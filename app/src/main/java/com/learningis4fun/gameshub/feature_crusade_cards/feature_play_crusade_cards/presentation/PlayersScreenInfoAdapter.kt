@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.presentation
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -54,6 +55,7 @@ class PlayersScreenInfoAdapter @Inject constructor(
     inner class PlayersScreenInfoViewHolder(private val binding: ItemPlayerScreenInfoBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
+        @SuppressLint("ResourceType")
         fun bind(position: Int) {
             val playerScreenInfo = getItem(position)
             binding.apply {

@@ -17,4 +17,6 @@ data class Player(
     val imageUrl: String = "",
     @ColumnInfo(name = "profile")
     val profileName: String = ""
-)
+){
+
+}

@@ -1,33 +1,68 @@
 package com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.presentation.play.cards
 
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.learningis4fun.gameshub.MainViewModel
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.feature_crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.controller.CrusadeLoggedUserCardsController
 import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
 import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.repository.CardRepository
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.repository.UserRepository
-import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.*
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.CardStates
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.CardStatesDefaultMsg
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.FiveFold
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.GameState
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.JokerActions
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.Response
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.TrackingPlay
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.toState
 import com.learningis4fun.gameshub.feature_crusade_cards.di.CrusadeCardsDataModule
-import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.model.*
+import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.model.CardsActionMessage
+import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.model.GamePlayerActions
+import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.model.PlayerScreenInfo
+import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.model.UserCardScrollInfo
 import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.use_case.EndGameUseCase
 import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.use_case.HandleCardStateUseCase
 import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.use_case.PauseGameUseCase
 import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.use_case.ResumeGameUseCase
 import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.presentation.PlayCardsEvent
+import com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.presentation.PlayCardsState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
-import java.util.*
+import io.ktor.util.InternalAPI
+import io.ktor.util.date.toDate
+import io.ktor.util.date.toJvmDate
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.math.abs
 
+@OptIn(InternalAPI::class)
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @HiltViewModel
@@ -48,23 +83,25 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     @CrusadeCardsDataModule.DefaultDispatcher private val defaultCoroutineDispatcher: CoroutineDispatcher
 ) : ViewModel() {
 
-    val _gameDuration = MutableStateFlow(Pair(false, 0L))
+    private val playCardsStateFlow = MutableStateFlow(PlayCardsState())
+    val playCardsState = playCardsStateFlow.asStateFlow()
+
+    private val _gameDuration = MutableStateFlow(Pair(false, 0L))
     var _lastCurrentTime: Long? = null
 
-    val gameDuration: LiveData<String>
-        get() = _gameDuration
-            .map {
-                it.second.toTimeFormatted()
-            }.asLiveData()
+    private val _playCardsStates: MutableStateFlow<GamePlayerActions> =
+        MutableStateFlow(GamePlayerActions.ActionMessages("Hitting up the scene"))
 
     init {
         viewModelScope.launch(defaultCoroutineDispatcher) {
             preference.recentCardState.collect {
-                val tracking = playCardsGameWhenOnCardStateChange()
-                when (tracking) {
-                    TrackingPlay.HasWinner -> {
-                        gameHasWinner()
+                when (val tracking = playCardsGameWhenOnCardStateChange()) {
+                    is TrackingPlay.HasWinner -> {
+                        playCardsStateFlow.update {
+                            it.copy(winner = tracking.player)
+                        }
                     }
+
                     else -> Unit
                 }
             }
@@ -76,31 +113,51 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 _gameDuration.value = adjustGameTimer(
                     currGameId = currGameId,
                     gameDuration = _gameDuration.value,
-                lastDuration = _lastCurrentTime)
+                    lastDuration = _lastCurrentTime
+                )
                 delay(Constants.GAME_DURATION_INTERVAL)
             }
         }
-    }
 
-    // test game object
-    val testData = liveData<String> {
-        val cardStates = preference.recentCardState.map {
-
-            gameRepository.getGame(
-                gameId = preference.recentGameId.first())
-                .firstOrNull()
-                .toString() + it.toString()
+        viewModelScope.launch {
+            playCardsUIState().collectLatest { uIStates ->
+                when (uIStates) {
+                    PlayCardsUIStates.Loading -> TODO()
+                    PlayCardsUIStates.WinnerScreen -> TODO()
+                    is PlayCardsUIStates.PlayingScreen -> {
+                        playCardsStateFlow.update {
+                            it.copy(
+                                playersScreenInfo = uIStates.playersScreenInfo,
+                                playedCards = uIStates.lastThreePlayedCards,
+                                duration = uIStates.durationText,
+                                userUnPlayedCards = uIStates.userCards.first,
+                                message = uIStates.messages.message,
+                                allowOthersPlay = uIStates.allowOthersPlay,
+                                showDefineJokerActions = uIStates.showDefineJokerActions,
+                                showCurrentCardType = uIStates.showCurrentCardType,
+                                showChooseCardTypeScreen = uIStates.showChooseCardTypeScreen
+                            )
+                        }
+                    }
+                }
+            }
         }
 
-        val completedGames = gameRepository.getCompletedGames()
+        viewModelScope.launch {
+            val calender = Calendar.getInstance()
+            val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
-        val test = combine(cardStates, completedGames){
-            state, games -> Pair(state, games)
-        }.map { (state, games) ->
-            "curr game: "+ state + " duration:" +_gameDuration.value.second.toString()
+            _gameDuration.collectLatest {(shouldUpdate, duration) ->
+                if(shouldUpdate){
+                    val date = calender.toDate(duration).toJvmDate()
+                    playCardsStateFlow.update {
+                        it.copy(
+                            duration = timeFormat.format(date)
+                        )
+                    }
+                }
+            }
         }
-
-        emitSource(test.asLiveData())
     }
 
     suspend fun adjustGameTimer(
@@ -140,24 +197,12 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
     val user = userRepository.getPlayerSignInDetails()
 
-    val playCardsEventsChannel = Channel<PlayCardsScreenEvents>()
-    val playCardsEvents: Flow<PlayCardsScreenEvents> = playCardsEventsChannel.receiveAsFlow()
-
-    val _playCardsStates: MutableStateFlow<GamePlayerActions> =
-        MutableStateFlow(GamePlayerActions.ActionMessages("Hitting up the scene"))
-
-    val playCardsStates: Flow<GamePlayerActions>
-        get() = _playCardsStates
-
-    fun updatePlayCardsStates(state: GamePlayerActions) {
+    private fun updatePlayCardsStates(state: GamePlayerActions) {
         _playCardsStates.value = state
     }
 
-    val _currentUserId: Flow<String>
-        get() = preference.user.map { it.uniqueId }
-
-    val _lastThreePlayedCards: Flow<List<UserCard>>
-        get() = gameRepository.getCurrentGameId().flatMapLatest { gameId ->
+    private fun lastThreePlayedCards(): Flow<List<UserCard>> =
+        gameRepository.getCurrentGameId().flatMapLatest { gameId ->
             if (gameId.isEmpty()) {
                 return@flatMapLatest emptyFlow()
             }
@@ -171,7 +216,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 }
         }
 
-    suspend fun anyPlayedAllCards(gameId: String): Player? =
+    private suspend fun anyPlayedAllCards(gameId: String): Player? =
         withContext(defaultCoroutineDispatcher) {
             if (gameId.isEmpty()) {
                 return@withContext null
@@ -199,7 +244,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
         }
 
-    suspend fun playCardsGameWhenOnCardStateChange(): TrackingPlay =
+    private suspend fun playCardsGameWhenOnCardStateChange(): TrackingPlay =
         withContext(defaultCoroutineDispatcher) {
 
             val gameId = gameRepository.getCurrentGameId().first()
@@ -219,14 +264,17 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 GameState.Completed -> {
                     TrackingPlay.Error("game is completed")
                 }
+
                 GameState.NotStarted -> {
                     resumeGameUseCase.resumeGame(gameId)
                     TrackingPlay.Playing
                 }
+
                 GameState.Paused -> {
                     resumeGameUseCase.resumeGame(gameId)
                     TrackingPlay.Error("Game is paused")
                 }
+
                 GameState.Started -> {
                     // check if any user has no cards - if yes, they wom so, end game
                     val hasWinner = anyPlayedAllCards(gameId = gameId)
@@ -248,12 +296,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                             duration = 0L,
                             winnerId = hasWinner.uniqueId
                         )
-                        playCardsEventsChannel.send(
-                            PlayCardsScreenEvents.NavigateToWinScreen(
-                                hasWinner.uniqueId
-                            )
-                        )
-                        TrackingPlay.HasWinner
+                        TrackingPlay.HasWinner(hasWinner)
                     } else {
                         val playCardState = handleCardStateUseCase.handleCardState(cardState)
                         playCardState?.let { updatePlayCardsStates(playCardState) }
@@ -264,7 +307,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         }
 
-    fun getPositionOfRecentlyAddedCardIfAdded(
+    private fun getPositionOfRecentlyAddedCardIfAdded(
         userCards: List<UserCard>,
         cardThatMightRecentlyBeAddedCard: UserCard
     ): UserCardScrollInfo {
@@ -286,42 +329,43 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         }
     }
 
-    fun _getUserCardsAndScrollInfo(): Flow<Pair<List<UserCard>, UserCardScrollInfo>> = combine(
-        gameRepository.getCurrentGameId(),
-        preference.userCardsSortBy
-    ) { currGameId, sortBy ->
-        Pair(currGameId, sortBy)
-    }.flatMapLatest { (currGameId, sortBy) ->
-        if (currGameId.isEmpty()) {
-            flowOf(Pair(emptyList(), UserCardScrollInfo()))
-        } else {
-            gameCardRepository.getUnPlayedCardsForPlayer(
-                gameId = currGameId,
-                playerId = _currentUserId.first()
-            ).map {
-                val userCards = it.sortedBy { userCard ->
-                    when (sortBy) {
-                        MainViewModel.UserCardsSortBy.CardName -> userCard.name
-                        MainViewModel.UserCardsSortBy.CardType -> userCard.type
-                        MainViewModel.UserCardsSortBy.TimePicked -> userCard.type
+    private fun _getUserCardsAndScrollInfo(): Flow<Pair<List<UserCard>, UserCardScrollInfo>> =
+        combine(
+            gameRepository.getCurrentGameId(),
+            preference.userCardsSortBy
+        ) { currGameId, sortBy ->
+            Pair(currGameId, sortBy)
+        }.flatMapLatest { (currGameId, sortBy) ->
+            if (currGameId.isEmpty()) {
+                flowOf(Pair(emptyList(), UserCardScrollInfo()))
+            } else {
+                gameCardRepository.getUnPlayedCardsForPlayer(
+                    gameId = currGameId,
+                    playerId = preference.user.map { it.uniqueId }.first()
+                ).map {
+                    val userCards = it.sortedBy { userCard ->
+                        when (sortBy) {
+                            MainViewModel.UserCardsSortBy.CardName -> userCard.name
+                            MainViewModel.UserCardsSortBy.CardType -> userCard.type
+                            MainViewModel.UserCardsSortBy.TimePicked -> userCard.type
+                        }
                     }
+
+                    val recentlyAddedCard = it.maxByOrNull { userCard ->
+                        userCard.pickedTime
+                    }
+
+                    val userCardScrollInfo = recentlyAddedCard?.let { userCard ->
+                        getPositionOfRecentlyAddedCardIfAdded(it, userCard)
+                    } ?: UserCardScrollInfo()
+
+                    Pair(userCards, userCardScrollInfo)
+
                 }
-
-                val recentlyAddedCard = it.maxByOrNull { userCard ->
-                    userCard.pickedTime
-                }
-
-                val userCardScrollInfo = recentlyAddedCard?.let { userCard ->
-                    getPositionOfRecentlyAddedCardIfAdded(it, userCard)
-                } ?: UserCardScrollInfo()
-
-                Pair(userCards, userCardScrollInfo)
-
             }
         }
-    }
 
-    suspend fun gameActionMessages(state: CardStates): CardsActionMessage {
+    private suspend fun gameActionMessages(state: CardStates): CardsActionMessage {
         return when (state) {
             is CardStates.ChangeType -> {
                 if (state.playerId == userRepository.getAndroidUserId()) {
@@ -332,6 +376,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     )
                 }
             }
+
             is CardStates.DefineCardAction -> {
                 if (state.playerId == userRepository.getAndroidUserId()) {
                     CardsActionMessage("...", true)
@@ -341,6 +386,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     )
                 }
             }
+
             is CardStates.Error -> CardsActionMessage(message = state.message)
             is CardStates.Hit -> {
                 if (state.playerId == userRepository.getAndroidUserId()) {
@@ -381,37 +427,26 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         }
     }
 
-    val playCardsUIState: LiveData<Resource<PlayCardsUIStates>> = liveData {
-        emit(Resource.Loading())
-        emitSource(
-            _playCardsUIState.map {
-                Resource.Success(it)
-            }.asLiveData()
-        )
-    }
-
-    val playersScreenInfo = combine(
+    private fun playCardsUIState(): Flow<PlayCardsUIStates> = combine(
         gameRepository.getCurrentGameId(),
+        lastThreePlayedCards(),
+        _playCardsStates,
+        _getUserCardsAndScrollInfo(),
         preference.recentCardState
-    ){gameId, cardState -> Pair(gameId, cardState)}.map{ (gameId, cardState) ->
-
-        playersScreenInfo(currGameId = gameId, cardState = cardState)
-    }
-
-    val gameActions :Flow<GameActions> = combine(
-        gameRepository.getCurrentGameId(),
-        playCardsStates,
-        preference.recentCardState
-    ) { gameId, playCardsStates, cardState ->
-        Triple(
+    ) { gameId, lastThreePlayedCards, playCardsStates, userCardsAndScrollInfo, cardState ->
+        FiveFold(
             gameId,
+            lastThreePlayedCards,
             playCardsStates,
+            userCardsAndScrollInfo,
             cardState,
         )
-    }.map { (gameId, playCardsStates, cardState) ->
+    }.flatMapLatest { (gameId, lastThreePlayedCards, playCardsStates, userCardsAndScrollInfo, cardState) ->
         if (gameId.isEmpty()) {
             flowOf(PlayCardsUIStates.Loading)
         }
+
+        val playerScreenInfo = playersScreenInfo(currGameId = gameId, cardState = cardState)
 
         val showCurrentCardTypeIfNecessary = showCurrentCardTypeIfNecessary(
             currGameId = gameId,
@@ -424,6 +459,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             is GamePlayerActions.PromptPlayerDefineJokerCardAction -> {
                 true
             }
+
             else -> {
                 false
             }
@@ -433,6 +469,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             is GamePlayerActions.PromptPlayerChangeCardType -> {
                 true
             }
+
             else -> {
                 false
             }
@@ -442,110 +479,31 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             is GamePlayerActions.PromptPlayerPlayOrPick -> {
                 !playCardsStates.canPick
             }
+
             else -> {
                 false
             }
         }
 
-        when{showDefineJokerActions -> GameActions(
-            allowOthersPlay = showAllowOthersPlayView,
-            gameActionEvents = GameActionEvents.DefineJokerAction,
-            showCurrentCardType = Pair(
-                showCurrentCardTypeIfNecessary.isNotEmpty(),
-                showCurrentCardTypeIfNecessary))
-
-            showChooseCardTypeScreen -> GameActions(
+        flowOf(
+            PlayCardsUIStates.PlayingScreen(
+                playersScreenInfo = playerScreenInfo,
+                dustbinImageUrl = "",
+                lastThreePlayedCards = lastThreePlayedCards,
+                durationText = "",
+                messages = gameActionMessages(state = cardState),
+                userCards = userCardsAndScrollInfo,
                 allowOthersPlay = showAllowOthersPlayView,
-                gameActionEvents = GameActionEvents.ChooseCardType,
+                showChooseCardTypeScreen = showChooseCardTypeScreen,
+                showDefineJokerActions = showDefineJokerActions,
                 showCurrentCardType = Pair(
                     showCurrentCardTypeIfNecessary.isNotEmpty(),
-                    showCurrentCardTypeIfNecessary))
-
-            else -> GameActions(
-                allowOthersPlay = showAllowOthersPlayView,
-                gameActionEvents = GameActionEvents.DefaultAction,
-                showCurrentCardType = Pair(
-                    showCurrentCardTypeIfNecessary.isNotEmpty(),
-                    showCurrentCardTypeIfNecessary))
-        }
-
-    }
-
-    val _playCardsUIState: Flow<PlayCardsUIStates>
-        get() = combine(
-            gameRepository.getCurrentGameId(),
-            _lastThreePlayedCards,
-            playCardsStates,
-            _getUserCardsAndScrollInfo(),
-            preference.recentCardState
-        ) { gameId, lastThreePlayedCards, playCardsStates, userCardsAndScrollInfo, cardState ->
-            FiveFold(
-                gameId,
-                lastThreePlayedCards,
-                playCardsStates,
-                userCardsAndScrollInfo,
-                cardState,
-            )
-        }.flatMapLatest { (gameId, lastThreePlayedCards, playCardsStates, userCardsAndScrollInfo, cardState) ->
-            if (gameId.isEmpty()) {
-                flowOf(PlayCardsUIStates.Loading)
-            }
-
-            val playerScreenInfo = playersScreenInfo(currGameId = gameId, cardState = cardState)
-
-            val showCurrentCardTypeIfNecessary = showCurrentCardTypeIfNecessary(
-                currGameId = gameId,
-                recentCardType = cardRepository.getCurrentCardType(),
-                recentCardState = cardState,
-                playCardState = playCardsStates
-            )
-
-            val showDefineJokerActions = when (playCardsStates) {
-                is GamePlayerActions.PromptPlayerDefineJokerCardAction -> {
-                    true
-                }
-                else -> {
-                    false
-                }
-            }
-
-            val showChooseCardTypeScreen = when (playCardsStates) {
-                is GamePlayerActions.PromptPlayerChangeCardType -> {
-                    true
-                }
-                else -> {
-                    false
-                }
-            }
-
-            val showAllowOthersPlayView = when (playCardsStates) {
-                is GamePlayerActions.PromptPlayerPlayOrPick -> {
-                    !playCardsStates.canPick
-                }
-                else -> {
-                    false
-                }
-            }
-
-            flowOf(
-                PlayCardsUIStates.PlayingScreen(
-                    playersScreenInfo = playerScreenInfo,
-                    dustbinImageUrl = "",
-                    lastThreePlayedCards = lastThreePlayedCards,
-                    durationText = "",
-                    messages = gameActionMessages(state = cardState),
-                    userCards = userCardsAndScrollInfo,
-                    allowOthersPlay = showAllowOthersPlayView,
-                    showChooseCardTypeScreen = showChooseCardTypeScreen,
-                    showDefineJokerActions = showDefineJokerActions,
-                    showCurrentCardType = Pair(
-                        showCurrentCardTypeIfNecessary.isNotEmpty(),
-                        showCurrentCardTypeIfNecessary
-                    )
+                    showCurrentCardTypeIfNecessary
                 )
             )
+        )
 
-        }
+    }
 
     private suspend fun showCurrentCardTypeIfNecessary(
         currGameId: String,
@@ -586,42 +544,33 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             is CardStates.Chance -> {
                 playerId == cardState.playerId
             }
+
             is CardStates.ChangeType -> {
                 playerId == cardState.playerId
             }
+
             is CardStates.DefineCardAction -> {
                 playerId == cardState.playerId
             }
+
             is CardStates.Hit -> {
                 playerId == cardState.playerId
             }
+
             is CardStates.Pick -> {
                 playerId == cardState.playerId
             }
+
             is CardStates.Play -> {
                 playerId == cardState.playerId
             }
+
             CardStates.Start -> {
                 playerId == userRepository.getAndroidUserId()
             }
+
             else -> false
         }
-    }
-
-    fun onEvent(event: PlayCardsEvent) {
-        when (event) {
-            PlayCardsEvent.ClosePlayCardsScreen -> TODO()
-            is PlayCardsEvent.DefineJokerAction -> TODO()
-            PlayCardsEvent.PickCardFromDustbin -> TODO()
-            is PlayCardsEvent.PlayCard -> {
-                TODO()
-            }
-            is PlayCardsEvent.SetNewCardType -> TODO()
-        }
-    }
-
-    fun onAllowOthersPlayBtnClick() = viewModelScope.launch(defaultCoroutineDispatcher) {
-        loggedUserCardsController.userRequestToAllowOthersPlay(user.first().uniqueId)
     }
 
     private suspend fun playersScreenInfo(
@@ -678,11 +627,25 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         }
     }
 
+    fun onEvent(event: PlayCardsEvent) {
+        when (event) {
+            PlayCardsEvent.AllowOthersPlay -> onAllowOthersPlayBtnClick()
+            PlayCardsEvent.ClosePlayCardsScreen -> onCloseNavigationIconClicked()
+            is PlayCardsEvent.DefineJokerAction -> onJokerActionClick(event.action)
+            PlayCardsEvent.PickCardFromDustbin -> onDustbinClick()
+            is PlayCardsEvent.PlayCard -> onUserCardClick(event.userCard)
+            is PlayCardsEvent.SetNewCardType -> onCardTypeClick(event.type)
+        }
+    }
+
+    fun onAllowOthersPlayBtnClick() = viewModelScope.launch(defaultCoroutineDispatcher) {
+        loggedUserCardsController.userRequestToAllowOthersPlay(user.first().uniqueId)
+    }
+
     fun onUserCardClick(userCard: UserCard) = viewModelScope.launch(defaultCoroutineDispatcher) {
 
         // hit back or play or error
-        val currentCardState = preference.recentCardState.first()
-        when (currentCardState) {
+        when (val currentCardState = preference.recentCardState.first()) {
             is CardStates.Play -> {
 
                 if (currentCardState.playerId == user.first().uniqueId) {
@@ -694,6 +657,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 }
 
             }
+
             is CardStates.Hit -> {
 
                 if (currentCardState.playerId == user.first().uniqueId) {
@@ -705,39 +669,42 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     )
                 }
             }
+
             else -> {
-                playCardsEventsChannel.send(
-                    PlayCardsScreenEvents.ShowErrorMessage(
-                        message = "Hold on, it might not be your turn event: $currentCardState"
-                    )
-                )
-            }
-        }
-    }
-
-    fun onJokerActionClick(action: JokerActions) = viewModelScope.launch(defaultCoroutineDispatcher) {
-        // define joker action or error
-
-        val currentCardState = preference.recentCardState.first()
-
-        when (currentCardState) {
-            is CardStates.DefineCardAction -> {
-
-                if (currentCardState.playerId == user.first().uniqueId) {
-                    loggedUserCardsController.userRequestToDefineJokerAction(
-                        playerId = currentCardState.playerId,
-                        action = action,
-                        gameCardId = currentCardState.gameCardId
-                    )
+                playCardsStateFlow.update {
+                    it.copy(error = "Hold on, it might not be your turn event: $currentCardState")
                 }
             }
-            else -> {
-                playCardsEventsChannel.send(PlayCardsScreenEvents.ShowErrorMessage("Unexpected behaviour, user has to define joker action"))
-            }
         }
     }
 
-    fun onCardTypeClick(type: String) = viewModelScope.launch(defaultCoroutineDispatcher) {
+    private fun onJokerActionClick(action: JokerActions) =
+        viewModelScope.launch(defaultCoroutineDispatcher) {
+            // define joker action or error
+
+            when (val currentCardState = preference.recentCardState.first()) {
+                is CardStates.DefineCardAction -> {
+
+                    if (currentCardState.playerId == user.first().uniqueId) {
+                        loggedUserCardsController.userRequestToDefineJokerAction(
+                            playerId = currentCardState.playerId,
+                            action = action,
+                            gameCardId = currentCardState.gameCardId
+                        )
+                    }
+                }
+
+                else -> {
+                    playCardsStateFlow.update {
+                        it.copy(
+                            error = "Unexpected behaviour, user has to define joker action"
+                        )
+                    }
+                }
+            }
+        }
+
+    private fun onCardTypeClick(type: String) = viewModelScope.launch(defaultCoroutineDispatcher) {
         // change card type or error
         val currentCardState = preference.recentCardState.first()
         val response = loggedUserCardsController.userRequestToChangeCardType(
@@ -746,7 +713,11 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             playerId = user.first().uniqueId
         )
         if (response is Response.Error) {
-            playCardsEventsChannel.send(PlayCardsScreenEvents.ShowErrorMessage(response.message))
+            playCardsStateFlow.update {
+                it.copy(
+                    error = response.message
+                )
+            }
         }
     }
 
@@ -762,28 +733,24 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         )
 
         if (response is Response.Error) {
-            playCardsEventsChannel.send(
-                PlayCardsScreenEvents.ShowErrorMessage(
-                    message = response.message
-                )
-            )
+            playCardsStateFlow.update {
+                it.copy(error = response.message)
+            }
         }
     }
 
-    suspend fun gameHasWinner() {
-        playCardsEventsChannel.send(PlayCardsScreenEvents.PopBackStack)
-    }
-
-    suspend fun pauseGameAndReleaseResources() {
+    private suspend fun pauseGameAndReleaseResources() {
         val currentGameId = gameRepository.getCurrentGameId().first()
         if (currentGameId.isNotEmpty()) {
             pauseGameUseCase.pauseGame(currGameId = currentGameId, _gameDuration.value.second)
         }
     }
 
-    fun onCloseNavigationIconClicked() = viewModelScope.launch{
-       pauseGameAndReleaseResources()
-        playCardsEventsChannel.send(PlayCardsScreenEvents.PopBackStack)
+    fun onCloseNavigationIconClicked(
+        onPopBack: () -> Unit = {}
+    ) = viewModelScope.launch {
+        pauseGameAndReleaseResources()
+        onPopBack()
     }
 
     sealed class PlayCardsUIStates {
@@ -801,28 +768,5 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             val showDefineJokerActions: Boolean,
             val showCurrentCardType: Pair<Boolean, String> // done
         ) : PlayCardsUIStates()
-    }
-
-    sealed class GameActionEvents{
-        object DefineJokerAction: GameActionEvents()
-        object ChooseCardType: GameActionEvents()
-        object DefaultAction: GameActionEvents()
-    }
-
-    data class GameActions(
-        val allowOthersPlay: Boolean,
-        val gameActionEvents: GameActionEvents,
-        val showCurrentCardType: Pair<Boolean, String>
-    )
-
-    sealed class PlayCardsScreenEvents {
-
-        data class ShowErrorMessage(val message: String) : PlayCardsScreenEvents()
-        data class ShowWarningMessage(val message: String) : PlayCardsScreenEvents()
-        data class ShowGeneralMessage(val message: String = "More fun with GamesHub") :
-            PlayCardsScreenEvents()
-
-        data class NavigateToWinScreen(val winnerId: String) : PlayCardsScreenEvents()
-        object PopBackStack : PlayCardsScreenEvents()
     }
 }

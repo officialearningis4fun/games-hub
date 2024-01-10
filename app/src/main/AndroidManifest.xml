@@ -5,6 +5,7 @@
     <uses-feature android:name="android.hardware.screen.portrait"/>
 
     <application
+        android:enableOnBackInvokedCallback="true"
         android:name=".GamesHubApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
