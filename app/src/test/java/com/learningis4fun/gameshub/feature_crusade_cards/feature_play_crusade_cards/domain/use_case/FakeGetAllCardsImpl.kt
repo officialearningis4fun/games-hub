@@ -1,0 +1,17 @@
+package com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.domain.use_case
+
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.model.Card
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.Response
+import com.learningis4fun.gameshub.feature_crusade_cards.feature_start.domain.use_cases.GetAllCards
+
+class FakeGetAllCardsImpl(
+
+): GetAllCards {
+    override suspend fun getAllCards(): Response<List<Card>> {
+
+        return Response.Success(data = Constants.Cards.cards, message = "No message")
+    }
+
+
+}

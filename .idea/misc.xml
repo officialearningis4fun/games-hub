@@ -1,0 +1,41 @@
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/drawable/background_card_number.xml" value="0.19166666666666668" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/drawable/background_stroked_rectangle.xml" value="0.22604166666666667" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/drawable/ic_account.xml" value="0.2140625" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/drawable/ic_close_black.xml" value="0.22604166666666667" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/drawable/ic_outline_cloud.xml" value="0.22604166666666667" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/drawable/ic_person_outline.xml" value="0.2140625" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/drawable/ic_suit_heart.xml" value="0.22604166666666667" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/activity_main.xml" value="0.1388888888888889" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/fragment_allow_others_play.xml" value="0.20989583333333334" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/fragment_card_types.xml" value="0.22" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/fragment_cards_start.xml" value="0.2" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/fragment_edit_profile_name.xml" value="0.13703703703703704" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/fragment_games_hub_start.xml" value="0.2" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/fragment_play_cards.xml" value="0.22" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/fragment_profile.xml" value="0.25" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/fragment_sign_up.xml" value="0.21" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/item_added_palayers.xml" value="0.33" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/item_added_players.xml" value="0.5" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/item_completed_game.xml" value="0.25" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/item_number_of_cards_for_players.xml" value="0.33" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/item_player_screen_info.xml" value="0.1" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/view_cards_start_feature_graphic.xml" value="0.22" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/view_create_new_game.xml" value="0.25" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/view_create_new_game_instantly.xml" value="0.20989583333333334" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/view_current_card_type.xml" value="0.15833333333333333" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/view_ongoing_game.xml" value="0.33" />
+        <entry key="..\:/HlomphoShadrackMohapi/APPLICATIONS/Projects/GamesHub/app/src/main/res/layout/view_start_feature_graphic.xml" value="0.2" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_18" default="true" project-jdk-name="corretto-18" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

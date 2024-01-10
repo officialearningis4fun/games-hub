@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/orange_500">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:menu="@menu/menu_play_cards_fragment"
+        app:navigationIcon="@drawable/ic_close"
+        app:title="@string/app_name"
+        app:titleCentered="true" />
+
+    <TextView
+        android:id="@+id/cards_test_data"
+        style="@style/Caption.CardsPlayGroundTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:scrollbars="vertical"
+        android:text="test data"
+        android:textSize="12sp"
+        android:visibility="invisible"
+        android:textColor="@color/black"
+        android:background="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/players_group" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/root_play_cards"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="?attr/actionBarSize"
+        android:visibility="invisible"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        tools:visibility="visible">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/scene_cards_and_players_guide"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.2" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/scene_cards_and_messages_or_ads_view_guide"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.55" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/messages_or_ads_view_and_user_cards_guide"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_percent="0.65" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/scene_cards_and_dustbin_cards_group"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:constraint_referenced_ids="top_played_card, second_top_played_card, third_top_played_card, scene_cards_title"
+            app:layout_constraintBottom_toTopOf="@id/scene_cards_and_messages_or_ads_view_guide"
+            app:layout_constraintTop_toBottomOf="@id/scene_cards_and_players_guide" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/played_cards_group"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            app:constraint_referenced_ids="top_played_card, second_top_played_card, third_top_played_card, user_cards"
+            app:layout_constraintBottom_toTopOf="@id/scene_cards_and_messages_or_ads_view_guide"
+            app:layout_constraintEnd_toStartOf="@id/game_duration"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scene_cards_title" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/players_group"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:constraint_referenced_ids="players, players_cards_title"
+            app:layout_constraintBottom_toTopOf="@id/scene_cards_and_players_guide"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/user_cards_group"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:constraint_referenced_ids="users_cards_title, user_cards"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/messages_or_ads_view_and_user_cards_guide" />
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/messages_or_ads_view_group"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="12dp"
+            app:constraint_referenced_ids="messages_or_ads_view"
+            app:layout_constraintBottom_toTopOf="@id/messages_or_ads_view_and_user_cards_guide"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/scene_cards_and_messages_or_ads_view_guide" />
+
+
+        <TextView
+            android:id="@+id/players_cards_title"
+            style="@style/Caption.CardsPlayGroundTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="8dp"
+            android:text="@string/title_players"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/players_group" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/players"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:overScrollMode="never"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="@id/players_group"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/players_cards_title"
+            tools:itemCount="2"
+            tools:listitem="@layout/item_player_screen_info" />
+
+        <TextView
+            android:id="@+id/scene_cards_title"
+            style="@style/Caption.CardsPlayGroundTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:text="@string/title_played_cards"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@id/top_played_card"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/scene_cards_and_dustbin_cards_group" />
+
+        <TextView
+            android:id="@+id/dustbin_title"
+            style="@style/Caption.CardsPlayGroundTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:text="@string/title_dustbin_cards"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="@id/dustbin_cards"
+            app:layout_constraintStart_toStartOf="@+id/dustbin_cards"
+            app:layout_constraintTop_toTopOf="@id/scene_cards_and_dustbin_cards_group" />
+
+        <ImageView
+            android:id="@+id/third_top_played_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:contentDescription="@string/image_content_description_third_top_played_card"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="@id/scene_cards_and_dustbin_cards_group"
+            app:layout_constraintDimensionRatio="2:3"
+            app:layout_constraintStart_toStartOf="@id/played_cards_group"
+            app:layout_constraintTop_toBottomOf="@id/scene_cards_title"
+            tools:src="@drawable/heart_3" />
+
+
+        <ImageView
+            android:id="@+id/second_top_played_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:contentDescription="@string/image_content_description_second_top_played_card"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="@id/scene_cards_and_dustbin_cards_group"
+            app:layout_constraintDimensionRatio="2:3"
+            app:layout_constraintEnd_toEndOf="@id/played_cards_group"
+            app:layout_constraintStart_toStartOf="@id/played_cards_group"
+            app:layout_constraintTop_toBottomOf="@id/scene_cards_title"
+            tools:src="@drawable/heart_1" />
+
+        <ImageView
+            android:id="@+id/top_played_card"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:contentDescription="@string/image_content_description_top_played_card"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="@id/scene_cards_and_dustbin_cards_group"
+            app:layout_constraintDimensionRatio="2:3"
+            app:layout_constraintEnd_toEndOf="@id/played_cards_group"
+            app:layout_constraintTop_toBottomOf="@id/scene_cards_title"
+            tools:src="@drawable/club_1" />
+
+        <include
+            android:id="@+id/layout_view_current_card_type"
+            layout="@layout/view_current_card_type"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/top_played_card"
+            app:layout_constraintEnd_toEndOf="@id/top_played_card"
+            app:layout_constraintStart_toStartOf="@id/third_top_played_card"
+            app:layout_constraintTop_toTopOf="@id/top_played_card"
+            tools:visibility="visible" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/game_duration"
+            style="@style/Headline6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="@string/placeholder_game_duration"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="@id/dustbin_cards"
+            app:layout_constraintEnd_toStartOf="@id/dustbin_cards"
+            app:layout_constraintTop_toTopOf="@id/dustbin_cards"
+            app:layout_constraintVertical_bias="0.4" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/game_duration_title"
+            style="@style/Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/title_game_duration"
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toEndOf="@id/game_duration"
+            app:layout_constraintStart_toStartOf="@id/game_duration"
+            app:layout_constraintTop_toBottomOf="@id/game_duration" />
+
+        <ImageView
+            android:id="@+id/dustbin_cards"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/title_dustbin_cards"
+            android:scaleType="fitXY"
+            android:src="@drawable/back"
+            app:layout_constraintBottom_toBottomOf="@id/scene_cards_and_dustbin_cards_group"
+            app:layout_constraintDimensionRatio="2:3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/dustbin_title" />
+
+        <View
+            android:id="@+id/messages_or_ads_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/background_cards_messages"
+            app:layout_constraintBottom_toBottomOf="@id/messages_or_ads_view_group"
+            app:layout_constraintEnd_toEndOf="@id/messages_or_ads_view_group"
+            app:layout_constraintStart_toStartOf="@id/messages_or_ads_view_group"
+            app:layout_constraintTop_toTopOf="@id/messages_or_ads_view_group" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/messages"
+            style="@style/Body2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingTop="8dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            android:text="@string/placeholder_game_messages"
+            android:textColor="@color/white"
+            app:layout_constraintBottom_toBottomOf="@id/messages_or_ads_view_group"
+            app:layout_constraintEnd_toEndOf="@id/messages_or_ads_view_group"
+            app:layout_constraintStart_toStartOf="@id/messages_or_ads_view_group"
+            app:layout_constraintTop_toTopOf="@id/messages_or_ads_view_group" />
+
+        <include
+            android:id="@+id/layout_include_card_types"
+            layout="@layout/fragment_card_types"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/messages_or_ads_view_and_user_cards_guide"
+            tools:visibility="visible" />
+
+        <include
+            android:id="@+id/layout_include_define_joker_action"
+            layout="@layout/fragment_joker_actions"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/messages_or_ads_view_and_user_cards_guide"
+            tools:visibility="invisible" />
+
+        <include
+            android:id="@+id/layout_include_allow_others_play"
+            layout="@layout/fragment_allow_others_play"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@id/dustbin_cards"
+            app:layout_constraintEnd_toEndOf="@id/dustbin_cards"
+            app:layout_constraintStart_toStartOf="@id/dustbin_cards"
+            app:layout_constraintTop_toTopOf="@id/dustbin_cards"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/ic_filter_list"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/users_cards_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/users_cards_title" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/users_cards_title"
+            style="@style/Caption.CardsPlayGroundTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:text="@string/title_users_cards"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/user_cards_group" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/user_cards"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="4dp"
+            android:clipToPadding="false"
+            android:orientation="horizontal"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="@id/user_cards_group"
+            app:layout_constraintTop_toBottomOf="@id/users_cards_title"
+            tools:listitem="@layout/item_card" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

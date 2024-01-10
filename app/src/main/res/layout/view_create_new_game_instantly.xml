@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/choose_card_type"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/add_participants_title"
+        style="@style/Caption.CardsPlayGroundTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:text="Add participants"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/participants"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:overScrollMode="never"
+        app:layoutManager="androidx.recyclerview.widget.StaggeredGridLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/add_participants_title"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_added_players" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/set_num_of_cards_title"
+        style="@style/Caption.CardsPlayGroundTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp"
+        android:text="Set number of cards"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/participants" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/numOfCards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:overScrollMode="never"
+        android:paddingStart="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintTop_toBottomOf="@id/set_num_of_cards_title"
+        tools:itemCount="5"
+        tools:listitem="@layout/item_number_of_cards_for_players" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/message"
+        style="@style/Subtitle2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:text="Challenge your device to the game of cards!!!"
+        android:textAlignment="center"
+        app:layout_constraintTop_toBottomOf="@id/numOfCards" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">GamesHub</string>
+
+    <!-- Main Cards Screen -->
+    <string name="title_users_cards">Your cards</string>
+    <string name="title_cards_types">Choose card type</string>
+    <string name="title_define_joker_actions">Define Joker Action</string>
+    <string name="title_allow_others_play">Allow others play</string>
+    <string name="item_profile_content_description">profile</string>
+
+    <string name="title_played_cards">Played</string>
+
+    <string name="image_content_description_second_top_played_card">Second Top Card</string>
+    <string name="image_content_description_top_played_card">Top card</string>
+    <string name="image_content_description_third_top_played_card">Third Top Card</string>
+
+    <string name="title_dustbin_cards">Dustbin</string>
+    <string name="image_content_description_dustbin_card">Dustbin card</string>
+
+    <string name="title_players">Players</string>
+
+    <string name="title_game_duration">Duration</string>
+    <string name="placeholder_game_duration">00:00</string>
+    <string name="placeholder_game_messages">Your action messages will appear here…</string>
+</resources>
