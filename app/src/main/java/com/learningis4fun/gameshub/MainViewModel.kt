@@ -3,9 +3,9 @@ package com.learningis4fun.gameshub
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.learningis4fun.gameshub.feature_crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.repository.DefaultCardRepository
-import com.learningis4fun.gameshub.feature_crusade_cards.commons.domain.util.CardStates
+import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*

@@ -7,12 +7,12 @@
 
     <fragment
         android:id="@+id/playCardsFragment"
-        android:name="com.learningis4fun.gameshub.feature_crusade_cards.feature_play_crusade_cards.presentation.PlayCardsFragment"
+        android:name="com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.presentation.PlayCardsFragment"
         android:label="PlayCardsFragment"
         tools:layout="@layout/fragment_play_cards" />
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.learningis4fun.gameshub.feature_crusade_cards.feature_profile.presentation.profile.ProfileFragment"
+        android:name="com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.profile.ProfileFragment"
         android:label="ProfileFragment">
         <action
             android:id="@+id/action_profileFragment_to_signUpFragment"
@@ -22,7 +22,7 @@
     </fragment>
     <fragment
         android:id="@+id/enterProfileName"
-        android:name="com.learningis4fun.gameshub.feature_crusade_cards.feature_profile.presentation.enterProfile.EnterProfileNameFragment"
+        android:name="com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.enterProfile.EnterProfileNameFragment"
         android:label="EnterProfileName"
         tools:layout="@layout/fragment_enter_profile_name">
         <action
@@ -31,7 +31,7 @@
     </fragment>
     <fragment
         android:id="@+id/cardsStartFragment"
-        android:name="com.learningis4fun.gameshub.feature_crusade_cards.feature_start.CardsStartFragment"
+        android:name="com.learningis4fun.gameshub.crusade_cards.feature_start.CardsStartFragment"
         android:label="CardsStartFragment"
         tools:layout="@layout/fragment_cards_start">
         <action
@@ -43,7 +43,7 @@
     </fragment>
     <fragment
         android:id="@+id/signUpFragment"
-        android:name="com.learningis4fun.gameshub.feature_signup.SignUpFragment"
+        android:name="com.learningis4fun.gameshub.signup.SignUpFragment"
         android:label="SignUpFragment"
         tools:layout="@layout/fragment_sign_up">
         <action

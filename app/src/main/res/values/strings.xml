@@ -22,4 +22,6 @@
     <string name="title_game_duration">Duration</string>
     <string name="placeholder_game_duration">00:00</string>
     <string name="placeholder_game_messages">Your action messages will appear here…</string>
+    <string name="android">Android</string>
+    <string name="challenge_your_phone_to_a_crusade">Challenge your Phone to a crusade</string>
 </resources>
