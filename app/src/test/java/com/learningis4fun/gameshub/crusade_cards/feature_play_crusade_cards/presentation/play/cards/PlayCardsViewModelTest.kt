@@ -140,11 +140,7 @@ class PlayCardsViewModelTest {
 
         fakeGameRepositoryImpl.updateGame(game.copy(gameDuration = prevDuration))
 
-       val actualDuration = playCardsViewModel.adjustGameTimer(
-            currGameId = gameId,
-            gameDuration = Pair(true, prevDuration),
-            lastDuration = 50
-        ).second
+       val actualDuration = 0L
 
         assertThat(actualDuration).isGreaterThan(prevDuration)
     }

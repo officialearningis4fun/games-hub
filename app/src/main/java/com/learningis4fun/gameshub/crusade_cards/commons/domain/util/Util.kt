@@ -62,6 +62,19 @@ fun hideKeyBoard(activity: Activity?, view: View) {
     }
 }
 
+public data class Quadruple<out A, out B, out C, out D>(
+    public val first: A,
+    public val second: B,
+    public val third: C,
+    public val fourth: D,
+) : Serializable {
+
+    /**
+     * Returns string representation of the [Quadruple] including its [first], [second], [third] and [fourth] values.
+     */
+    public override fun toString(): String = "($first, $second, $third, $fourth)"
+}
+
 public data class FiveFold<out A, out B, out C, out D, out E>(
     public val first: A,
     public val second: B,

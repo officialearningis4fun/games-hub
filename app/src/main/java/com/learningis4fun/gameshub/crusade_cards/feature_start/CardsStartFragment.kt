@@ -38,13 +38,14 @@ class CardsStartFragment : Fragment(R.layout.fragment_cards_start) {
 
         binding?.completedGames?.apply {
             setContent {
-                val completedGames by cardsStartViewModel.completedGames.collectAsState()
+                val completedGamesState by cardsStartViewModel.completedGamesState.collectAsState()
+
                 MaterialTheme {
                     CompletedGamesSection(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White),
-                        completedGames = completedGames
+                        completedGamesState = completedGamesState
                     )
                 }
             }

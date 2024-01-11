@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.use_case
 
+import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
@@ -12,7 +13,8 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 class ResumeGameUseCase @Inject constructor(
     val repository: DefaultCardRepository,
-    private val gameRepository: GameRepository
+    private val gameRepository: GameRepository,
+    private val preferencesManager: CrusadeCardsPreferencesManager
 ) {
 
     suspend fun resumeGame(currGameId: String): Response<String> {
@@ -37,6 +39,7 @@ class ResumeGameUseCase @Inject constructor(
                 }
                 GameState.NotStarted -> {
                     gameRepository.updateGame(currGame.copy(gameState = GameState.Started.name))
+                    preferencesManager.updateRecentGameId(currGame.id)
                     //_gameDuration.value = Pair(true, currGame.gameDuration)
                     Response.Success("", "Successfully started the game")
                 }

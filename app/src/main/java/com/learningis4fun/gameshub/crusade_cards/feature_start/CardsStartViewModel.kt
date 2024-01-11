@@ -13,8 +13,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameC
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.FiveFold
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Quadruple
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Resource
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
@@ -24,6 +23,7 @@ import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.doma
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.OnGoingGame
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetAllCards
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CompletedGamesState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -59,69 +59,34 @@ class CardsStartViewModel @Inject constructor(
     private val cardsStartScreenEventsChannel = Channel<CardsStartScreenEvents>()
     val cardsStartScreenEvents = cardsStartScreenEventsChannel.receiveAsFlow()
 
-    private val completedGamesFlow =
-        MutableStateFlow<List<com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CompletedGame>>(
-            emptyList()
-        )
-    val completedGames = completedGamesFlow.asStateFlow()
+    private val completedGamesStateFlow = MutableStateFlow(CompletedGamesState())
+    val completedGamesState = completedGamesStateFlow.asStateFlow()
 
     init {
         viewModelScope.launch {
             gameRepository.getCompletedGamesWithPlayers()
                 .collectLatest { gamesWithPlayers ->
+
                     val completedGames = gamesWithPlayers.map {
-                        println(it)
-                        com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CompletedGame(
+                        CompletedGame(
                             duration = it.game.gameDuration,
                             game = it.game,
                             players = it.players
                         )
                     }
 
-                    completedGamesFlow.update {
-                        completedGames
+                    completedGamesStateFlow.update {
+                        it.copy(completedGames = completedGames)
                     }
                 }
         }
     }
 
-    // completed games
-    fun _completedGamesMessage(): Flow<CompletedGame> =
-        userRepository.getPlayerSignInDetails().flatMapLatest { user ->
 
-            val playerId = user.uniqueId
-
-            repository.getGamesOfPlayer(playerId = playerId).map {
-
-                try {
-                    val gamesWon = it.games.count { game ->
-                        game.winnerId == playerId
-                    }
-
-                    val totalGames = it.games
-                        .count {
-                            it.gameState == GameState.Completed.name
-                        }
-                    if (totalGames == 0) {
-                        CompletedGame(numOfGamesWon = "")
-                    } else {
-                        CompletedGame(
-                            numOfGamesWon = "Won $gamesWon of $totalGames",
-                            totalGames = totalGames
-                        )
-                    }
-
-                } catch (exception: Exception) {
-                    CompletedGame()
-                }
-
-            }
-        }
-
-    val _ongoingGameIsActive = MutableStateFlow(false)
+    private val _ongoingGameIsActive = MutableStateFlow(false)
 
     // currentGame
-    fun _onGoingGame(): Flow<List<OnGoingGame>> = combine(
+    private fun _onGoingGame(): Flow<List<OnGoingGame>> = combine(
         userRepository.getPlayerSignInDetails(),
         preference.recentGameId
     ) { user, gameId ->
@@ -178,16 +143,15 @@ class CardsStartViewModel @Inject constructor(
         }
     }
 
-    val _cardsStartUIStates: Flow<CardsStartUIStates>
+    private val _cardsStartUIStates: Flow<CardsStartUIStates>
         get() = combine(
-            _completedGamesMessage(),
             _onGoingGame(),
             cardRepository.getNumOfCards(),
             gameRepository.getCurrentGameId(),
             _ongoingGameIsActive
-        ) { completedGame, ongoingGame, numOfCards, gameId, ongoingGameIsActive ->
-            FiveFold(completedGame, ongoingGame, numOfCards, gameId, ongoingGameIsActive)
-        }.flatMapLatest { (completedGame, ongoingGame, numOfCards, gameId, ongoingGameIsActive) ->
+        ) { ongoingGame, numOfCards, gameId, ongoingGameIsActive ->
+            Quadruple(ongoingGame, numOfCards, gameId, ongoingGameIsActive)
+        }.flatMapLatest { (ongoingGame, numOfCards, gameId, ongoingGameIsActive) ->
 
             if (numOfCards != Constants.Cards.cards.size) {
                 return@flatMapLatest flowOf(CardsStartUIStates.Default)
@@ -196,7 +160,6 @@ class CardsStartViewModel @Inject constructor(
             if (gameId.isEmpty()) {
                 return@flatMapLatest flowOf(
                     CardsStartUIStates.CreateGame(
-                        completedGame = completedGame,
                         enableChallengeFriendsBtn = false,
                         enableChallengeAndroidBtn = true
                     )
@@ -205,7 +168,6 @@ class CardsStartViewModel @Inject constructor(
 
             flowOf(
                 CardsStartUIStates.ResumeGame(
-                    completedGame = completedGame,
                     onGoingGame = ongoingGame
                 )
             )
@@ -285,13 +247,11 @@ class CardsStartViewModel @Inject constructor(
     sealed class CardsStartUIStates {
         object Default : CardsStartUIStates()
         data class CreateGame(
-            val completedGame: CompletedGame,
             val enableChallengeFriendsBtn: Boolean,
             val enableChallengeAndroidBtn: Boolean
         ) : CardsStartUIStates()
 
         data class ResumeGame(
-            val completedGame: CompletedGame,
             val onGoingGame: List<OnGoingGame>
         ) : CardsStartUIStates()
     }

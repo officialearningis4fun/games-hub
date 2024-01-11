@@ -61,7 +61,6 @@ class PlayCardsFragment : Fragment(R.layout.fragment_play_cards) {
                         gameDuration = gameDuration,
                         onEvent = playCardsViewModel::onEvent,
                         winner = {
-                            println(it)
                             findNavController().popBackStack()
                         }
                     )
@@ -74,6 +73,18 @@ class PlayCardsFragment : Fragment(R.layout.fragment_play_cards) {
                 findNavController().popBackStack()
             }
         }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        println("frag: pause")
+        playCardsViewModel.onAppPaused()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        println("frag: resume")
+        playCardsViewModel.onAppResumed()
     }
 
     override fun onDestroy() {

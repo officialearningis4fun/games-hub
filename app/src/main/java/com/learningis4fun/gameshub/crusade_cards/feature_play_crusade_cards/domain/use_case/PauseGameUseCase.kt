@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.use_case
 
+import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
@@ -9,7 +10,8 @@ import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 class PauseGameUseCase @Inject constructor(
-    private val gameRepository: GameRepository
+    private val gameRepository: GameRepository,
+    private val preferencesManager: CrusadeCardsPreferencesManager
 ) {
 
     /**

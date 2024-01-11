@@ -6,6 +6,7 @@ import com.learningis4fun.gameshub.MainViewModel
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeLoggedUserCardsController
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
@@ -15,6 +16,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.FiveFold
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.JokerActions
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
@@ -23,7 +25,6 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
 import com.learningis4fun.gameshub.crusade_cards.di.CrusadeCardsDataModule
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.CardsActionMessage
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCardScrollInfo
@@ -32,7 +33,6 @@ import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.doma
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.use_case.PauseGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.use_case.ResumeGameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.ktor.util.InternalAPI
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -43,7 +43,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -53,7 +52,6 @@ import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.math.abs
 
-@OptIn(InternalAPI::class)
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
 @HiltViewModel
@@ -76,7 +74,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     val playCardsState = playCardsStateFlow.asStateFlow()
 
     private val _gameDuration = MutableStateFlow(Pair(false, 0L))
-    private var _lastCurrentTime: Long? = null
+
     private val gameDurationFlow = MutableStateFlow("00:00")
     val gameDuration = gameDurationFlow.asStateFlow()
 
@@ -93,7 +91,9 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                         }
                     }
 
-                    else -> Unit
+                    else -> {
+                        println(tracking)
+                    }
                 }
             }
         }
@@ -101,11 +101,13 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         viewModelScope.launch(defaultCoroutineDispatcher) {
             while (true) {
                 val currGameId = gameRepository.getCurrentGameId().first()
-                _gameDuration.value = adjustGameTimer(
-                    currGameId = currGameId,
-                    gameDuration = _gameDuration.value,
-                    lastDuration = _lastCurrentTime
-                )
+                val recentGame = gameRepository.getGame(currGameId).first()
+                println("recentGame: $recentGame")
+                if (recentGame?.gameState == GameState.Started.name) {
+                    adjustGameTimer(
+                        currentGame = recentGame
+                    )
+                }
                 delay(Constants.GAME_DURATION_INTERVAL)
             }
         }
@@ -135,6 +137,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         viewModelScope.launch {
             _gameDuration.collectLatest { (shouldUpdate, duration) ->
+                println("currTime: $duration shUp: $shouldUpdate")
                 if (shouldUpdate) {
                     val durationText = duration.toTimeFormatted()
                     gameDurationFlow.update {
@@ -145,39 +148,25 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         }
     }
 
-    suspend fun adjustGameTimer(
-        currGameId: String,
-        gameDuration: Pair<Boolean, Long>,
-        lastDuration: Long?
-    ): Pair<Boolean, Long> {
-        var recentGameDuration: Pair<Boolean, Long>
-        var lastCurrentTime = lastDuration
+    private fun adjustGameTimer(
+        currentGame: Game
+    ) {
 
-        recentGameDuration =
-            if (currGameId.isEmpty() || gameRepository.getGame(currGameId).firstOrNull() == null) {
-                Pair(false, 0L)
-            } else if (gameDuration.first) {
-                gameDuration
-            } else {
-                val duration = gameRepository.getGame(currGameId).first()?.gameDuration!!
-                Pair(true, duration)
-            }
+        val currentTime = System.currentTimeMillis()
 
-        val shouldUpdateTime = recentGameDuration.first
+        val lastCurrentTime = currentGame.gameDuration
 
-        if (shouldUpdateTime) {
-            lastCurrentTime = lastCurrentTime ?: System.currentTimeMillis()
 
-            val currentTime = System.currentTimeMillis()
+        val durationInterval = abs(currentTime - lastCurrentTime)
+        val duration = lastCurrentTime + durationInterval
 
-            val prevDuration = recentGameDuration.second
-            val durationInterval = abs(currentTime - lastCurrentTime)
-            val duration = prevDuration + durationInterval
-
-            recentGameDuration = Pair(true, duration)
-            _lastCurrentTime = currentTime
+        viewModelScope.launch {
+            gameRepository.updateGame(currentGame.copy(gameDuration = duration))
         }
-        return recentGameDuration
+
+        _gameDuration.update {
+            it.copy(first = true, second = duration)
+        }
     }
 
     val user = userRepository.getPlayerSignInDetails()
@@ -251,12 +240,10 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 }
 
                 GameState.NotStarted -> {
-                    resumeGameUseCase.resumeGame(gameId)
                     TrackingPlay.Playing
                 }
 
                 GameState.Paused -> {
-                    resumeGameUseCase.resumeGame(gameId)
                     TrackingPlay.Error("Game is paused")
                 }
 
@@ -729,8 +716,14 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         val currentGameId = gameRepository.getCurrentGameId().first()
         if (currentGameId.isNotEmpty()) {
             val duration = _gameDuration.value.second
-            println("gd: $duration")
             pauseGameUseCase.pauseGame(currGameId = currentGameId, gameDuration = duration)
+        }
+    }
+
+    private suspend fun resumeGame() {
+        val gameId = gameRepository.getCurrentGameId().first()
+        if (gameId.isNotEmpty()) {
+           // resumeGameUseCase.resumeGame(gameId)
         }
     }
 
@@ -740,6 +733,19 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         pauseGameAndReleaseResources()
         onPopBack()
     }
+
+    fun onAppPaused() {
+        viewModelScope.launch {
+            pauseGameAndReleaseResources()
+        }
+    }
+
+    fun onAppResumed() {
+        viewModelScope.launch {
+            resumeGame()
+        }
+    }
+
 
     sealed class PlayCardsUIStates {
         object Loading : PlayCardsUIStates()

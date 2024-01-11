@@ -5,6 +5,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.User
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.R
+import java.sql.Time
 
 
 object Constants {
@@ -49,7 +50,7 @@ object Constants {
     )
 
     const val NUM_OF_CARDS_TO_PICK_FOR_JOKER = 4
-    const val GAME_DURATION_INTERVAL = 200L
+    const val GAME_DURATION_INTERVAL = 1000L
 
     object CardsImages {
          val ONE_CLUB_IMG = R.drawable.club_1

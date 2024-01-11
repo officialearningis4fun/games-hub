@@ -35,14 +35,17 @@ import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
+import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CompletedGamesSection(
     modifier: Modifier = Modifier,
-    completedGames: List<CompletedGame>,
+    completedGamesState: CompletedGamesState,
     ongoingGame: String? = "Ongoing games"
 ) {
+
+    val completedGames = completedGamesState.completedGames
 
     Column(modifier) {
         Heading(
@@ -229,19 +232,21 @@ private fun CompletedGamesScreenPrev() {
             .background(Color.White)
             .fillMaxWidth(),
         ongoingGame = null,
-        completedGames = listOf(
-            CompletedGame(
-                game = Game(id = "", name = "Game 01", winnerId = "id"),
-                players = listOf(
-                    Player("id", profileName = "Hlompho"),
-                    Player("id2", profileName = "Android"),
-                )
-            ),
-            CompletedGame(
-                game = Game(id = "", name = "Game 01", winnerId = "id"),
-                players = listOf(
-                    Player("id", profileName = "Hlompho"),
-                    Player("id2", profileName = "Android"),
+        completedGamesState = CompletedGamesState(
+            completedGames = listOf(
+                CompletedGame(
+                    game = Game(id = "", name = "Game 01", winnerId = "id"),
+                    players = listOf(
+                        Player("id", profileName = "Hlompho"),
+                        Player("id2", profileName = "Android"),
+                    )
+                ),
+                CompletedGame(
+                    game = Game(id = "", name = "Game 01", winnerId = "id"),
+                    players = listOf(
+                        Player("id", profileName = "Hlompho"),
+                        Player("id2", profileName = "Android"),
+                    )
                 )
             )
         )
