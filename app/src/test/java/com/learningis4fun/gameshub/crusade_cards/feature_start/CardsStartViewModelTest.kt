@@ -196,7 +196,7 @@ class CardsStartViewModelTest {
     @Test
     fun onAccountBtnClick() = runBlockingTest {
         cardsStartViewModel.onAccountBtnClick()
-        val expect = CardsStartViewModel.CardsStartScreenEvents.NavigateToAccoutScreen
+        val expect = CardsStartViewModel.CardsStartScreenEvents.NavigateToAccountScreen
         val actual = cardsStartViewModel.cardsStartScreenEvents.first()
 
         assertThat(expect).isEqualTo(actual)

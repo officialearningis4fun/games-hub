@@ -2,21 +2,17 @@ package com.learningis4fun.gameshub.crusade_cards.feature_start
 
 import android.os.Bundle
 import android.view.View
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.learningis4fun.gameshub.R
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Resource
-import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CompletedGamesSection
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CardsStartScreen
 import com.learningis4fun.gameshub.databinding.FragmentCardsStartBinding
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -36,97 +32,31 @@ class CardsStartFragment : Fragment(R.layout.fragment_cards_start) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentCardsStartBinding.bind(view)
 
-        binding?.completedGames?.apply {
+        binding?.rootStartCards?.apply {
             setContent {
-                val completedGamesState by cardsStartViewModel.completedGamesState.collectAsState()
-
+                val cardsStartState by cardsStartViewModel.cardsStartState.collectAsState()
                 MaterialTheme {
-                    CompletedGamesSection(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color.White),
-                        completedGamesState = completedGamesState
+                    CardsStartScreen(
+                        modifier = Modifier.fillMaxSize(),
+                        cardsStartState = cardsStartState,
+                        onStartClick = {
+                            cardsStartViewModel.onChallengeAIBtnClick()
+                        },
+                        onResumeClick = {
+                            cardsStartViewModel.onResumeGameBtnClick()
+                        }
                     )
                 }
             }
         }
 
-        registerObservers()
         registerEventListeners()
-
-        binding?.challengeAiBtn?.setOnClickListener {
-            cardsStartViewModel.onChallengeAIBtnClick()
-        }
 
         binding?.gamesStartToolbar?.menu?.findItem(R.id.action_account)
             ?.setOnMenuItemClickListener {
                 cardsStartViewModel.onAccountBtnClick()
                 true
             }
-
-        binding?.viewOngoingGame?.onGoingGameResumeBtn?.setOnClickListener {
-            cardsStartViewModel.onResumeGameBtnClick()
-        }
-    }
-
-    private fun showCreateGameViews(state: CardsStartViewModel.CardsStartUIStates.CreateGame) {
-        binding?.createGameActions?.isVisible = true
-        binding?.challengeAiBtn?.isEnabled = state.enableChallengeAndroidBtn
-    }
-
-    private fun hideCreateGameViews() {
-        binding?.createGameActions?.isVisible = false
-    }
-
-    private fun hideResumeGameViews() {
-        binding?.viewOngoingGame?.root?.isVisible = false
-    }
-
-    private fun showResumeGameViews(state: CardsStartViewModel.CardsStartUIStates.ResumeGame) {
-        binding?.viewOngoingGame?.root?.isVisible = true
-        if (state.onGoingGame.isNotEmpty()) {
-            binding?.viewOngoingGame?.gameName?.text = state.onGoingGame[0].players
-            binding?.viewOngoingGame?.apply {
-                gameName.text = state.onGoingGame[0].players
-                timeTaken.text = state.onGoingGame[0].timeElapsed
-            }
-        }
-    }
-
-    private fun registerObservers() {
-
-        cardsStartViewModel.cardsStartUIStates.observe(viewLifecycleOwner) { resource ->
-            when (resource) {
-                is Resource.Error -> TODO()
-                is Resource.Loading -> {
-                    binding?.rootStartCards?.isVisible = false
-                }
-
-                is Resource.Success -> {
-                    when (val state = resource.data) {
-                        is CardsStartViewModel.CardsStartUIStates.CreateGame -> {
-                            hideResumeGameViews()
-                            showCreateGameViews(state)
-                        }
-
-                        CardsStartViewModel.CardsStartUIStates.Default -> {
-                            hideCreateGameViews()
-                            hideResumeGameViews()
-                        }
-
-                        is CardsStartViewModel.CardsStartUIStates.ResumeGame -> {
-                            hideCreateGameViews()
-                            showResumeGameViews(state)
-
-                        }
-
-                        null -> TODO()
-                    }
-                    binding?.rootStartCards?.isVisible = true
-                }
-            }
-        }
-
     }
 
     private fun registerEventListeners() {
@@ -139,7 +69,7 @@ class CardsStartFragment : Fragment(R.layout.fragment_cards_start) {
                         findNavController().navigate(action)
                     }
 
-                    CardsStartViewModel.CardsStartScreenEvents.NavigateToAccoutScreen -> {
+                    CardsStartViewModel.CardsStartScreenEvents.NavigateToAccountScreen -> {
                         val action =
                             CardsStartFragmentDirections.actionCardsStartFragmentToProfileFragment()
                         findNavController().navigate(action)

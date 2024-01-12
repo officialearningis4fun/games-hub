@@ -65,7 +65,7 @@ interface GameCardDao {
     }
 
     @Transaction
-    @Query("SELECT * FROM gameCard WHERE gameId LIKE :gameId AND playerId LIKE :playerId AND isPlayed == 0")
+    @Query("SELECT * FROM gameCard, card WHERE gameId LIKE :gameId AND playerId LIKE :playerId AND isPlayed == 0 ORDER BY cardType")
     fun getUnPlayedCardsForPlayerSortedByCardType(
         gameId: String,
         playerId: String

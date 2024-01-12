@@ -27,7 +27,6 @@ import com.learningis4fun.gameshub.crusade_cards.di.CrusadeCardsDataModule
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.CardsActionMessage
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCard
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCardScrollInfo
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.use_case.EndGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.use_case.HandleCardStateUseCase
 import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.use_case.PauseGameUseCase
@@ -50,7 +49,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.math.abs
 
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
@@ -74,6 +72,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     val playCardsState = playCardsStateFlow.asStateFlow()
 
     private val _gameDuration = MutableStateFlow(Pair(false, 0L))
+    private val lastDurationFlow = MutableStateFlow<Long?>(null)
+    private var onLaunch: Boolean = true
 
     private val gameDurationFlow = MutableStateFlow("00:00")
     val gameDuration = gameDurationFlow.asStateFlow()
@@ -92,7 +92,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     }
 
                     else -> {
-                        println(tracking)
+
                     }
                 }
             }
@@ -102,7 +102,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             while (true) {
                 val currGameId = gameRepository.getCurrentGameId().first()
                 val recentGame = gameRepository.getGame(currGameId).first()
-                println("recentGame: $recentGame")
                 if (recentGame?.gameState == GameState.Started.name) {
                     adjustGameTimer(
                         currentGame = recentGame
@@ -122,7 +121,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                             it.copy(
                                 playersScreenInfo = uIStates.playersScreenInfo,
                                 playedCards = uIStates.lastThreePlayedCards,
-                                userUnPlayedCards = uIStates.userCards.first,
+                                userUnPlayedCards = uIStates.userCards,
                                 message = uIStates.messages.message,
                                 allowOthersPlay = uIStates.allowOthersPlay,
                                 showDefineJokerActions = uIStates.showDefineJokerActions,
@@ -137,7 +136,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         viewModelScope.launch {
             _gameDuration.collectLatest { (shouldUpdate, duration) ->
-                println("currTime: $duration shUp: $shouldUpdate")
                 if (shouldUpdate) {
                     val durationText = duration.toTimeFormatted()
                     gameDurationFlow.update {
@@ -152,13 +150,12 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         currentGame: Game
     ) {
 
-        val currentTime = System.currentTimeMillis()
-
-        val lastCurrentTime = currentGame.gameDuration
-
-
-        val durationInterval = abs(currentTime - lastCurrentTime)
-        val duration = lastCurrentTime + durationInterval
+        val duration = if (onLaunch) {
+            onLaunch = false
+            currentGame.gameDuration
+        } else {
+            currentGame.gameDuration + Constants.GAME_DURATION_INTERVAL
+        }
 
         viewModelScope.launch {
             gameRepository.updateGame(currentGame.copy(gameDuration = duration))
@@ -280,29 +277,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         }
 
-    private fun getPositionOfRecentlyAddedCardIfAdded(
-        userCards: List<UserCard>,
-        cardThatMightRecentlyBeAddedCard: UserCard
-    ): UserCardScrollInfo {
-
-        val nowTime = System.currentTimeMillis()
-
-        val timeDifference = abs(nowTime.minus(cardThatMightRecentlyBeAddedCard.pickedTime))
-
-        val isAddedRecently = timeDifference <= 2000L
-
-        val message = "start: ${cardThatMightRecentlyBeAddedCard.pickedTime} now: $nowTime"
-
-        return if (isAddedRecently) {
-            val positionOfRecentlyAddedCard = userCards.indexOf(cardThatMightRecentlyBeAddedCard)
-
-            UserCardScrollInfo(true, positionOfRecentlyAddedCard, timeDifference)
-        } else {
-            UserCardScrollInfo(false, 0, timeDifference, message)
-        }
-    }
-
-    private fun _getUserCardsAndScrollInfo(): Flow<Pair<List<UserCard>, UserCardScrollInfo>> =
+    private fun getUserCards(): Flow<List<UserCard>> =
         combine(
             gameRepository.getCurrentGameId(),
             preference.userCardsSortBy
@@ -310,29 +285,25 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             Pair(currGameId, sortBy)
         }.flatMapLatest { (currGameId, sortBy) ->
             if (currGameId.isEmpty()) {
-                flowOf(Pair(emptyList(), UserCardScrollInfo()))
+                flowOf(emptyList())
             } else {
                 gameCardRepository.getUnPlayedCardsForPlayer(
                     gameId = currGameId,
                     playerId = preference.user.map { it.uniqueId }.first()
-                ).map {
-                    val userCards = it.sortedBy { userCard ->
-                        when (sortBy) {
-                            MainViewModel.UserCardsSortBy.CardName -> userCard.name
-                            MainViewModel.UserCardsSortBy.CardType -> userCard.type
-                            MainViewModel.UserCardsSortBy.TimePicked -> userCard.type
+                ).map { cardsOfUser ->
+                    val userCards = cardsOfUser.groupBy { it.type }.toSortedMap()
+                        .map { (_, cards) ->
+                            cards.sortedBy { userCard ->
+                                when (sortBy) {
+                                    MainViewModel.UserCardsSortBy.CardName -> userCard.name
+                                    MainViewModel.UserCardsSortBy.CardType -> userCard.type
+                                    MainViewModel.UserCardsSortBy.TimePicked -> userCard.gameCardId
+                                }
+                            }
                         }
-                    }
+                        .flatten()
 
-                    val recentlyAddedCard = it.maxByOrNull { userCard ->
-                        userCard.pickedTime
-                    }
-
-                    val userCardScrollInfo = recentlyAddedCard?.let { userCard ->
-                        getPositionOfRecentlyAddedCardIfAdded(it, userCard)
-                    } ?: UserCardScrollInfo()
-
-                    Pair(userCards, userCardScrollInfo)
+                    userCards
 
                 }
             }
@@ -404,17 +375,17 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         gameRepository.getCurrentGameId(),
         lastThreePlayedCards(),
         _playCardsStates,
-        _getUserCardsAndScrollInfo(),
+        getUserCards(),
         preference.recentCardState
-    ) { gameId, lastThreePlayedCards, playCardsStates, userCardsAndScrollInfo, cardState ->
+    ) { gameId, lastThreePlayedCards, playCardsStates, userCards, cardState ->
         FiveFold(
             gameId,
             lastThreePlayedCards,
             playCardsStates,
-            userCardsAndScrollInfo,
+            userCards,
             cardState,
         )
-    }.flatMapLatest { (gameId, lastThreePlayedCards, playCardsStates, userCardsAndScrollInfo, cardState) ->
+    }.flatMapLatest { (gameId, lastThreePlayedCards, playCardsStates, userCards, cardState) ->
         if (gameId.isEmpty()) {
             flowOf(PlayCardsUIStates.Loading)
         }
@@ -424,8 +395,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         val showCurrentCardTypeIfNecessary = showCurrentCardTypeIfNecessary(
             currGameId = gameId,
             recentCardType = cardRepository.getCurrentCardType(),
-            recentCardState = cardState,
-            playCardState = playCardsStates
+            recentCardState = cardState
         )
 
         val showDefineJokerActions = when (playCardsStates) {
@@ -461,11 +431,9 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         flowOf(
             PlayCardsUIStates.PlayingScreen(
                 playersScreenInfo = playerScreenInfo,
-                dustbinImageUrl = "",
                 lastThreePlayedCards = lastThreePlayedCards,
-                durationText = "",
                 messages = gameActionMessages(state = cardState),
-                userCards = userCardsAndScrollInfo,
+                userCards = userCards,
                 allowOthersPlay = showAllowOthersPlayView,
                 showChooseCardTypeScreen = showChooseCardTypeScreen,
                 showDefineJokerActions = showDefineJokerActions,
@@ -481,8 +449,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     private suspend fun showCurrentCardTypeIfNecessary(
         currGameId: String,
         recentCardType: String,
-        recentCardState: CardStates,
-        playCardState: GamePlayerActions
+        recentCardState: CardStates
     ): String {
         var type = ""
         return try {
@@ -590,7 +557,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                         playerId = player.uniqueId,
                         cardState = cardState
                     ),
-                    imageUrl = if (player.imageUrl.isEmpty()) null else player.imageUrl
+                    imageUrl = player.imageUrl.ifEmpty { null }
                 )
 
             }
@@ -723,7 +690,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     private suspend fun resumeGame() {
         val gameId = gameRepository.getCurrentGameId().first()
         if (gameId.isNotEmpty()) {
-           // resumeGameUseCase.resumeGame(gameId)
+            resumeGameUseCase.resumeGame(gameId)
         }
     }
 
@@ -748,15 +715,13 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
 
     sealed class PlayCardsUIStates {
-        object Loading : PlayCardsUIStates()
-        object WinnerScreen : PlayCardsUIStates()
+        data object Loading : PlayCardsUIStates()
+        data object WinnerScreen : PlayCardsUIStates()
         data class PlayingScreen(
             val playersScreenInfo: List<PlayerScreenInfo>,//done
-            val dustbinImageUrl: String, //later
             val lastThreePlayedCards: List<UserCard>,//done
-            val durationText: String,//later
             val messages: CardsActionMessage, //done
-            val userCards: Pair<List<UserCard>, UserCardScrollInfo>,//done
+            val userCards: List<UserCard>,//done
             val allowOthersPlay: Boolean,
             val showChooseCardTypeScreen: Boolean,
             val showDefineJokerActions: Boolean,

@@ -2,6 +2,7 @@ package com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.dom
 
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 
 data class UserCard(
     @ColumnInfo(name = "gameCardId")
@@ -36,4 +37,10 @@ data class UserCard(
 ){
     @Ignore
     val card = "${name.uppercase()} - ${type.uppercase()}"
+    fun toCard(): Card = Card(
+        id = cardId,
+        name = name,
+        type = type,
+        image = image
+    )
 }

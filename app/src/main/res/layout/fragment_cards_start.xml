@@ -24,120 +24,12 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <androidx.compose.ui.platform.ComposeView
         android:id="@+id/root_start_cards"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clickable="true"
         android:focusable="true"
-        android:paddingTop="?android:attr/actionBarSize"
-        android:visibility="invisible"
-        tools:visibility="visible">
-
-
-        <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/completed_games"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/create_game_actions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/completed_games"
-            tools:visibility="visible">
-
-            <ImageView
-                android:id="@+id/cloud"
-                android:layout_width="0dp"
-                android:layout_height="64dp"
-                android:src="@drawable/ic_outline_cloud"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/king"
-                android:layout_width="0dp"
-                android:layout_height="72dp"
-                android:rotation="20"
-                android:src="@drawable/heart_king"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toStartOf="@id/cloud"
-                app:layout_constraintTop_toBottomOf="@id/cloud" />
-
-            <ImageView
-                android:id="@+id/joker"
-                android:layout_width="0dp"
-                android:layout_height="72dp"
-                android:layout_marginTop="10dp"
-                android:src="@drawable/joker_red"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toEndOf="@id/cloud"
-                app:layout_constraintStart_toStartOf="@id/cloud"
-                app:layout_constraintTop_toTopOf="@id/king" />
-
-            <ImageView
-                android:id="@+id/queen"
-                android:layout_width="0dp"
-                android:layout_height="72dp"
-                android:rotation="-20"
-                android:src="@drawable/diamond_queen"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintStart_toEndOf="@id/cloud"
-                app:layout_constraintTop_toBottomOf="@id/cloud" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/create_game_actions_title"
-                style="@style/Headline5"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
-                android:text="@string/challenge_your_phone_to_a_crusade"
-                android:textAlignment="center"
-                android:textColor="@color/black"
-                app:layout_constraintEnd_toEndOf="@id/queen"
-                app:layout_constraintStart_toStartOf="@+id/king"
-                app:layout_constraintTop_toBottomOf="@id/joker" />
-
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/challenge_ai_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:padding="8dp"
-                android:text="@string/android"
-                app:icon="@drawable/ic_outline_phone_android"
-                app:layout_constraintStart_toEndOf="@id/guideline2"
-                app:layout_constraintEnd_toEndOf="@id/guideline2"
-                app:layout_constraintTop_toBottomOf="@id/create_game_actions_title"
-                app:strokeColor="@color/white" />
-
-            <androidx.constraintlayout.widget.Guideline
-                android:id="@+id/guideline2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                app:layout_constraintGuide_percent="0.5" />
-
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <include
-            android:id="@+id/view_ongoing_game"
-            layout="@layout/view_ongoing_game"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/completed_games"
-            tools:visibility="invisible" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        android:paddingTop="?android:attr/actionBarSize" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

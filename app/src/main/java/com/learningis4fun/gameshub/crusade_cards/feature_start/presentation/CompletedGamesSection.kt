@@ -41,8 +41,7 @@ import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.Comp
 @Composable
 fun CompletedGamesSection(
     modifier: Modifier = Modifier,
-    completedGamesState: CompletedGamesState,
-    ongoingGame: String? = "Ongoing games"
+    completedGamesState: CompletedGamesState
 ) {
 
     val completedGames = completedGamesState.completedGames
@@ -72,23 +71,8 @@ fun CompletedGamesSection(
                 }
             }
         }
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color.LightGray)
-        )
-
-        ongoingGame?.let {
-            Heading(
-                text = "Ongoing games",
-                modifier = Modifier.padding(16.dp),
-                textColor = Color.Black
-            )
-        }
 
     }
-
 
 }
 
@@ -209,7 +193,7 @@ private fun CompletedGameItem(
 }
 
 @Composable
-private fun Heading(
+fun Heading(
     modifier: Modifier = Modifier,
     text: String,
     textColor: Color = Color.White
@@ -231,7 +215,6 @@ private fun CompletedGamesScreenPrev() {
         modifier = Modifier
             .background(Color.White)
             .fillMaxWidth(),
-        ongoingGame = null,
         completedGamesState = CompletedGamesState(
             completedGames = listOf(
                 CompletedGame(

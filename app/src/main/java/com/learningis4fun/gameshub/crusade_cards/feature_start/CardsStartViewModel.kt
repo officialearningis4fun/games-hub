@@ -1,18 +1,19 @@
 package com.learningis4fun.gameshub.crusade_cards.feature_start
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Quadruple
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Resource
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
@@ -23,7 +24,9 @@ import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.doma
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.OnGoingGame
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetAllCards
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CardsStartState
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CompletedGamesState
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OngoingGameState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -59,8 +62,10 @@ class CardsStartViewModel @Inject constructor(
     private val cardsStartScreenEventsChannel = Channel<CardsStartScreenEvents>()
     val cardsStartScreenEvents = cardsStartScreenEventsChannel.receiveAsFlow()
 
+    private val ongoingGamesStateFlow = MutableStateFlow(OngoingGameState())
     private val completedGamesStateFlow = MutableStateFlow(CompletedGamesState())
-    val completedGamesState = completedGamesStateFlow.asStateFlow()
+    private val cardsStartStateFlow = MutableStateFlow(CardsStartState())
+    val cardsStartState = cardsStartStateFlow.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -80,8 +85,71 @@ class CardsStartViewModel @Inject constructor(
                     }
                 }
         }
-    }
 
+        viewModelScope.launch {
+            gameRepository.getCurrentGameId().flatMapLatest {
+                gameRepository.getGameWithPlayers(it)
+            }.collectLatest { gameWithPlayers ->
+
+                val showOngoing = try {
+                    gameWithPlayers.game.gameState == GameState.Paused.name
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+
+                if (!showOngoing) {
+                    ongoingGamesStateFlow.update {
+                        OngoingGameState()
+                    }
+
+                    return@collectLatest
+                }
+
+                gameCardRepository.getThreeTopPlayedCards(
+                    gameId = gameWithPlayers.game.id,
+                    playerIds = gameWithPlayers.players.map { it.uniqueId }
+                ).collectLatest {
+                    val cards = it.map { userCard ->
+                        Card(
+                            id = userCard.cardId,
+                            name = userCard.name,
+                            type = userCard.type,
+                            image = userCard.image
+                        )
+                    }
+
+                    ongoingGamesStateFlow.update {
+                        OngoingGameState(
+                            threeCards = cards,
+                            gameWithPlayers = gameWithPlayers,
+                        )
+                    }
+                }
+            }
+
+        }
+
+        viewModelScope.launch {
+            combine(
+                ongoingGamesStateFlow,
+                completedGamesStateFlow
+            ) { ongoing, completed -> Pair(ongoing, completed) }
+                .collectLatest { (ongoing, completed) ->
+                    val userId = userRepository.getUserId()
+
+                    val showOngoing = ongoing != OngoingGameState()
+
+                    cardsStartStateFlow.update {
+                        it.copy(
+                            completedGamesState = completed.copy(userId = userId),
+                            ongoingGameState = ongoing,
+                            showOngoingGame = showOngoing
+                        )
+                    }
+                }
+        }
+    }
 
     private val _ongoingGameIsActive = MutableStateFlow(false)
 
@@ -175,15 +243,6 @@ class CardsStartViewModel @Inject constructor(
 
         }
 
-    val cardsStartUIStates: LiveData<Resource<CardsStartUIStates>> = liveData {
-        emit(Resource.Loading())
-        emitSource(
-            _cardsStartUIStates.map {
-                Resource.Success(it)
-            }.asLiveData()
-        )
-    }
-
     fun onChallengeAIBtnClick() = viewModelScope.launch {
 
         try {
@@ -194,7 +253,7 @@ class CardsStartViewModel @Inject constructor(
                 loggedUser,
                 userRepository.getAndroidPlayerSignInDetails().first()
             )
-            println(participants)
+
             val gameId = createGameUseCase.createGame(
                 gameName = "",
                 participants = participants
@@ -218,18 +277,9 @@ class CardsStartViewModel @Inject constructor(
 
     }
 
-    fun onPlayWithFriendsClick() = viewModelScope.launch {
-        val getAllCardsResponse = getAllCards.getAllCards()
-        if (getAllCardsResponse is Response.Error) {
-            println(getAllCardsResponse.message)
-        }
-        Log.d("AllCards", "onPlayWithFriendsClick: Cards: ${getAllCardsResponse.data}")
-    }
-
     fun onResumeGameBtnClick() = viewModelScope.launch {
         val currGameId = gameRepository.getCurrentGameId().first()
-        val response = resumeGameUseCase.resumeGame(currGameId = currGameId)
-        when (response) {
+        when (val response = resumeGameUseCase.resumeGame(currGameId = currGameId)) {
             is Response.Error -> {
                 cardsStartScreenEventsChannel.send(CardsStartScreenEvents.ShowErrorMessage(response.message))
             }
@@ -241,7 +291,7 @@ class CardsStartViewModel @Inject constructor(
     }
 
     fun onAccountBtnClick() = viewModelScope.launch {
-        cardsStartScreenEventsChannel.send(CardsStartScreenEvents.NavigateToAccoutScreen)
+        cardsStartScreenEventsChannel.send(CardsStartScreenEvents.NavigateToAccountScreen)
     }
 
     sealed class CardsStartUIStates {
@@ -259,7 +309,7 @@ class CardsStartViewModel @Inject constructor(
     sealed class CardsStartScreenEvents {
         object NavigateToPlayCardsScreen : CardsStartScreenEvents()
         object OpenChooseNumberOfCardsScreen : CardsStartScreenEvents()
-        object NavigateToAccoutScreen : CardsStartScreenEvents()
+        object NavigateToAccountScreen : CardsStartScreenEvents()
         data class ShowErrorMessage(val message: String) : CardsStartScreenEvents()
     }
 }
