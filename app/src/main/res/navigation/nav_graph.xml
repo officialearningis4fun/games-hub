@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/playCardsFragment"
-        android:name="com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.presentation.PlayCardsFragment"
+        android:name="com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.PlayCardsFragment"
         android:label="PlayCardsFragment"
         tools:layout="@layout/fragment_play_cards" />
     <fragment
@@ -31,7 +31,7 @@
     </fragment>
     <fragment
         android:id="@+id/cardsStartFragment"
-        android:name="com.learningis4fun.gameshub.crusade_cards.feature_start.CardsStartFragment"
+        android:name="com.learningis4fun.gameshub.crusade_cards.start.CardsStartFragment"
         android:label="CardsStartFragment"
         tools:layout="@layout/fragment_cards_start">
         <action

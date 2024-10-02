@@ -1,6 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.CardStateEntity
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 
 sealed class CardStates(val name: String) {
 

@@ -2,8 +2,8 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.repository
 
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.data.data_source.relations.GameWithPlayers
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.CardStateEntity
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 import kotlinx.coroutines.flow.Flow
 
 interface GameRepository {

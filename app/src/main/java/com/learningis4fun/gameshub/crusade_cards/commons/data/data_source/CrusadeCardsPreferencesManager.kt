@@ -4,7 +4,7 @@ import com.learningis4fun.gameshub.MainViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.CardStateEntity
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 

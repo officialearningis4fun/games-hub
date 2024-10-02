@@ -7,8 +7,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentFactory
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
-import androidx.test.espresso.core.internal.deps.guava.base.Preconditions
 
+
+/*
 inline fun <reified T : Fragment> launchFragmentInHiltContainer(
     fragmentArgs: Bundle? = null,
     fragmentFactory: FragmentFactory? = null,
@@ -37,4 +38,4 @@ inline fun <reified T : Fragment> launchFragmentInHiltContainer(
 
         (fragment as T).action()
     }
-}
+}*/

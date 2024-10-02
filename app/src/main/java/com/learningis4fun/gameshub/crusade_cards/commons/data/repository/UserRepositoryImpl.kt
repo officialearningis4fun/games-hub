@@ -1,7 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.data.repository
 
 import androidx.room.withTransaction
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.AuthStates
@@ -37,7 +36,7 @@ class UserRepositoryImpl @ExperimentalCoroutinesApi
         imageUrl = ""
     )
 
-    override suspend fun googleSignInWithFirebase(account: GoogleSignInAccount): Response<String> {
+    override suspend fun googleSignInWithFirebase(): Response<String> {
         return withContext(Dispatchers.IO) {
             try {
                 authStates.emit(AuthStates.SignedIn(player = player))

@@ -3,9 +3,8 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.User
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.R
-import java.sql.Time
 
 
 object Constants {

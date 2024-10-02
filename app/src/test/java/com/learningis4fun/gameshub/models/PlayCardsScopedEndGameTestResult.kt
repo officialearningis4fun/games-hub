@@ -3,7 +3,7 @@ package com.learningis4fun.gameshub.models
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.TrackingPlay
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.presentation.PlayCardsViewModel
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.PlayCardsViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalStdlibApi

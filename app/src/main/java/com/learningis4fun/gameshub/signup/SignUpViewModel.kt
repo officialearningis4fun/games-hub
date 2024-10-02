@@ -1,15 +1,16 @@
 package com.learningis4fun.gameshub.signup
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.AuthStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
@@ -21,11 +22,11 @@ class SignUpViewModel @Inject constructor(
     val signUpScreenEventsChannel = Channel<SignUpScreenEvents>()
     val signUpScreenEvents = signUpScreenEventsChannel.receiveAsFlow()
 
-    fun googleAuthForFirebase(account: GoogleSignInAccount) {
+   /* fun googleAuthForFirebase(account: GoogleSignInAccount) {
         viewModelScope.launch {
             userRepository.googleSignInWithFirebase(account)
         }
-    }
+    }*/
 
     fun signUpScreenStates(): Flow<SignUpScreenStates> = flow {
         emit(SignUpScreenStates.Loading)

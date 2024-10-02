@@ -1,9 +1,8 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.repository
 
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.AuthStates
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
@@ -28,7 +27,7 @@ interface UserRepository {
 
     fun getPlayers(): Flow<List<Player>>
 
-    suspend fun googleSignInWithFirebase(account: GoogleSignInAccount): Response<String>
+    suspend fun googleSignInWithFirebase(): Response<String>
 
     fun authStateListener(): Flow<AuthStates>
 

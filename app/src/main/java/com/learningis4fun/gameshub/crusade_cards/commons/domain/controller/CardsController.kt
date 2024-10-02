@@ -4,8 +4,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardR
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCard
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.mappers.toGameCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.mappers.toGameCard
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg

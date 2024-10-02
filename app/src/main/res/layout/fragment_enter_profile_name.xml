@@ -58,12 +58,6 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.google.android.gms.common.SignInButton
-        android:layout_width="wrap_content"
-        android:id="@+id/google_sign_in_btn"
-        android:layout_gravity="center"
-        android:layout_height="wrap_content"/>
-
     <com.google.android.material.button.MaterialButton
         android:layout_width="wrap_content"
         android:layout_gravity="bottom|center"

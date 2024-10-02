@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.databinding.FragmentSignUpBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,8 +20,8 @@ const val REQUEST_CODE_SIGN_IN = 200
 @AndroidEntryPoint
 class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
 
-    var binding: FragmentSignUpBinding? = null
-    val signUpViewModel: SignUpViewModel by viewModels()
+    private var binding: FragmentSignUpBinding? = null
+    private val signUpViewModel: SignUpViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -46,7 +45,7 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         }
     }
 
-    fun registerEventListeners() {
+    private fun registerEventListeners() {
         lifecycleScope.launchWhenStarted {
             signUpViewModel.signUpScreenEvents.collect { event ->
                 when (event) {
@@ -61,7 +60,7 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     }
 
 
-    fun registerObservers() {
+    private fun registerObservers() {
         lifecycleScope.launchWhenStarted {
             signUpViewModel.signUpScreenStates().collectLatest { state ->
                 when (state) {
@@ -88,10 +87,10 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_SIGN_IN) {
-            val account = GoogleSignIn.getSignedInAccountFromIntent(data).result
+            /*val account = GoogleSignIn.getSignedInAccountFromIntent(data).result
             account?.let {
                 signUpViewModel.googleAuthForFirebase(it)
-            }
+            }*/
         }
     }
 

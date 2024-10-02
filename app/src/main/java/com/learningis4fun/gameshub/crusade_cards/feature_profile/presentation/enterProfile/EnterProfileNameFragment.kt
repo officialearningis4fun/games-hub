@@ -52,7 +52,7 @@ class EnterProfileNameFragment : Fragment(R.layout.fragment_enter_profile_name) 
 
     private fun registerEventListeners() {
         lifecycleScope.launchWhenStarted {
-          val name =  enterProfileNameViewModel.getOldProfileName()
+          /*val name =  enterProfileNameViewModel.getOldProfileName()
             binding?.nameLayout?.editText?.setText(name)
             enterProfileNameViewModel.signUpScreenEvents.collect { event ->
                 when(event){
@@ -61,7 +61,7 @@ class EnterProfileNameFragment : Fragment(R.layout.fragment_enter_profile_name) 
                         findNavController().popBackStack()
                     }
                 }
-            }
+            }*/
         }
     }
 

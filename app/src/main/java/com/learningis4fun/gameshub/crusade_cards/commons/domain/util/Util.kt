@@ -4,8 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.data.data_source.relations.GameCardWithCard
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*

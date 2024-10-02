@@ -8,8 +8,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCard
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.mappers.toGameCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.mappers.toGameCard
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first

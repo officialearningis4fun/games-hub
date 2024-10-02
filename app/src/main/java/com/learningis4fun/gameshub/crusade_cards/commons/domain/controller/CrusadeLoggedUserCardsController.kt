@@ -4,8 +4,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameC
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.JokerActions
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.model.UserCard
-import com.learningis4fun.gameshub.crusade_cards.feature_play_crusade_cards.domain.use_case.HandleCardStateUseCase
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.HandleCardStateUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
