@@ -114,7 +114,7 @@ class UserRepositoryImpl @ExperimentalCoroutinesApi
     }
 
     override fun getPlayerSignInDetails(): Flow<Player> {
-        return crusadeCardsPreferencesManager.user
+        return crusadeCardsPreferencesManager.user.mapLatest { if (it == Player()) player else it }
     }
 
     override fun getAndroidPlayerSignInDetails(): Flow<Player> {

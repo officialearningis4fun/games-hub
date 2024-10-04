@@ -34,7 +34,7 @@ object CrusadeCardsDataModule {
 
     @Singleton
     @Provides
-    fun providesGamesHubAPI() = Retrofit.Builder()
+    fun providesGamesHubAPI(): GamesHubAPI = Retrofit.Builder()
         .addConverterFactory(GsonConverterFactory.create())
         .baseUrl(Constants.TEST_BASE_URL)
         .build()

@@ -90,7 +90,6 @@ class CardsStartViewModel @Inject constructor(
                 val showOngoing = try {
                     gameWithPlayers.game.gameState == GameState.Paused.name
                 } catch (e: Exception) {
-                    e.printStackTrace()
                     false
                 }
 
@@ -303,9 +302,9 @@ class CardsStartViewModel @Inject constructor(
     }
 
     sealed class CardsStartScreenEvents {
-        object NavigateToPlayCardsScreen : CardsStartScreenEvents()
-        object OpenChooseNumberOfCardsScreen : CardsStartScreenEvents()
-        object NavigateToAccountScreen : CardsStartScreenEvents()
+        data object NavigateToPlayCardsScreen : CardsStartScreenEvents()
+        data object OpenChooseNumberOfCardsScreen : CardsStartScreenEvents()
+        data object NavigateToAccountScreen : CardsStartScreenEvents()
         data class ShowErrorMessage(val message: String) : CardsStartScreenEvents()
     }
 }

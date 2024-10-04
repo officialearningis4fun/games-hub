@@ -25,4 +25,10 @@
     <string name="android">Android</string>
     <string name="challenge_your_phone_to_a_crusade">Challenge your Phone to a crusade</string>
     <string name="resume_btn">Resume</string>
+
+    <string name="screen_profile_title">Profile</string>
+
+    <string name="admob_app_ID">ca-app-pub-9786986871932218~6262489813</string>
+    <string name="admod_ad_ID">ca-app-pub-9786986871932218/1354548577</string>
+
 </resources>

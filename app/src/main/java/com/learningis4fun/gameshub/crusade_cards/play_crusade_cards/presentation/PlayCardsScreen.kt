@@ -26,13 +26,13 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -61,6 +61,7 @@ fun PlayCardsScreen(
     modifier: Modifier = Modifier,
     playCardsState: PlayCardsState,
     gameDuration: String,
+    testing: Boolean = false,
     onEvent: (PlayCardsEvent) -> Unit = {},
     winner: (Player?) -> Unit = {},
     onClose: () -> Unit = {},
@@ -76,14 +77,22 @@ fun PlayCardsScreen(
         modifier = modifier,
         containerColor = backgroundColor,
         topBar = {
-            TopAppBar(
+
+            CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = backgroundColor,
                     navigationIconContentColor = Color.White,
                     actionIconContentColor = Color.White,
                     titleContentColor = Color.White
                 ),
-                title = {},
+                title = {
+                    Text(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        style = MaterialTheme.typography.titleSmall,
+                        text = "PLAYERS",
+                        color = Color.White
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(
@@ -121,6 +130,12 @@ fun PlayCardsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     message = playCardsState.message
                 )
+
+               if(!testing){
+                   PlayCardsBannerAd(
+                       modifier = Modifier.fillMaxWidth()
+                   )
+               }
 
                 PlayedAndDustbinSection(
                     playedCards = playCardsState.playedCards,
@@ -162,7 +177,6 @@ fun PlayCardsScreen(
         }
     }
 
-
 }
 
 @Composable
@@ -175,16 +189,10 @@ fun PlayersSectionScreen(
     val playerImgHeight = 64.dp
 
     Column(
-        modifier = modifier.padding(bottom = 16.dp),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Text(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            text = "PLAYERS",
-            color = Color.White
-        )
 
         val player1 = if (playersScreenInfo.isNotEmpty()) playersScreenInfo[0] else null
 
@@ -226,55 +234,62 @@ fun PlayerItem(
 
     val isPlaying = playerScreenInfo.isCurrentlyPlaying
 
-    Card(
+    Column(
         modifier = modifier,
-        border = BorderStroke(
-            width = 2.dp,
-            color = if (isPlaying) Color.White else Color.Transparent
-        )
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
+
+        Card(
+            modifier = Modifier,
+            border = BorderStroke(
+                width = 3.dp,
+                color = if (isPlaying) Color.White else Color.Transparent
+            )
         ) {
-
-            Image(
-                modifier = Modifier.size(64.dp),
-                contentScale = ContentScale.Crop,
-                painter = painterResource(id = image),
-                contentDescription = null
-            )
-
-            Text(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(8.dp),
-                text = playerScreenInfo.playerName,
-                color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.Bold
-                ),
-                maxLines = 1
-            )
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
 
-            Text(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(4.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(4.dp)
-                    )
-                    .padding(4.dp),
-                text = playerScreenInfo.numOfCardsLeft,
-                color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.labelLarge.copy(
-                    fontWeight = FontWeight.Bold
+                Image(
+                    modifier = Modifier.size(64.dp),
+                    contentScale = ContentScale.Crop,
+                    painter = painterResource(id = image),
+                    contentDescription = null
                 )
-            )
 
+                Text(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .background(
+                            color = MaterialTheme.colorScheme.error,
+                            shape = RoundedCornerShape(
+                                bottomStart = 8.dp
+                            )
+                        )
+                        .padding(vertical = 4.dp, horizontal = 6.dp),
+                    text = playerScreenInfo.numOfCardsLeft,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+
+            }
         }
+
+        Text(
+            modifier = Modifier
+                .padding(vertical = 4.dp, horizontal = 8.dp),
+            text = playerScreenInfo.playerName,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.labelSmall.copy(
+                fontWeight = FontWeight.Medium
+            ),
+            maxLines = 1
+        )
     }
+
 
 }
 
@@ -299,7 +314,7 @@ private fun PlayedAndDustbinSection(
             showCurrentCardType = showCurrentCardType
         )
 
-        Spacer(modifier = Modifier.weight(0.5f))
+        Spacer(modifier = Modifier.weight(0.6f))
 
         DustbinSection(
             modifier = Modifier.weight(1f),
@@ -700,92 +715,280 @@ fun Heading(
     )
 }
 
+
 @Preview
 @Composable
-fun PlayCardsScreenPrev() {
+fun PlayCardsDefaultScreenPrev() {
     val backgroundColor = Color(0xffff8800)
     PlayCardsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor),
+        testing = true,
         gameDuration = "00:01",
-        playCardsState = PlayCardsState(
-            playersScreenInfo = listOf(
-                PlayerScreenInfo(
-                    "id1",
-                    "Hlompho",
-                    "",
-                    R.drawable.game_test_profile,
-                    "7",
-                    false,
-                ),
-                PlayerScreenInfo(
-                    "id2",
-                    "Android",
-                    "",
-                    R.drawable.game_test_profile,
-                    "4",
-                    true,
-                )
-            ),
-            showCurrentCardType = Pair(true, Constants.CardTypes.DIAMOND),
-            showDefineJokerActions = false,
-            showChooseCardTypeScreen = false,
-            playedCards = listOf(
-                UserCard(
-                    gameCardId = "1",
-                    playerId = "id2",
-                    cardId = "1d1",
-                    name = "",
-                    type = "",
-                    gameId = "id",
-                    isPlayed = true,
-                    image = R.drawable.diamond_king.toString(),
-                    playTime = 0L,
-                    pickedTime = 0L
-                ),
-                UserCard(
-                    gameCardId = "1",
-                    playerId = "id2",
-                    cardId = "1d2",
-                    name = "",
-                    type = "",
-                    gameId = "id",
-                    isPlayed = true,
-                    image = R.drawable.diamond_2.toString(),
-                    playTime = 0L,
-                    pickedTime = 0L
-                ),
-                UserCard(
-                    gameCardId = "1",
-                    playerId = "id2",
-                    cardId = "1d3",
-                    name = "",
-                    type = "",
-                    gameId = "id",
-                    isPlayed = true,
-                    image = R.drawable.diamond_3.toString(),
-                    playTime = 0L,
-                    pickedTime = 0L
-                )
-            ),
-            message = "We getting the game ready for you...",
-            userUnPlayedCards = Constants.Cards.cards.take(10).mapIndexed { index, card ->
-                val cardId = "$index"
-                UserCard(
-                    gameCardId = "game",
-                    playerId = "id2",
-                    cardId = cardId,
-                    name = card.name,
-                    type = card.type,
-                    gameId = "id",
-                    isPlayed = true,
-                    image = card.image,
-                    playTime = 0L,
-                    pickedTime = 0L
-                )
-            }
-        )
+        playCardsState = DefaultPlayCardsState
     )
 }
 
+@Preview
+@Composable
+fun PlayCardsChangeJokerActionScreenPrev() {
+    val backgroundColor = Color(0xffff8800)
+    PlayCardsScreen(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor),
+        testing = true,
+        gameDuration = "00:01",
+        playCardsState = ChangeJokerActionPlayCardsState
+    )
+}
+
+@Preview
+@Composable
+fun PlayCardsChangeCardTypeScreenPrev() {
+    val backgroundColor = Color(0xffff8800)
+    PlayCardsScreen(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor),
+        testing = true,
+        gameDuration = "00:01",
+        playCardsState = ChangeCardTypePlayCardsState
+    )
+}
+
+
+private val DefaultPlayCardsState = PlayCardsState(
+    playersScreenInfo = listOf(
+        PlayerScreenInfo(
+            "id1",
+            "Hlompho",
+            "",
+            R.drawable.game_test_profile,
+            "7",
+            false,
+        ),
+        PlayerScreenInfo(
+            "id2",
+            "Android",
+            "",
+            R.drawable.game_test_profile,
+            "4",
+            true,
+        )
+    ),
+    showCurrentCardType = Pair(true, Constants.CardTypes.DIAMOND),
+    showDefineJokerActions = false,
+    showChooseCardTypeScreen = false,
+    playedCards = listOf(
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d1",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_king.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        ),
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d2",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_2.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        ),
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d3",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_3.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        )
+    ),
+    message = "We getting the game ready for you...",
+    userUnPlayedCards = Constants.Cards.cards.take(10).mapIndexed { index, card ->
+        val cardId = "$index"
+        UserCard(
+            gameCardId = "game",
+            playerId = "id2",
+            cardId = cardId,
+            name = card.name,
+            type = card.type,
+            gameId = "id",
+            isPlayed = true,
+            image = card.image,
+            playTime = 0L,
+            pickedTime = 0L
+        )
+    }
+)
+
+private val ChangeCardTypePlayCardsState = PlayCardsState(
+    playersScreenInfo = listOf(
+        PlayerScreenInfo(
+            "id1",
+            "Hlompho",
+            "",
+            R.drawable.game_test_profile,
+            "7",
+            false,
+        ),
+        PlayerScreenInfo(
+            "id2",
+            "Android",
+            "",
+            R.drawable.game_test_profile,
+            "4",
+            true,
+        )
+    ),
+    showCurrentCardType = Pair(true, Constants.CardTypes.DIAMOND),
+    showDefineJokerActions = false,
+    showChooseCardTypeScreen = true,
+    playedCards = listOf(
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d1",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_king.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        ),
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d2",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_2.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        ),
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d3",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_3.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        )
+    ),
+    message = "We getting the game ready for you...",
+    userUnPlayedCards = Constants.Cards.cards.take(10).mapIndexed { index, card ->
+        val cardId = "$index"
+        UserCard(
+            gameCardId = "game",
+            playerId = "id2",
+            cardId = cardId,
+            name = card.name,
+            type = card.type,
+            gameId = "id",
+            isPlayed = true,
+            image = card.image,
+            playTime = 0L,
+            pickedTime = 0L
+        )
+    }
+)
+
+private val ChangeJokerActionPlayCardsState = PlayCardsState(
+    playersScreenInfo = listOf(
+        PlayerScreenInfo(
+            "id1",
+            "Hlompho",
+            "",
+            R.drawable.game_test_profile,
+            "7",
+            false,
+        ),
+        PlayerScreenInfo(
+            "id2",
+            "Android",
+            "",
+            R.drawable.game_test_profile,
+            "4",
+            true,
+        )
+    ),
+    showCurrentCardType = Pair(true, Constants.CardTypes.DIAMOND),
+    showDefineJokerActions = true,
+    showChooseCardTypeScreen = false,
+    playedCards = listOf(
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d1",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_king.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        ),
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d2",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_2.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        ),
+        UserCard(
+            gameCardId = "1",
+            playerId = "id2",
+            cardId = "1d3",
+            name = "",
+            type = "",
+            gameId = "id",
+            isPlayed = true,
+            image = R.drawable.diamond_3.toString(),
+            playTime = 0L,
+            pickedTime = 0L
+        )
+    ),
+    message = "We getting the game ready for you...",
+    userUnPlayedCards = Constants.Cards.cards.take(10).mapIndexed { index, card ->
+        val cardId = "$index"
+        UserCard(
+            gameCardId = "game",
+            playerId = "id2",
+            cardId = cardId,
+            name = card.name,
+            type = card.type,
+            gameId = "id",
+            isPlayed = true,
+            image = card.image,
+            playTime = 0L,
+            pickedTime = 0L
+        )
+    }
+)

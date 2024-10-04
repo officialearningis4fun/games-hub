@@ -50,9 +50,9 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             signUpViewModel.signUpScreenEvents.collect { event ->
                 when (event) {
                     SignUpViewModel.SignUpScreenEvents.NavigateToStartScreen -> {
-                        val action =
+                        /*val action =
                             SignUpFragmentDirections.actionSignUpFragmentToCardsStartFragment2()
-                        findNavController().navigate(action)
+                        findNavController().navigate(action)*/
                     }
                 }
             }

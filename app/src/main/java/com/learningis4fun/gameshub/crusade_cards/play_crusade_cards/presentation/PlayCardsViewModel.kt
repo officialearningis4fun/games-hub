@@ -712,6 +712,10 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        onAppPaused()
+    }
 
     sealed class PlayCardsUIStates {
         data object Loading : PlayCardsUIStates()
