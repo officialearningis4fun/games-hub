@@ -12,10 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -26,6 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,19 +36,53 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.ProfileScreenRoute
+import com.learningis4fun.gameshub.util.ScaleTransitionDirection
+import com.learningis4fun.gameshub.util.scaleIntoContainer
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+@OptIn(ExperimentalCoroutinesApi::class)
+fun NavGraphBuilder.profileScreenComposable(
+    onBackClick: () -> Unit,
+) {
+    composable<ProfileScreenRoute>(
+        enterTransition = {
+            scaleIntoContainer()
+        },
+        popEnterTransition = {
+            scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS)
+        }
+    ) {
+
+        val profileViewModel: ProfileViewModel = hiltViewModel()
+        val userProfileInfo by profileViewModel.userProfileInfo.collectAsStateWithLifecycle()
+        println("profile viewModel: ${profileViewModel.hashCode()}")
+
+        ProfileScreen(
+            userProfileInfo = userProfileInfo,
+            onBackClick = onBackClick,
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
-    onSignOut: () -> Unit = {},
     userProfileInfo: Player
 ) {
     val backgroundColor = Color(0xffff8800)
-    val image = R.drawable.game_test_profile
+
+    val userImage by remember {
+        mutableIntStateOf(userProfileInfo.imageUrl.toIntOrNull() ?: R.drawable.avatar_man1)
+    }
 
     Scaffold(
         modifier = modifier,
@@ -100,7 +134,7 @@ fun ProfileScreen(
                             .clip(CircleShape)
                             .aspectRatio(1f),
                         contentScale = ContentScale.Crop,
-                        painter = painterResource(id = image),
+                        painter = painterResource(id = userImage),
                         contentDescription = null
                     )
 
@@ -138,19 +172,6 @@ fun ProfileScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.labelSmall
                 )
-
-                if (userProfileInfo.uniqueId.isNotEmpty()) {
-                    Button(
-                        modifier = Modifier
-                            .padding(top = 16.dp),
-                        onClick = { onSignOut() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xffff8800)
-                        )
-                    ) {
-                        Text(text = "SIGN OUT")
-                    }
-                }
 
             }
 

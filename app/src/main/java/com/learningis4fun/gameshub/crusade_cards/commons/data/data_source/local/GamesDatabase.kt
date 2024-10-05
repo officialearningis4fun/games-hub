@@ -29,6 +29,7 @@ import javax.inject.Provider
 abstract class GamesDatabase : RoomDatabase() {
     abstract fun gameUserCrossRef(): GameUserCrossRefDao
     abstract fun cardDao(): CardDao
+    @OptIn(ExperimentalCoroutinesApi::class)
     abstract fun gameCardDao(): GameCardDao
     abstract fun gameDao(): GameDao
     abstract fun playerDao(): PlayerDao
@@ -37,7 +38,7 @@ abstract class GamesDatabase : RoomDatabase() {
     @Inject constructor(
         private val database: Provider<GamesDatabase>,
         @CrusadeCardsDataModule.ApplicationScope private val scope: CoroutineScope
-    ) : RoomDatabase.Callback() {
+    ) : Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
             val dao = database.get().cardDao()

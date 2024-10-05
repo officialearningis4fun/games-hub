@@ -1,11 +1,12 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case
 
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toState
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -17,12 +18,12 @@ class ResumeGameUseCase @Inject constructor(
     private val preferencesManager: CrusadeCardsPreferencesManager
 ) {
 
-    suspend fun resumeGame(currGameId: String): Response<String> {
+    suspend fun resumeGame(currGameId: String): Response<Unit> {
 
         try {
 
             if (currGameId.isEmpty()) {
-                return Response.Error("", "Unable to resume the game, Game to be resumed was created")
+                throw Exception("Game to be resumed was not found")
             }
 
             val currGame = gameRepository.getGame(currGameId).first()
@@ -33,29 +34,32 @@ class ResumeGameUseCase @Inject constructor(
             return when (prevSavedGameState) {
                 GameState.Completed -> {
                     return Response.Error(
-                        "",
                         "Unable to resume game because it was completed"
                     )
                 }
+
                 GameState.NotStarted -> {
                     gameRepository.updateGame(currGame.copy(gameState = GameState.Started.name))
-                    preferencesManager.updateRecentGameId(currGame.id)
+                        .getDataOrThrowException()
+                    preferencesManager.updateRecentGameId(currGame.id).getDataOrThrowException()
                     //_gameDuration.value = Pair(true, currGame.gameDuration)
-                    Response.Success("", "Successfully started the game")
+                    Response.Success(Unit)
                 }
+
                 GameState.Paused -> {
                     gameRepository.updateGame(currGame.copy(gameState = GameState.Started.name))
                     //_gameDuration.value = Pair(true, currGame.gameDuration)
-                    Response.Success("", "Successfully resumed the game")
+                    Response.Success(Unit)
                 }
+
                 GameState.Started -> {
-                    Response.Success("", "The game was already started")
+                    Response.Success(Unit)
                 }
             }
 
         } catch (exception: Exception) {
+            exception.printStackTrace()
             return Response.Error(
-                "",
                 exception.localizedMessage ?: "Unknown error occurred while resuming game"
             )
         }

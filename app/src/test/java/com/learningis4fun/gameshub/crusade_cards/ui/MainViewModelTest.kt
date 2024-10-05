@@ -1,15 +1,7 @@
 package com.learningis4fun.gameshub.crusade_cards.ui
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.learningis4fun.gameshub.FakeRepository
 import com.learningis4fun.gameshub.MainCoroutineRule
-import com.learningis4fun.gameshub.MainViewModel
-import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.FakeCardRepositoryImpl
-import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.FakeGameCardRepositoryImpl
-import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.FakeGameRepositoryImpl
-import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.FakeUserRepositoryImpl
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CardsController
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsController
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 
@@ -22,40 +14,32 @@ class MainViewModelTest {
     @get:Rule
     var mainCoroutineRule = MainCoroutineRule()
 
-    private lateinit var mainViewModel: MainViewModel
-    private lateinit var repository: FakeRepository
-    private lateinit var cardsController: CardsController
-    private lateinit var crusadeComputerCardsController: CrusadeComputerCardsController
-    private lateinit var fakeGameCardRepositoryImpl: FakeGameCardRepositoryImpl
-    private lateinit var fakeCardRepositoryImpl: FakeCardRepositoryImpl
-    private lateinit var fakeGameRepositoryImpl: FakeGameRepositoryImpl
-    private lateinit var fakeUserRepositoryImpl: FakeUserRepositoryImpl
-/*
-    @Before
-    fun setup() {
-        fakeCardRepositoryImpl = FakeCardRepositoryImpl()
-        fakeUserRepositoryImpl = FakeUserRepositoryImpl()
-        fakeGameCardRepositoryImpl = FakeGameCardRepositoryImpl(fakeCardRepositoryImpl)
-        repository = FakeRepository(
-            gameCardRepositoryImpl = fakeGameCardRepositoryImpl,
-            cardRepositoryImpl = fakeCardRepositoryImpl
-        )
-        crusadeComputerCardsController = CrusadeComputerCardsController(
-            repository = repository,
-            gameRepository = fakeGameRepositoryImpl,
-            cardRepository = fakeCardRepositoryImpl
-        )
+    /*
+        @Before
+        fun setup() {
+            fakeCardRepositoryImpl = FakeCardRepositoryImpl()
+            fakeUserRepositoryImpl = FakeUserRepositoryImpl()
+            fakeGameCardRepositoryImpl = FakeGameCardRepositoryImpl(fakeCardRepositoryImpl)
+            repository = FakeRepository(
+                gameCardRepositoryImpl = fakeGameCardRepositoryImpl,
+                cardRepositoryImpl = fakeCardRepositoryImpl
+            )
+            crusadeComputerCardsController = CrusadeComputerCardsController(
+                repository = repository,
+                gameRepository = fakeGameRepositoryImpl,
+                cardRepository = fakeCardRepositoryImpl
+            )
 
-        cardsController = CardsController(
-            repository = repository,
-            gameRepository = fakeGameRepositoryImpl,
-            cardRepository = fakeCardRepositoryImpl,
-            crusadeComputerCardsController = crusadeComputerCardsController,
-            gameCardRepository = fakeGameCardRepositoryImpl,
-            userRepository = fakeUserRepositoryImpl
-        )
-        mainViewModel = MainViewModel(repository, cardsController)
-    }*/
+            cardsController = CardsController(
+                repository = repository,
+                gameRepository = fakeGameRepositoryImpl,
+                cardRepository = fakeCardRepositoryImpl,
+                crusadeComputerCardsController = crusadeComputerCardsController,
+                gameCardRepository = fakeGameCardRepositoryImpl,
+                userRepository = fakeUserRepositoryImpl
+            )
+            mainViewModel = MainViewModel(repository, cardsController)
+        }*/
 
 
     /**
@@ -398,19 +382,19 @@ class MainViewModelTest {
             job2.cancel()
 
         }*/
-/*
-    @Test
-    fun `playCardsGameScopedToScreen from com start game, should request other user play`() =
-        runBlocking {
-            // insert cards
-            val cards = Constants.Cards.cards
-            cards.forEach { card ->
-                repository.insertCard(card)
-            }
-            // create game
-            mainViewModel.createGameOrResume()
+    /*
+        @Test
+        fun `playCardsGameScopedToScreen from com start game, should request other user play`() =
+            runBlocking {
+                // insert cards
+                val cards = Constants.Cards.cards
+                cards.forEach { card ->
+                    repository.insertCard(card)
+                }
+                // create game
+                mainViewModel.createGameOrResume()
 
-            *//*val trackingPlays: MutableList<TrackingPlay> = ArrayList()
+                *//*val trackingPlays: MutableList<TrackingPlay> = ArrayList()
             mainViewModel.playingTest().toList(trackingPlays)*//*
 
             mainViewModel.playCardsGameWhenOnCardStateChange()

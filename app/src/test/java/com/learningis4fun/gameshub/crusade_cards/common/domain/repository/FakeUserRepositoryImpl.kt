@@ -21,11 +21,11 @@ class FakeUserRepositoryImpl : UserRepository {
         )
         _player = Player(uniqueId = Constants.Players.GUEST_PLAYER.id)
         players.forEach {
-            insertPlayer(it)
+            savePlayer(it)
         }
     }
 
-    override suspend fun insertPlayer(player: Player): Response<String> {
+    override suspend fun savePlayer(player: Player): Response<String> {
         return try {
             _players.add(player)
             Response.Success("", "Successfully updated")

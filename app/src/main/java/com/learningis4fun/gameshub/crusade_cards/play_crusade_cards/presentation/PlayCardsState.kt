@@ -17,8 +17,10 @@ data class PlayCardsState(
     val showCurrentCardType: Pair<Boolean, String> = Pair(false, ""),
     val showChooseCardTypeScreen: Boolean = false,
     val showDefineJokerActions: Boolean = false,
-    val winner: Player? = null,
-    val error: String? = null
+    val wonGame: WonGame = WonGame(),
+    val error: String? = null,
+    val warning: String? = null,
+    val isLoading: Boolean = true
 ) {
 
     private val imageOfCurrentCardType = when (showCurrentCardType.second) {
@@ -44,3 +46,8 @@ data class PlayCardsState(
 
     val showCurrentCardTypeAndImage = Pair(showCurrentCardType.first, imageOfCurrentCardType)
 }
+
+data class WonGame(
+    val winner: Player = Player(),
+    val gameId: String = ""
+)

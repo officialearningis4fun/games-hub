@@ -25,18 +25,18 @@ interface CrusadeCardsPreferencesManager {
 
     val AndroidUser: Flow<Player>
 
-    suspend fun updatePlayer(player: Player): Response<String>
+    suspend fun updatePlayer(player: Player): Response<Unit>
 
-    suspend fun updateAndroidPlayer(player: Player): Response<String>
+    suspend fun updateAndroidPlayer(player: Player): Response<Unit>
 
     suspend fun updateRecentCardState(stateEntity: CardStateEntity)
 
-    suspend fun updateUserId(playerId: String): Response<String>
+    suspend fun updateUserId(playerId: String): Response<Unit>
 
-    suspend fun updateUserCardsSortBy(sortBy: String): Response<String>
+    suspend fun updateUserCardsSortBy(sortBy: String): Response<Unit>
 
-    suspend fun updateRecentCardType(recentType: String): Response<String>
+    suspend fun updateRecentCardType(recentType: String): Response<Unit>
 
-    suspend fun updateRecentGameId(gameId: String): Response<String>
+    suspend fun updateRecentGameId(gameId: String): Response<Unit>
 
 }

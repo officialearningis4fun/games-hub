@@ -2,7 +2,7 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 
 sealed class GamePlayerActions(val name: String) {
 
-    object Default : GamePlayerActions("default")
+    data object Default : GamePlayerActions("default")
 
     data class ActionMessages(val message: String) : GamePlayerActions("messages")
 
@@ -28,6 +28,17 @@ sealed class GamePlayerActions(val name: String) {
         val playerId: String,
         val message: String = CardStatesDefaultMsg.ChangeType
     ) : GamePlayerActions("change-card-type")
+}
+
+fun GamePlayerActions.toDebugMsg(): String {
+    return when(val action = this){
+        is GamePlayerActions.ActionMessages -> "${action.name}: ${action.message}"
+        GamePlayerActions.Default -> action.name
+        is GamePlayerActions.PromptPlayerChangeCardType -> "${action.name}: ${action.message}"
+        is GamePlayerActions.PromptPlayerDefineJokerCardAction -> "${action.name}: ${action.message}"
+        is GamePlayerActions.PromptPlayerHitBackOrPick -> "${action.name}: ${action.message}"
+        is GamePlayerActions.PromptPlayerPlayOrPick -> "${action.name}: ${action.message}"
+    }
 }
 
 fun promptUserHitBackOrPickMessage(cardsToPick: Int): String {

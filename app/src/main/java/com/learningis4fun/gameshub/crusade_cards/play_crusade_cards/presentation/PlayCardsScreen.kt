@@ -1,6 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation
 
-import androidx.compose.foundation.BorderStroke
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -20,12 +20,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,6 +37,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,13 +54,80 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.JokerActions
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.PlayCardsScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.util.ScaleTransitionDirection
+import com.learningis4fun.gameshub.util.scaleIntoContainer
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+
+
+@OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
+fun NavGraphBuilder.playCardsScreenComposable(
+    onProfileClick: () -> Unit,
+    onBackClick: () -> Unit,
+    navigateToWinner: (String) -> Unit
+) {
+    composable<PlayCardsScreenRoute>(
+        enterTransition = {
+            scaleIntoContainer()
+        },
+        popEnterTransition = {
+            scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS)
+        }
+    ) {
+
+        val playCardsViewModel: PlayCardsViewModel = hiltViewModel()
+
+        val playCardsState by playCardsViewModel.playCardsState.collectAsState()
+        val gameDuration by playCardsViewModel.gameDuration.collectAsState()
+
+        BackHandler(
+            onBack = {
+                playCardsViewModel.onCloseNavigationIconClicked {
+                    onBackClick()
+                }
+            }
+        )
+
+        PlayCardsScreen(
+            playCardsState = playCardsState,
+            gameDuration = gameDuration,
+            onEvent = playCardsViewModel::onEvent,
+            winner = { (_, wonGameId) ->
+                navigateToWinner(wonGameId)
+            },
+            onClose = {
+                playCardsViewModel.onCloseNavigationIconClicked {
+                    onBackClick()
+                }
+            },
+            onProfileClick = {
+                onProfileClick()
+            },
+            onResumeGame = {
+                playCardsViewModel.onAppResumed()
+            },
+            onPauseGame = {
+                playCardsViewModel.onAppPaused()
+            }
+
+        )
+    }
+}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,15 +137,41 @@ fun PlayCardsScreen(
     gameDuration: String,
     testing: Boolean = false,
     onEvent: (PlayCardsEvent) -> Unit = {},
-    winner: (Player?) -> Unit = {},
+    winner: (Pair<Player, String>) -> Unit = {},
     onClose: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onPauseGame: () -> Unit = {},
+    onResumeGame: () -> Unit = {}
 ) {
 
-    if (playCardsState.winner != null) {
-        winner(playCardsState.winner)
+    LaunchedEffect(key1 = playCardsState.wonGame) {
+        if (playCardsState.wonGame.gameId.isNotEmpty()) {
+            winner(Pair(playCardsState.wonGame.winner, playCardsState.wonGame.gameId))
+            println("has winner called")
+        }
     }
     val backgroundColor = Color(0xffff8800)
+
+    val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
+
+    val currentOnPause by rememberUpdatedState(newValue = onPauseGame)
+    val currentOnResume by rememberUpdatedState(newValue = onResumeGame)
+
+    DisposableEffect(key1 = lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                currentOnResume()
+            } else if (event == Lifecycle.Event.ON_PAUSE) {
+                currentOnPause()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
 
     Scaffold(
         modifier = modifier,
@@ -86,12 +186,14 @@ fun PlayCardsScreen(
                     titleContentColor = Color.White
                 ),
                 title = {
-                    Text(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        style = MaterialTheme.typography.titleSmall,
-                        text = "PLAYERS",
-                        color = Color.White
-                    )
+                    if (playCardsState.isLoading.not() && playCardsState.error == null) {
+                        Text(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            style = MaterialTheme.typography.titleSmall,
+                            text = "PLAYERS",
+                            color = Color.White
+                        )
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
@@ -112,69 +214,125 @@ fun PlayCardsScreen(
             )
         }
     ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                PlayersSectionScreen(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    playersScreenInfo = playCardsState.playersScreenInfo,
-                    duration = gameDuration
-                )
-
-                MessagesSection(
-                    modifier = Modifier.fillMaxWidth(),
-                    message = playCardsState.message
-                )
-
-               if(!testing){
-                   PlayCardsBannerAd(
-                       modifier = Modifier.fillMaxWidth()
-                   )
-               }
-
-                PlayedAndDustbinSection(
-                    playedCards = playCardsState.playedCards,
-                    showAllowOthersPlay = playCardsState.allowOthersPlay,
-                    showCurrentCardType = playCardsState.showCurrentCardTypeAndImage,
-                    onDustbinClick = {
-                        onEvent(PlayCardsEvent.PickCardFromDustbin)
-                    }
-                ) {
-                    onEvent(PlayCardsEvent.AllowOthersPlay)
-                }
-
-                UserCardsSection(
-                    modifier = Modifier.fillMaxWidth(),
-                    cards = playCardsState.userUnPlayedCards,
-                    onClick = {
-                        onEvent(PlayCardsEvent.PlayCard(it))
-                    }
-                )
-            }
-
-            if (playCardsState.showDefineJokerActions) {
-                DefineJokerActionScreen(
-                    modifier = Modifier.padding(end = 16.dp),
-                    onClick = {
-                        onEvent(PlayCardsEvent.DefineJokerAction(it))
-                    }
-                )
-            }
-
-            if (playCardsState.showChooseCardTypeScreen) {
-                ChooseCardTypeScreen(
-                    modifier = Modifier,
-                    onClick = {
-                        onEvent(PlayCardsEvent.SetNewCardType(it))
-                    }
-                )
-            }
+        if (playCardsState.isLoading) {
+            PlayCardsLoadingScreen(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            )
+        } else if (playCardsState.error != null) {
+            PlayCardsErrorScreen(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                error = playCardsState.error
+            )
+        } else {
+            PlayCardsDataRoot(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                playCardsState = playCardsState,
+                gameDuration = gameDuration,
+                testing = testing,
+                onEvent = onEvent
+            )
         }
+    }
+
+}
+
+@Composable
+fun PlayCardsDataRoot(
+    modifier: Modifier = Modifier,
+    playCardsState: PlayCardsState,
+    gameDuration: String,
+    testing: Boolean = false,
+    onEvent: (PlayCardsEvent) -> Unit = {},
+) {
+    Box(
+        modifier = modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            PlayersSectionScreen(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                playersScreenInfo = playCardsState.playersScreenInfo,
+                duration = gameDuration
+            )
+
+            MessagesSection(
+                modifier = Modifier.fillMaxWidth(),
+                message = playCardsState.message
+            )
+
+            PlayedAndDustbinSection(
+                playedCards = playCardsState.playedCards,
+                showAllowOthersPlay = playCardsState.allowOthersPlay,
+                showCurrentCardType = playCardsState.showCurrentCardTypeAndImage,
+                onDustbinClick = {
+                    onEvent(PlayCardsEvent.PickCardFromDustbin)
+                }
+            ) {
+                onEvent(PlayCardsEvent.AllowOthersPlay)
+            }
+
+            UserCardsSection(
+                modifier = Modifier.fillMaxWidth(),
+                cards = playCardsState.userUnPlayedCards,
+                onClick = {
+                    onEvent(PlayCardsEvent.PlayCard(it))
+                }
+            )
+        }
+
+        if (playCardsState.showDefineJokerActions) {
+            DefineJokerActionScreen(
+                modifier = Modifier.padding(end = 16.dp),
+                onClick = {
+                    onEvent(PlayCardsEvent.DefineJokerAction(it))
+                }
+            )
+        }
+
+        if (playCardsState.showChooseCardTypeScreen) {
+            ChooseCardTypeScreen(
+                modifier = Modifier,
+                onClick = {
+                    onEvent(PlayCardsEvent.SetNewCardType(it))
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayCardsLoadingScreen(
+    modifier: Modifier = Modifier
+) {
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Setting up the scene...")
+    }
+
+}
+
+@Composable
+fun PlayCardsErrorScreen(
+    modifier: Modifier = Modifier,
+    error: String
+) {
+
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = error)
     }
 
 }
@@ -225,7 +383,7 @@ fun PlayersSectionScreen(
 }
 
 @Composable
-fun PlayerItem(
+private fun PlayerItem(
     modifier: Modifier,
     playerScreenInfo: PlayerScreenInfo
 ) {
@@ -241,39 +399,46 @@ fun PlayerItem(
 
         Card(
             modifier = Modifier,
-            border = BorderStroke(
-                width = 3.dp,
-                color = if (isPlaying) Color.White else Color.Transparent
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent
             )
         ) {
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
             ) {
 
                 Image(
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .border(
+                            width = 3.dp,
+                            shape = CircleShape,
+                            color = if (isPlaying) Color.White else Color.LightGray.copy(alpha = 0.8f)
+                        ),
                     contentScale = ContentScale.Crop,
                     painter = painterResource(id = image),
                     contentDescription = null
                 )
 
-                Text(
+                Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .background(
-                            color = MaterialTheme.colorScheme.error,
-                            shape = RoundedCornerShape(
-                                bottomStart = 8.dp
-                            )
-                        )
-                        .padding(vertical = 4.dp, horizontal = 6.dp),
-                    text = playerScreenInfo.numOfCardsLeft,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    style = MaterialTheme.typography.labelLarge.copy(
-                        fontWeight = FontWeight.Bold
+                        .size(24.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.error)
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .align(Alignment.Center),
+                        text = playerScreenInfo.numOfCardsLeft,
+                        color = MaterialTheme.colorScheme.onError,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        textAlign = TextAlign.Center
                     )
-                )
+                }
 
             }
         }
@@ -377,8 +542,7 @@ private fun DustbinSection(
     ) {
         Heading(modifier = Modifier, text = "Dustbin")
 
-        Box(
-        ) {
+        Box {
             Image(
                 modifier = Modifier
                     .clickable { onDustbinClick() }
@@ -726,7 +890,38 @@ fun PlayCardsDefaultScreenPrev() {
             .background(backgroundColor),
         testing = true,
         gameDuration = "00:01",
-        playCardsState = DefaultPlayCardsState
+        playCardsState = DefaultPlayCardsState.copy(
+            isLoading = false,
+            error = null
+        )
+    )
+}
+
+@Preview
+@Composable
+fun PlayCardsLoadingScreenPrev() {
+    val backgroundColor = Color(0xffff8800)
+    PlayCardsScreen(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor),
+        testing = true,
+        gameDuration = "00:01",
+        playCardsState = PlayCardsState()
+    )
+}
+
+@Preview
+@Composable
+fun PlayCardsErrorScreenPrev() {
+    val backgroundColor = Color(0xffff8800)
+    PlayCardsScreen(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundColor),
+        testing = true,
+        gameDuration = "00:01",
+        playCardsState = PlayCardsState(error = "Unexpected error occurred", isLoading = false)
     )
 }
 
@@ -740,7 +935,9 @@ fun PlayCardsChangeJokerActionScreenPrev() {
             .background(backgroundColor),
         testing = true,
         gameDuration = "00:01",
-        playCardsState = ChangeJokerActionPlayCardsState
+        playCardsState = DefaultPlayCardsState.copy(
+            showDefineJokerActions = true,
+        )
     )
 }
 
@@ -754,7 +951,9 @@ fun PlayCardsChangeCardTypeScreenPrev() {
             .background(backgroundColor),
         testing = true,
         gameDuration = "00:01",
-        playCardsState = ChangeCardTypePlayCardsState
+        playCardsState = DefaultPlayCardsState.copy(
+            showChooseCardTypeScreen = true
+        )
     )
 }
 
@@ -834,161 +1033,8 @@ private val DefaultPlayCardsState = PlayCardsState(
             playTime = 0L,
             pickedTime = 0L
         )
-    }
+    },
+    isLoading = false,
+    error = null
 )
 
-private val ChangeCardTypePlayCardsState = PlayCardsState(
-    playersScreenInfo = listOf(
-        PlayerScreenInfo(
-            "id1",
-            "Hlompho",
-            "",
-            R.drawable.game_test_profile,
-            "7",
-            false,
-        ),
-        PlayerScreenInfo(
-            "id2",
-            "Android",
-            "",
-            R.drawable.game_test_profile,
-            "4",
-            true,
-        )
-    ),
-    showCurrentCardType = Pair(true, Constants.CardTypes.DIAMOND),
-    showDefineJokerActions = false,
-    showChooseCardTypeScreen = true,
-    playedCards = listOf(
-        UserCard(
-            gameCardId = "1",
-            playerId = "id2",
-            cardId = "1d1",
-            name = "",
-            type = "",
-            gameId = "id",
-            isPlayed = true,
-            image = R.drawable.diamond_king.toString(),
-            playTime = 0L,
-            pickedTime = 0L
-        ),
-        UserCard(
-            gameCardId = "1",
-            playerId = "id2",
-            cardId = "1d2",
-            name = "",
-            type = "",
-            gameId = "id",
-            isPlayed = true,
-            image = R.drawable.diamond_2.toString(),
-            playTime = 0L,
-            pickedTime = 0L
-        ),
-        UserCard(
-            gameCardId = "1",
-            playerId = "id2",
-            cardId = "1d3",
-            name = "",
-            type = "",
-            gameId = "id",
-            isPlayed = true,
-            image = R.drawable.diamond_3.toString(),
-            playTime = 0L,
-            pickedTime = 0L
-        )
-    ),
-    message = "We getting the game ready for you...",
-    userUnPlayedCards = Constants.Cards.cards.take(10).mapIndexed { index, card ->
-        val cardId = "$index"
-        UserCard(
-            gameCardId = "game",
-            playerId = "id2",
-            cardId = cardId,
-            name = card.name,
-            type = card.type,
-            gameId = "id",
-            isPlayed = true,
-            image = card.image,
-            playTime = 0L,
-            pickedTime = 0L
-        )
-    }
-)
-
-private val ChangeJokerActionPlayCardsState = PlayCardsState(
-    playersScreenInfo = listOf(
-        PlayerScreenInfo(
-            "id1",
-            "Hlompho",
-            "",
-            R.drawable.game_test_profile,
-            "7",
-            false,
-        ),
-        PlayerScreenInfo(
-            "id2",
-            "Android",
-            "",
-            R.drawable.game_test_profile,
-            "4",
-            true,
-        )
-    ),
-    showCurrentCardType = Pair(true, Constants.CardTypes.DIAMOND),
-    showDefineJokerActions = true,
-    showChooseCardTypeScreen = false,
-    playedCards = listOf(
-        UserCard(
-            gameCardId = "1",
-            playerId = "id2",
-            cardId = "1d1",
-            name = "",
-            type = "",
-            gameId = "id",
-            isPlayed = true,
-            image = R.drawable.diamond_king.toString(),
-            playTime = 0L,
-            pickedTime = 0L
-        ),
-        UserCard(
-            gameCardId = "1",
-            playerId = "id2",
-            cardId = "1d2",
-            name = "",
-            type = "",
-            gameId = "id",
-            isPlayed = true,
-            image = R.drawable.diamond_2.toString(),
-            playTime = 0L,
-            pickedTime = 0L
-        ),
-        UserCard(
-            gameCardId = "1",
-            playerId = "id2",
-            cardId = "1d3",
-            name = "",
-            type = "",
-            gameId = "id",
-            isPlayed = true,
-            image = R.drawable.diamond_3.toString(),
-            playTime = 0L,
-            pickedTime = 0L
-        )
-    ),
-    message = "We getting the game ready for you...",
-    userUnPlayedCards = Constants.Cards.cards.take(10).mapIndexed { index, card ->
-        val cardId = "$index"
-        UserCard(
-            gameCardId = "game",
-            playerId = "id2",
-            cardId = cardId,
-            name = card.name,
-            type = card.type,
-            gameId = "id",
-            isPlayed = true,
-            image = card.image,
-            playTime = 0L,
-            pickedTime = 0L
-        )
-    }
-)

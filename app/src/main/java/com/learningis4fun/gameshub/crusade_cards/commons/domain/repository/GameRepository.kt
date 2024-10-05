@@ -8,11 +8,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface GameRepository {
 
-    suspend fun insertGame(game: Game): Response<String>
+    suspend fun insertGame(game: Game): Response<Unit>
 
-    suspend fun updateGame(game: Game): Response<String>
+    suspend fun updateGame(game: Game): Response<Unit>
 
-    suspend fun deleteGame(game: Game): Response<String>
+    suspend fun deleteGame(gameId: String): Response<Unit>
 
     fun getNonCompletedGame(): Flow<Game>
 
@@ -30,5 +30,5 @@ interface GameRepository {
 
     fun getCurrentGameId(): Flow<String>
 
-    suspend fun updateRecentGameId(gameId: String): Response<String>
+    suspend fun updateRecentGameId(gameId: String): Response<Unit>
 }

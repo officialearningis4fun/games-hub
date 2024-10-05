@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 interface PlayerDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertPlayer(player: Player)
+    suspend fun savePlayer(player: Player)
 
     @Update
     suspend fun updatePlayer(player: Player)

@@ -6,6 +6,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.JokerAction
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.HandleCardStateUseCase
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
@@ -33,15 +34,16 @@ class CrusadeLoggedUserCardsController @Inject constructor(
             JokerActions.ChangeType -> {
                 CardStates.ChangeType(playerId = playerId)
             }
+
             JokerActions.Hit -> {
-                val userCardResponse = gameCardRepository.getGameCardWithCard(gameCardId)
-                when (userCardResponse) {
+                when (val userCardResponse = gameCardRepository.getGameCardWithCard(gameCardId)) {
                     is Response.Success -> {
                         multiplayerCrusadeCardsController.requestPlayerHit(
                             playerId = playerId,
-                            userCard = userCardResponse.data
+                            userCard = userCardResponse.getDataOrThrowException()
                         )
                     }
+
                     is Response.Error -> {
                         CardStates.Error("${userCardResponse.message}, gameCardId: $gameCardId")
                     }
@@ -103,7 +105,7 @@ class CrusadeLoggedUserCardsController @Inject constructor(
     suspend fun userRequestToPickCards(
         currentCardState: CardStates,
         playerId: String
-    ): Response<String> {
+    ): Response<Unit> {
 
         return when (currentCardState) {
 
@@ -115,8 +117,9 @@ class CrusadeLoggedUserCardsController @Inject constructor(
                         canPlay = true
                     )
                 }
-                Response.Success("", message = "")
+                Response.Success(Unit)
             }
+
             is CardStates.Hit -> {
                 if (currentCardState.playerId == playerId) {
                     userRequestToPick(
@@ -125,10 +128,11 @@ class CrusadeLoggedUserCardsController @Inject constructor(
                         canPlay = false
                     )
                 }
-                Response.Success("", message = "")
+                Response.Success(Unit)
             }
+
             else -> {
-                Response.Success("", message = "Hold on, it might not be your turn")
+                Response.Success(Unit)
             }
         }
     }
@@ -137,7 +141,7 @@ class CrusadeLoggedUserCardsController @Inject constructor(
         type: String,
         currentCardState: CardStates,
         playerId: String
-    ): Response<String> {
+    ): Response<Unit> {
         return when (currentCardState) {
             is CardStates.ChangeType -> {
                 if (currentCardState.playerId == playerId) {
@@ -145,17 +149,16 @@ class CrusadeLoggedUserCardsController @Inject constructor(
                         playerId = currentCardState.playerId,
                         type = type
                     )
-                    Response.Success("", "")
+                    Response.Success(Unit)
                 } else {
                     Response.Error(
-                        data = "",
                         message = "Unexpected behaviour, user has to define joker action"
                     )
                 }
             }
+
             else -> {
                 Response.Error(
-                    data = "",
                     message = "Unexpected behaviour, user has to define joker action"
                 )
             }

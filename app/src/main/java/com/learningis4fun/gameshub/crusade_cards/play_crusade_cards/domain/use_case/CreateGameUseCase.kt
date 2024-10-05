@@ -8,6 +8,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.Defau
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 
@@ -65,10 +66,10 @@ class CreateGameUseCase @Inject constructor(
                         gameId = gameId,
                         userId = it.uniqueId
                     )
-                )
+                ).getDataOrThrowException()
             }
             gameCards.forEach { gameCard ->
-                gameCardRepository.insertGameCard(gameCard)
+                gameCardRepository.insertGameCard(gameCard).getDataOrThrowException()
             }
             gameRepository.insertGame(game)
             gameId

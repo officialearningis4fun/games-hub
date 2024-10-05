@@ -58,7 +58,7 @@ class AssignCardsUseCaseTest {
         val gameId = "id"
 
         playerIds.forEach {
-            fakeUserRepositoryImpl.insertPlayer(Player(uniqueId = it))
+            fakeUserRepositoryImpl.savePlayer(Player(uniqueId = it))
             fakeDefaultRepositoryImpl.insertGameUserCrossRef(
                 GameUserCrossRef(gameId = gameId, userId = it)
             )

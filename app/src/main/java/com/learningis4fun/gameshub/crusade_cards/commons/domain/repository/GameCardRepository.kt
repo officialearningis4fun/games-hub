@@ -11,15 +11,15 @@ import kotlinx.coroutines.flow.Flow
 @ExperimentalCoroutinesApi
 interface GameCardRepository {
 
-    suspend fun insertGameCard(gameCard: GameCard): Response<String>
+    suspend fun insertGameCard(gameCard: GameCard): Response<Unit>
 
     suspend fun updateGameCard(gameCard: GameCard): Response<Boolean>
 
     suspend fun playGameCard(gameCard: GameCard): Response<Boolean>
 
-    suspend fun deleteGameCard(gameCard: GameCard): Response<String>
+    suspend fun deleteGameCard(gameCard: GameCard): Response<Unit>
 
-    suspend fun deleteAllGameCards(): Response<String>
+    suspend fun deleteAllGameCards(): Response<Unit>
 
     fun getNumOfCurrentGameCards(gameId: String): Flow<Int>
 

@@ -14,8 +14,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.*
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.*
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.start.domain.use_cases.GetAllCards
-import com.learningis4fun.gameshub.crusade_cards.start.domain.use_cases.GetAllCardsImpl
+import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetAllCards
+import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetAllCardsImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -1,6 +1,7 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.controller
 
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
@@ -8,9 +9,9 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.mappers.toGameCard
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -33,6 +34,7 @@ class CrusadeCardsController @Inject constructor(
 
     suspend fun getUserId() = userRepository.getUserId()
     suspend fun getAndroidUserId() = userRepository.getAndroidUserId()
+
     /**
      * No tests present
      */
@@ -61,13 +63,10 @@ class CrusadeCardsController @Inject constructor(
 
         val type = repository.cardTypeForComputerToChangeTo()
 
-        val result = allowChangeType(playerId = playerId, type = type)
-
-        return when (result) {
-            is Response.Error -> CardStates.Error(message = result.message)
+        return when (val result = allowChangeType(playerId = playerId, type = type)) {
+            is Response.Error -> CardStates.Error(message = result.message.toString())
             is Response.Success -> CardStates.ChangedType(
-                playerId = playerId,
-                message = result.message
+                playerId = playerId
             )
         }
     }
@@ -77,13 +76,10 @@ class CrusadeCardsController @Inject constructor(
         type: String
     ): CardStates {
 
-        val result = allowChangeType(playerId = playerId, type = type)
-
-        return when (result) {
-            is Response.Error -> CardStates.Error(message = result.message)
+        return when (val result = allowChangeType(playerId = playerId, type = type)) {
+            is Response.Error -> CardStates.Error(message = result.message.toString())
             is Response.Success -> CardStates.ChangedType(
-                playerId = playerId,
-                message = result.message
+                playerId = playerId
             )
         }
     }
@@ -333,17 +329,20 @@ class CrusadeCardsController @Inject constructor(
                             is Response.Error -> {
                                 CardStates.Error("${response.message} while hitting back")
                             }
+
                             is Response.Success -> {
                                 allowHit
                             }
                         }
                     }
+
                     is Response.Error -> {
-                        CardStates.Error(updateResult.message)
+                        CardStates.Error(updateResult.message.toString())
                     }
                 }
 
             }
+
             else -> {
                 // show prev state
                 CardStates.Hit(
@@ -383,6 +382,7 @@ class CrusadeCardsController @Inject constructor(
                             is Response.Error -> {
                                 CardStates.Error("${updateResult.message}, while hitting...")
                             }
+
                             is Response.Success -> {
 
                                 val response = repository.changeCurrentCardType(userCard.type)
@@ -391,6 +391,7 @@ class CrusadeCardsController @Inject constructor(
                                     is Response.Error -> {
                                         CardStates.Error("${response.message}, while hitting...")
                                     }
+
                                     is Response.Success -> {
                                         allowHit
                                     }
@@ -399,10 +400,12 @@ class CrusadeCardsController @Inject constructor(
                         }
 
                     }
+
                     else -> allowHit
                 }
 
             }
+
             Constants.CardNames.EIGHT -> {
                 // play and prompt user define type
                 val updateResult = gameCardRepository.playGameCard(
@@ -415,11 +418,13 @@ class CrusadeCardsController @Inject constructor(
                             playerId = userCard.playerId
                         )
                     }
+
                     is Response.Error -> {
                         CardStates.Error("${updateResult.message} while playing eight")
                     }
                 }
             }
+
             Constants.CardNames.JOKER -> {
                 // can hit or change type
                 // ask user define type
@@ -436,6 +441,7 @@ class CrusadeCardsController @Inject constructor(
 
                                 CardStates.Error("${response.message} while asked to define card action...")
                             }
+
                             is Response.Success -> {
                                 CardStates.DefineCardAction(
                                     playerId = userCard.playerId,
@@ -444,11 +450,13 @@ class CrusadeCardsController @Inject constructor(
                             }
                         }
                     }
+
                     is Response.Error -> {
                         CardStates.Error("${updateResult.message} while asked to define card action...")
                     }
                 }
             }
+
             Constants.CardNames.SEVEN, Constants.CardNames.JACK -> {
                 val updateResult = gameCardRepository.playGameCard(
                     gameCard = userCard.toGameCard().copy(isPlayed = true)
@@ -462,6 +470,7 @@ class CrusadeCardsController @Inject constructor(
                             is Response.Error -> {
                                 CardStates.Error("${response.message} while being given a chance to play another card...")
                             }
+
                             is Response.Success -> {
                                 CardStates.Chance(
                                     playerId = userCard.playerId
@@ -469,11 +478,13 @@ class CrusadeCardsController @Inject constructor(
                             }
                         }
                     }
+
                     is Response.Error -> {
                         CardStates.Error("${updateResult.message} while being given a chance to play another card...")
                     }
                 }
             }
+
             else -> {
                 val updateResult = gameCardRepository.playGameCard(
                     gameCard = userCard.toGameCard().copy(isPlayed = true)
@@ -488,6 +499,7 @@ class CrusadeCardsController @Inject constructor(
                             is Response.Error -> {
                                 CardStates.Error("${response.message} Error while playing a card...")
                             }
+
                             is Response.Success -> {
                                 CardStates.Played(
                                     playerId = userCard.playerId
@@ -495,6 +507,7 @@ class CrusadeCardsController @Inject constructor(
                             }
                         }
                     }
+
                     is Response.Error -> CardStates.Error("Error while playing a card...")
                 }
             }
@@ -561,11 +574,12 @@ class CrusadeCardsController @Inject constructor(
                 CardStates.Picked(
                     playerId = playerId,
                     canPlay = canPlay,
-                    cardsPicked = pickedCardsResponse.data
+                    cardsPicked = pickedCardsResponse.getDataOrThrowException()
                 )
             }
+
             is Response.Error -> {
-                CardStates.Error(pickedCardsResponse.message)
+                CardStates.Error(pickedCardsResponse.message.toString())
             }
         }
 
@@ -574,17 +588,16 @@ class CrusadeCardsController @Inject constructor(
     suspend fun allowChangeType(
         playerId: String,
         type: String
-    ): Response<String> {
+    ): Response<Unit> {
 
         if (type.isEmpty()) {
             return Response.Error(
-                type,
                 "The correct type should be set, was unable to change card type"
             )
         }
 
         if (playerId.isEmpty()) {
-            return Response.Error(type, "The player should not be empty")
+            return Response.Error("The player should not be empty")
         }
 
         return repository.changeCurrentCardType(type = type)
@@ -618,9 +631,11 @@ class CrusadeCardsController @Inject constructor(
             Constants.CardNames.TWO -> {
                 2 + prevCardsToPick
             }
+
             Constants.CardNames.JOKER -> {
                 4 + prevCardsToPick
             }
+
             else -> {
                 prevCardsToPick
             }

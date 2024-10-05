@@ -57,9 +57,9 @@ class CrusadeComputerCardsController @Inject constructor(
             val userCard =
                 cardToPlay ?: cards.randomOrNull() ?: throw Exception("User card not found")
 
-            Response.Success(data = userCard, message = "")
+            Response.Success(data = userCard)
         } catch (exception: Exception) {
-            Response.Error(data = null, message = exception.localizedMessage.toString())
+            Response.Error(message = exception.message.toString())
         }
     }
 
@@ -98,7 +98,7 @@ class CrusadeComputerCardsController @Inject constructor(
         }
     }
 
-    fun randomCardTypeButJoker(cardsTypes: List<String> = emptyList()): String{
+    fun randomCardTypeButJoker(cardsTypes: List<String> = emptyList()): String {
         val defaultCardTypes = listOf(
             Constants.CardTypes.CLUBS,
             Constants.CardTypes.SPADE,
@@ -106,7 +106,7 @@ class CrusadeComputerCardsController @Inject constructor(
             Constants.CardTypes.HEART,
         )
 
-        return  cardsTypes.randomOrNull() ?: defaultCardTypes.random()
+        return cardsTypes.randomOrNull() ?: defaultCardTypes.random()
     }
 
     suspend fun playCardForComputer(

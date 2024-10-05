@@ -58,7 +58,7 @@ class CreateGameUseCaseTest {
             )
 
             participants.forEach {
-                fakeUserRepositoryImpl.insertPlayer(it)
+                fakeUserRepositoryImpl.savePlayer(it)
             }
 
             val gameId = createGameUseCase.createGame("gameName", participants)
@@ -85,7 +85,7 @@ class CreateGameUseCaseTest {
             val participants = emptyList<Player>()
 
             participants.forEach {
-                fakeUserRepositoryImpl.insertPlayer(it)
+                fakeUserRepositoryImpl.savePlayer(it)
             }
 
             val gameId = createGameUseCase.createGame("gameName", participants)
@@ -119,7 +119,7 @@ class CreateGameUseCaseTest {
             )
 
             participants.forEach {
-                fakeUserRepositoryImpl.insertPlayer(it)
+                fakeUserRepositoryImpl.savePlayer(it)
             }
 
             val gameId = createGameUseCase.createGame("gameName", participants)

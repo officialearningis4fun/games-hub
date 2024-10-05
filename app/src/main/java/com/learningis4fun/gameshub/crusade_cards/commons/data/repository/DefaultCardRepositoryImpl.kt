@@ -5,11 +5,11 @@ import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.Crusad
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GamesOfPlayer
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GamesOfPlayer
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,31 +39,31 @@ class DefaultCardRepositoryImpl @Inject constructor(
     val crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager
 ) : DefaultCardRepository {
 
-    override suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<String> {
+    override suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit> {
         return try {
             db.gameUserCrossRef().insertGameUserCrossRef(crossRef)
-            Response.Success("", "Successfully inserted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
     override suspend fun updateGameUserCrossRef(crossRef: GameUserCrossRef): Response<Boolean> {
         return try {
             db.gameUserCrossRef().updateGameUserCrossRef(crossRef)
-            Response.Success(true, "Successfully updated")
+            Response.Success(true)
         } catch (exception: Exception) {
-            Response.Error(false, exception.localizedMessage ?: "Unknown error occurred")
+            Response.Error(exception.localizedMessage ?: "Unknown error occurred")
         }
     }
 
 
-    override suspend fun deleteGameUserCrossRef(crossRef: GameUserCrossRef): Response<String> {
+    override suspend fun deleteGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit> {
         return try {
             db.gameUserCrossRef().deleteGameUserCrossRef(crossRef)
-            Response.Success("", "Successfully deleted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
@@ -118,7 +118,7 @@ class DefaultCardRepositoryImpl @Inject constructor(
         return cardsToHitBack.random().toUserCard()
     }
 
-    override suspend fun changeCurrentCardType(type: String): Response<String> {
+    override suspend fun changeCurrentCardType(type: String): Response<Unit> {
         return crusadeCardsPreferencesManager.updateRecentCardType(type)
     }
 
@@ -163,14 +163,13 @@ class DefaultCardRepositoryImpl @Inject constructor(
                         )
                     }
                 }
-                Response.Success(cardsToRequest.size, "Successfully requested cards")
+                Response.Success(cardsToRequest.size)
 
             } else {
                 throw Exception("Not enough cards to be picked")
             }
         } catch (exception: Exception) {
             Response.Error(
-                0,
                 exception.localizedMessage
                     ?: "Unknown error occurred while requesting cards to be picked"
             )
@@ -210,6 +209,7 @@ class DefaultCardRepositoryImpl @Inject constructor(
                     is Response.Error -> {
                         throw Exception(response.message)
                     }
+
                     is Response.Success -> {
 
                         val cardsInDustbinAfterRequesting =
@@ -231,7 +231,6 @@ class DefaultCardRepositoryImpl @Inject constructor(
 
         } catch (exception: Exception) {
             Response.Error(
-                0,
                 exception.localizedMessage ?: "Unknown error occurred while picking cards"
             )
         }
@@ -254,10 +253,9 @@ class DefaultCardRepositoryImpl @Inject constructor(
                     )
                 }
             }
-            Response.Success(data = cardsToPick.size, message = "Successfully picked")
+            Response.Success(data = cardsToPick.size)
         } catch (exception: Exception) {
             Response.Error(
-                data = 0,
                 message = exception.localizedMessage ?: "Unknown error occurred while picking cards"
             )
         }

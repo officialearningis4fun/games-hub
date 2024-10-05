@@ -12,6 +12,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.yield
 import javax.inject.Inject
 
 @ExperimentalStdlibApi
@@ -24,8 +25,8 @@ class HandleCardStateUseCase @Inject constructor(
     private val computerCardsController: CrusadeComputerCardsController
 ) {
 
-    val user = userRepository.getPlayerSignInDetails()
-    val androidUser = userRepository.getAndroidPlayerSignInDetails()
+    private val user = userRepository.getPlayerSignInDetails()
+    private val androidUser = userRepository.getAndroidPlayerSignInDetails()
 
     /**
      * from start to Computer Play
@@ -294,6 +295,8 @@ class HandleCardStateUseCase @Inject constructor(
             }
         }
         cardState?.let {
+            println("cardStates In DB:${cardState}")
+            yield()
             saveCardStateToPreferences(it)
         }
 

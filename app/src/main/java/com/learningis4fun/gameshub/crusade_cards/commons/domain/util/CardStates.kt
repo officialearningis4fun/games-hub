@@ -4,7 +4,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 
 sealed class CardStates(val name: String) {
 
-    object Start : CardStates("start")
+    data object Start : CardStates("start")
     data class Play(val playerId: String, val canPick: Boolean = true, val message: String = CardStatesDefaultMsg.Play) :
         CardStates("play")
 
@@ -92,7 +92,7 @@ data class CardStateAndContent(
 object CardStatesDefaultMsg{
     const val Play = "Requested to play"
     const val Played = "Successfully played"
-    const val PlayOnly = "Requested to play or allow others play if you have no card"
+    const val PlayOnly = "Requested to play or allow others play"
     const val PlayOrPick = "Requested to play or pick"
     const val Pick = "Requested to pick"
     const val Picked = "Successfully picked"

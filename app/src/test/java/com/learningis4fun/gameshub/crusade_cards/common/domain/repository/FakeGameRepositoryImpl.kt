@@ -38,7 +38,7 @@ class FakeGameRepositoryImpl(
         }
     }
 
-    override suspend fun deleteGame(game: Game): Response<String> {
+    override suspend fun deleteGame(gameId: Game): Response<String> {
         TODO("Not yet implemented")
     }
 

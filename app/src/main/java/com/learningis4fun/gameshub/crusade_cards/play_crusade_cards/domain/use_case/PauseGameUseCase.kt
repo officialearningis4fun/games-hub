@@ -1,6 +1,5 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case
 
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
@@ -10,8 +9,7 @@ import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 class PauseGameUseCase @Inject constructor(
-    private val gameRepository: GameRepository,
-    private val preferencesManager: CrusadeCardsPreferencesManager
+    private val gameRepository: GameRepository
 ) {
 
     /**
@@ -25,7 +23,7 @@ class PauseGameUseCase @Inject constructor(
         try {
 
             if (currGameId.isEmpty()) {
-                return Response.Error("", "Unable to pause the game")
+                return Response.Error("Unable to pause the game")
             }
             val game = gameRepository.getGame(gameId = currGameId).first()?.copy(
                 gameState = GameState.Paused.name,
@@ -33,10 +31,9 @@ class PauseGameUseCase @Inject constructor(
             ) ?: throw Exception("The game was not found")
 
             gameRepository.updateGame(game)
-            return Response.Success(game.gameState, "Successfully paused the game")
+            return Response.Success(game.gameState)
         } catch (exception: Exception) {
             return Response.Error(
-                "",
                 exception.localizedMessage ?: "Unknown error occurred while pausing game"
             )
         }

@@ -16,30 +16,30 @@ class CardRepositoryImpl @Inject constructor(
     private val crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager
 ) : CardRepository {
 
-    override suspend fun insertCard(card: Card): Response<String> {
+    override suspend fun insertCard(card: Card): Response<Unit> {
         return try {
             db.cardDao().insertCard(card)
-            Response.Success("", "Successfully inserted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
-    override suspend fun updateCard(card: Card): Response<String> {
+    override suspend fun updateCard(card: Card): Response<Unit> {
         return try {
             db.cardDao().updateCard(card)
-            Response.Success("", "Successfully updated")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
-    override suspend fun deleteCard(card: Card): Response<String> {
+    override suspend fun deleteCard(card: Card): Response<Unit> {
         return try {
             db.cardDao().deleteCard(card)
-            Response.Success("", "Successfully deleted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
@@ -53,7 +53,8 @@ class CardRepositoryImpl @Inject constructor(
             return ""
         }
 
-        val playersOfGameIds = db.gameDao().getGameWithPlayers(gameId = gameId).first().players.map { it.uniqueId }
+        val playersOfGameIds =
+            db.gameDao().getGameWithPlayers(gameId = gameId).first().players.map { it.uniqueId }
         val topPlayedCard = db.gameCardDao().getTopPlayedCard(
             gameId = gameId,
             playerIds = playersOfGameIds

@@ -41,6 +41,15 @@ interface GameDao {
         )
     ): Flow<Game>
 
+    @Query("SELECT * FROM game WHERE gameState IN(:gameStates)")
+    fun getNonCompletedGames(
+        gameStates: List<String> = listOf(
+            GameState.Started.name,
+            GameState.Paused.name,
+            GameState.NotStarted.name
+        )
+    ): Flow<List<GameWithPlayers>>
+
     @Transaction
     @Query("SELECT * FROM game WHERE gameId LIKE :gameId")
     fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers>

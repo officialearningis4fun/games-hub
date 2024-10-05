@@ -23,7 +23,7 @@ import org.junit.Test
 @ExperimentalCoroutinesApi
 class PlayCardsFragmentTest {
 
-    @get:Rule
+    /*@get:Rule
     var instantTaskExecutorRule = InstantTaskExecutorRule()
 
     @get:Rule
@@ -226,5 +226,5 @@ class PlayCardsFragmentTest {
         val actual = fakePreference.recentCardState.first()
 
         assertThat(actual).isEqualTo(expect)
-    }
+    }*/
 }

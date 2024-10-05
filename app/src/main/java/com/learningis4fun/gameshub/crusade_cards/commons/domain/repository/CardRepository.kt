@@ -6,11 +6,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface CardRepository {
 
-    suspend fun insertCard(card: Card) : Response<String>
+    suspend fun insertCard(card: Card) : Response<Unit>
 
-    suspend fun updateCard(card: Card): Response<String>
+    suspend fun updateCard(card: Card): Response<Unit>
 
-    suspend fun deleteCard(card: Card) : Response<String>
+    suspend fun deleteCard(card: Card) : Response<Unit>
 
     suspend fun getCards() : List<Card>
 

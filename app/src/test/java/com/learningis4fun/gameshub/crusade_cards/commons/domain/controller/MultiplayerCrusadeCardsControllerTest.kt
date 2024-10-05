@@ -553,7 +553,7 @@ class MultiplayerCrusadeCardsControllerTest {
                 type = Constants.CardTypes.CLUBS
             )
             fakeUserRepositoryImpl.insertDefaultPlayers()
-            fakeUserRepositoryImpl.insertPlayer(Player(uniqueId = "id"))
+            fakeUserRepositoryImpl.savePlayer(Player(uniqueId = "id"))
 
             fakeCardRepositoryImpl.insertCard(card)
             val userId = fakeUserRepositoryImpl.getUserId()
@@ -646,7 +646,7 @@ class MultiplayerCrusadeCardsControllerTest {
                 type = Constants.CardTypes.CLUBS)
 
             fakeUserRepositoryImpl.insertDefaultPlayers()
-            fakeUserRepositoryImpl.insertPlayer(Player(uniqueId = "id"))
+            fakeUserRepositoryImpl.savePlayer(Player(uniqueId = "id"))
 
             fakeCardRepositoryImpl.insertCard(card)
 
@@ -820,7 +820,7 @@ class MultiplayerCrusadeCardsControllerTest {
     fun `find previous player to play after jack for more than two players, return diff id`() =
         runBlockingTest {
             fakeUserRepositoryImpl.insertDefaultPlayers()
-            fakeUserRepositoryImpl.insertPlayer(Player(uniqueId = "id"))
+            fakeUserRepositoryImpl.savePlayer(Player(uniqueId = "id"))
             val userId = fakeUserRepositoryImpl.getUserId()
 
             val participants = fakeUserRepositoryImpl.getPlayers().first()
@@ -864,7 +864,7 @@ class MultiplayerCrusadeCardsControllerTest {
     fun `find next player to play after seven for more than two players, return diff id`() =
         runBlockingTest {
             fakeUserRepositoryImpl.insertDefaultPlayers()
-            fakeUserRepositoryImpl.insertPlayer(Player(uniqueId = "id"))
+            fakeUserRepositoryImpl.savePlayer(Player(uniqueId = "id"))
             val userId = fakeUserRepositoryImpl.getUserId()
 
             val participants = fakeUserRepositoryImpl.getPlayers().first()
@@ -886,7 +886,7 @@ class MultiplayerCrusadeCardsControllerTest {
     @Test
     fun `find next player id to be hit by a two for more than two players, return diff id`() =
         runBlockingTest {
-            fakeUserRepositoryImpl.insertPlayer(Player(uniqueId = "id"))
+            fakeUserRepositoryImpl.savePlayer(Player(uniqueId = "id"))
             fakeUserRepositoryImpl.insertDefaultPlayers()
 
             val comUserId = fakeUserRepositoryImpl.getAndroidUserId()

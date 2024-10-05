@@ -1,16 +1,14 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.remote
 
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.remote.dto.CardOfGameDto
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import io.ktor.client.*
+import io.ktor.client.HttpClient
 
 class CrusadeGameServiceImpl(
     val client: HttpClient
-): CrusadeGameService {
+) {
 
-    override suspend fun playCard(playerId: String, cardOfGameDto: CardOfGameDto): Response<Unit> {
+    /*override suspend fun playCard(playerId: String, cardOfGameDto: CardOfGameDto): Response<Unit> {
         return try {
-            Response.Success(data = Unit, message = "")
+            Response.Success(data = Unit)
         }catch (e: Exception){
             Response.Error(
                 data = Unit,
@@ -69,5 +67,5 @@ class CrusadeGameServiceImpl(
                 message = e.message.toString()
             )
         }
-    }
+    }*/
 }

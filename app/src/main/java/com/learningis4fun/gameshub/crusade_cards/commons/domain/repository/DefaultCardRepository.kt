@@ -12,11 +12,11 @@ import kotlinx.coroutines.flow.Flow
 @ExperimentalCoroutinesApi
 interface DefaultCardRepository {
 
-    suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<String>
+    suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit>
 
     suspend fun updateGameUserCrossRef(crossRef: GameUserCrossRef): Response<Boolean>
 
-    suspend fun deleteGameUserCrossRef(crossRef: GameUserCrossRef): Response<String>
+    suspend fun deleteGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit>
 
     suspend fun getRecentTopCard(): UserCard
 
@@ -28,7 +28,7 @@ interface DefaultCardRepository {
 
     suspend fun getGameCard(cardName: String): UserCard?
 
-    suspend fun changeCurrentCardType(type: String): Response<String>
+    suspend fun changeCurrentCardType(type: String): Response<Unit>
 
     suspend fun pickCardsFromLibrary(
         playerId: String,

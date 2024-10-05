@@ -1,12 +1,14 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case
 
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -33,25 +35,32 @@ class EndGameUseCase @Inject constructor(
      *
      * change playCardState to navigate to winScreen (popping off the playCardsScreen)
      */
-    suspend fun endGame(currGameId: String, duration: Long, winnerId: String) {
-        val gameCompletedTime = System.currentTimeMillis()
+    suspend fun endGame(currGameId: String, duration: Long, winnerId: String): Response<Unit> {
+
+        return try {
+            val gameCompletedTime = System.currentTimeMillis()
 
 
-        val game = gameRepository.getGame(currGameId).first()
-            ?.copy(
-                gameState = GameState.Completed.name,
-                winnerId = winnerId,
-                gameDuration = duration,
-                completedTime = gameCompletedTime
-            )
+            val game = gameRepository.getGame(currGameId).first()
+                ?.copy(
+                    gameState = GameState.Completed.name,
+                    winnerId = winnerId,
+                    gameDuration = duration,
+                    completedTime = gameCompletedTime
+                )
 
-        game?.let {
-            gameRepository.updateGame(game)
-            println("com: $game")
-            repository.changeCurrentCardType("")
-            gameRepository.updateRecentGameId("")
-            gameCardRepository.deleteAllGameCards()
-            preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
+            game?.let {
+                gameRepository.updateRecentGameId("").getDataOrThrowException()
+                gameRepository.updateGame(game).getDataOrThrowException()
+                repository.changeCurrentCardType("").getDataOrThrowException()
+                println("com: $game")
+                gameCardRepository.deleteAllGameCards().getDataOrThrowException()
+                preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
+            }
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Response.Error(e.message.toString())
         }
 
     }

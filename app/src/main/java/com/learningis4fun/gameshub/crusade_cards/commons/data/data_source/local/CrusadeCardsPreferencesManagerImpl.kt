@@ -2,9 +2,14 @@ package com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local
 
 import android.content.Context
 import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.*
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.learningis4fun.gameshub.MainViewModel
+import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
@@ -65,11 +70,11 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
 
     override val user: Flow<Player> = context.dataStore.data.map {
         Player(
-            uniqueId = it[PreferencesKeys.Player.UNIQUE_ID] ?: "",
-            email = it[PreferencesKeys.Player.EMAIL] ?: "",
+            uniqueId = it[PreferencesKeys.Player.UNIQUE_ID] ?: "uniqueId",
+            email = it[PreferencesKeys.Player.EMAIL] ?: "user@mail.com",
             phone = it[PreferencesKeys.Player.PHONE] ?: "",
-            imageUrl = it[PreferencesKeys.Player.IMAGE_URL] ?: "",
-            profileName = it[PreferencesKeys.Player.PROFILE_NAME] ?: ""
+            imageUrl = it[PreferencesKeys.Player.IMAGE_URL] ?: R.drawable.avatar_man1.toString(),
+            profileName = it[PreferencesKeys.Player.PROFILE_NAME] ?: "user"
         )
     }
 
@@ -79,12 +84,13 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
                 ?: "7iooVf8Vu9T8NR2JcwgqLbgr0OC3",
             email = it[PreferencesKeys.AndroidPlayer.EMAIL] ?: "",
             phone = it[PreferencesKeys.AndroidPlayer.PHONE] ?: "",
-            imageUrl = it[PreferencesKeys.AndroidPlayer.IMAGE_URL] ?: "",
-            profileName = it[PreferencesKeys.AndroidPlayer.PROFILE_NAME] ?: "Computer"
+            imageUrl = it[PreferencesKeys.AndroidPlayer.IMAGE_URL]
+                ?: R.drawable.ai_platform.toString(),
+            profileName = it[PreferencesKeys.AndroidPlayer.PROFILE_NAME] ?: "Device"
         )
     }
 
-    override suspend fun updatePlayer(player: Player): Response<String> {
+    override suspend fun updatePlayer(player: Player): Response<Unit> {
         return try {
             context.dataStore.edit {
                 it[PreferencesKeys.Player.UNIQUE_ID] = player.uniqueId
@@ -93,16 +99,15 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
                 it[PreferencesKeys.Player.IMAGE_URL] = player.imageUrl
                 it[PreferencesKeys.Player.PROFILE_NAME] = player.profileName
             }
-            Response.Success(player.profileName, "Successfully saved login info")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                player.profileName,
                 "Failed to save login info: ${exception.localizedMessage}"
             )
         }
     }
 
-    override suspend fun updateAndroidPlayer(player: Player): Response<String> {
+    override suspend fun updateAndroidPlayer(player: Player): Response<Unit> {
         return try {
             context.dataStore.edit {
                 it[PreferencesKeys.AndroidPlayer.UNIQUE_ID] = player.uniqueId
@@ -111,10 +116,9 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
                 it[PreferencesKeys.AndroidPlayer.IMAGE_URL] = player.imageUrl
                 it[PreferencesKeys.AndroidPlayer.PROFILE_NAME] = player.profileName
             }
-            Response.Success(player.profileName, "Successfully saved login info")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                player.profileName,
                 "Failed to save login info: ${exception.localizedMessage}"
             )
         }
@@ -133,57 +137,53 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
         }
     }
 
-    override suspend fun updateUserId(playerId: String): Response<String> {
+    override suspend fun updateUserId(playerId: String): Response<Unit> {
         return try {
             context.dataStore.edit {
                 it[PreferencesKeys.USER_ID] = playerId
             }
-            Response.Success(playerId, "Successfully updated user info")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                playerId,
                 "Failed to update user info with this error: ${exception.localizedMessage}"
             )
         }
     }
 
-    override suspend fun updateUserCardsSortBy(sortBy: String): Response<String> {
+    override suspend fun updateUserCardsSortBy(sortBy: String): Response<Unit> {
         return try {
             context.dataStore.edit {
                 it[PreferencesKeys.USER_CARDS_SORT_BY] = sortBy
             }
-            Response.Success(sortBy, "Successfully updated")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                data = sortBy,
                 message = "Failed to change sort cards by with this error: ${exception.localizedMessage}"
             )
         }
     }
 
-    override suspend fun updateRecentCardType(recentType: String): Response<String> {
+    override suspend fun updateRecentCardType(recentType: String): Response<Unit> {
         return try {
             context.dataStore.edit {
                 it[PreferencesKeys.RECENT_CARD_TYPE] = recentType
             }
-            Response.Success(recentType, "Successfully changed type")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                recentType,
                 "Failed to change type with this error: ${exception.localizedMessage}"
             )
         }
     }
 
-    override suspend fun updateRecentGameId(gameId: String): Response<String> {
+    override suspend fun updateRecentGameId(gameId: String): Response<Unit> {
         return try {
             context.dataStore.edit {
                 it[PreferencesKeys.RECENT_GAME_ID] = gameId
             }
-            Response.Success(gameId, "Successfully changed type")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                gameId,
                 "Failed to change type with this error: ${exception.localizedMessage}"
             )
         }

@@ -3,12 +3,13 @@ package com.learningis4fun.gameshub.crusade_cards.commons.data.repository
 import androidx.room.withTransaction
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -20,41 +21,49 @@ class GameRepositoryImpl @Inject constructor(
     private val crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager
 ) : GameRepository {
 
-    override suspend fun insertGame(game: Game): Response<String> {
+    override suspend fun insertGame(game: Game): Response<Unit> {
         return try {
             db.gameDao().insertGame(game)
-            Response.Success("", "Successfully inserted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.message.toString())
         }
     }
 
-    override suspend fun updateGame(game: Game): Response<String> {
+    override suspend fun updateGame(game: Game): Response<Unit> {
         return try {
             db.gameDao().updateGame(game)
-            Response.Success("", "Successfully updated")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
-    override suspend fun deleteGame(game: Game): Response<String> {
+    override suspend fun deleteGame(gameId: String): Response<Unit> {
         return try {
-            val playersOfGame = db.gameDao().getGameWithPlayers(gameId = game.id).first().players
+            val game = db.gameDao().getGameWithPlayers(gameId = gameId).first()
+            val playersOfGame = game.players
+
             db.withTransaction {
                 playersOfGame.forEach { player ->
                     db.gameUserCrossRef().deleteGameUserCrossRef(
                         GameUserCrossRef(
-                            gameId = game.id,
+                            gameId = gameId,
                             userId = player.uniqueId
                         )
                     )
                 }
-                db.gameDao().deleteGame(game)
+                db.gameDao().deleteGame(game.game)
+                val currentGameId = crusadeCardsPreferencesManager.recentGameId.first()
+                if (currentGameId == gameId) {
+                    crusadeCardsPreferencesManager.updateRecentGameId("").getDataOrThrowException()
+                    crusadeCardsPreferencesManager.updateRecentCardState(CardStateEntity())
+                    crusadeCardsPreferencesManager.updateRecentCardType("")
+                }
             }
-            Response.Success("", "Successfully deleted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
@@ -90,12 +99,12 @@ class GameRepositoryImpl @Inject constructor(
         return crusadeCardsPreferencesManager.recentGameId
     }
 
-    override suspend fun updateRecentGameId(gameId: String): Response<String> {
+    override suspend fun updateRecentGameId(gameId: String): Response<Unit> {
         return try {
             crusadeCardsPreferencesManager.updateRecentGameId(gameId = gameId)
-            Response.Success(gameId, "Successfully updated")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 

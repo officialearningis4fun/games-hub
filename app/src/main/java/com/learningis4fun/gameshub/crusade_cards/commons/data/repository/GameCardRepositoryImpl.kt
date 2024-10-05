@@ -24,21 +24,21 @@ class GameCardRepositoryImpl @Inject constructor(
 ) : GameCardRepository {
 
 
-    override suspend fun insertGameCard(gameCard: GameCard): Response<String> {
+    override suspend fun insertGameCard(gameCard: GameCard): Response<Unit> {
         return try {
             db.gameCardDao().insertGameCard(gameCard)
-            Response.Success("", "Successfully inserted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
     override suspend fun updateGameCard(gameCard: GameCard): Response<Boolean> {
         return try {
             db.gameCardDao().updateGameCard(gameCard)
-            Response.Success(true, "Successfully updated")
+            Response.Success(true)
         } catch (exception: Exception) {
-            Response.Error(false, exception.localizedMessage ?: "Unknown error occurred")
+            Response.Error(exception.localizedMessage ?: "Unknown error occurred")
         }
     }
 
@@ -46,27 +46,27 @@ class GameCardRepositoryImpl @Inject constructor(
         val playTime = System.currentTimeMillis()
         return try {
             db.gameCardDao().updateGameCard(gameCard.copy(playTime = playTime, isPlayed = true))
-            Response.Success(true, "Successfully updated")
+            Response.Success(true)
         } catch (exception: Exception) {
-            Response.Error(false, exception.localizedMessage ?: "Unknown error occurred")
+            Response.Error(exception.localizedMessage ?: "Unknown error occurred")
         }
     }
 
-    override suspend fun deleteGameCard(gameCard: GameCard): Response<String> {
+    override suspend fun deleteGameCard(gameCard: GameCard): Response<Unit> {
         return try {
             db.gameCardDao().deleteGameCard(gameCard)
-            Response.Success("", "Successfully deleted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
-    override suspend fun deleteAllGameCards(): Response<String> {
+    override suspend fun deleteAllGameCards(): Response<Unit> {
         return try {
             db.gameCardDao().deleteAllGameCards()
-            Response.Success("", "Successfully deleted")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
@@ -108,10 +108,9 @@ class GameCardRepositoryImpl @Inject constructor(
             if (gameCard == GameCardWithCard(GameCard(), Card())) {
                 throw Exception("Unable to retrieve game card")
             }
-            Response.Success(gameCard.toUserCard(), "Success")
+            Response.Success(gameCard.toUserCard())
         } catch (exception: Exception) {
             Response.Error(
-                UserCard(),
                 exception.localizedMessage ?: "Unknown error retrieving game card"
             )
         }
@@ -166,6 +165,7 @@ class GameCardRepositoryImpl @Inject constructor(
                     is Response.Error -> {
                         throw Exception(response.message)
                     }
+
                     is Response.Success -> {
 
                         val cardsInDustbinAfterRequesting =
@@ -187,7 +187,6 @@ class GameCardRepositoryImpl @Inject constructor(
 
         } catch (exception: Exception) {
             Response.Error(
-                0,
                 exception.localizedMessage ?: "Unknown error occurred while picking cards"
             )
         }
@@ -210,10 +209,9 @@ class GameCardRepositoryImpl @Inject constructor(
                     )
                 }
             }
-            Response.Success(data = cardsToPick.size, message = "Successfully picked")
+            Response.Success(data = cardsToPick.size)
         } catch (exception: Exception) {
             Response.Error(
-                data = 0,
                 message = exception.localizedMessage ?: "Unknown error occurred while picking cards"
             )
         }
@@ -260,14 +258,13 @@ class GameCardRepositoryImpl @Inject constructor(
                         )
                     }
                 }
-                Response.Success(cardsToRequest.size, "Successfully requested cards")
+                Response.Success(cardsToRequest.size)
 
             } else {
                 throw Exception("Not enough cards to be picked")
             }
         } catch (exception: Exception) {
             Response.Error(
-                0,
                 exception.localizedMessage
                     ?: "Unknown error occurred while requesting cards to be picked"
             )

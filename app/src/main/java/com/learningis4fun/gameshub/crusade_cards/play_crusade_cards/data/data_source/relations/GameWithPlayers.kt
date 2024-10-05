@@ -3,9 +3,10 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_s
 import androidx.room.Embedded
 import androidx.room.Junction
 import androidx.room.Relation
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 
 data class GameWithPlayers(
     @Embedded
@@ -16,4 +17,10 @@ data class GameWithPlayers(
         associateBy = Junction(GameUserCrossRef::class)
     )
     val players: List<Player>
-)
+) {
+    fun toCompletedGame() = CompletedGame(
+        duration = game.gameDuration,
+        game = game,
+        players = players
+    )
+}
