@@ -1,0 +1,30 @@
+package com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.profile
+
+import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+
+data class ProfileState(
+    val avatars: List<Int> = defaultAvatars,
+    val user: Player = Player(),
+    val isEnableSaveButton: Boolean = false,
+    val error: String? = null
+) {
+    fun enableSaveButton(newUser: Player): ProfileState {
+        val enable = newUser.imageUrl != user.imageUrl || newUser.profileName != user.profileName
+        return this.copy(
+            isEnableSaveButton = enable
+        )
+    }
+}
+
+val defaultAvatars = listOf(
+    R.drawable.avatar_boy1,
+    R.drawable.avatar_boy2,
+    R.drawable.avatar_male3,
+    R.drawable.avatar_man1,
+
+    R.drawable.avatar_female3,
+    R.drawable.avatar_girl1,
+    R.drawable.avatar_girl2,
+    R.drawable.avatar_person1
+)

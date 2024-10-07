@@ -21,7 +21,15 @@ class UserRepositoryImpl @ExperimentalCoroutinesApi
 
     @ExperimentalCoroutinesApi
     override suspend fun updatePlayerLogin(player: Player): Response<Unit> {
-        return crusadeCardsPreferencesManager.updatePlayer(player)
+        return try {
+            db.withTransaction {
+                crusadeCardsPreferencesManager.updatePlayer(player)
+                db.playerDao().savePlayer(player)
+            }
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            Response.Error(e.message.toString())
+        }
     }
 
     override suspend fun savePlayer(player: Player): Response<Unit> {

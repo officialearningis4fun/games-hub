@@ -12,4 +12,7 @@ data class PlayCardsScreenRoute(val currentGameId: String = "")
 data object ProfileScreenRoute
 
 @Serializable
+data object EditProfileRoute
+
+@Serializable
 data class WinnerScreenRoute(val wonGameId: String)

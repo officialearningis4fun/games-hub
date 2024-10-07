@@ -3,11 +3,13 @@ package com.learningis4fun.gameshub
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.EditProfileRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.PlayCardsScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.ProfileScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.StartScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.feature_game_winner.presentation.playedGameWinnerComposable
+import com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.profile.editProfileScreenComposable
 import com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.profile.profileScreenComposable
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.cardsStartScreenComposable
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.playCardsScreenComposable
@@ -56,6 +58,15 @@ fun NavigationRoot() {
         )
 
         profileScreenComposable(
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onEditProfile = {
+                navController.navigate(EditProfileRoute)
+            }
+        )
+
+        editProfileScreenComposable(
             onBackClick = {
                 navController.navigateUp()
             }

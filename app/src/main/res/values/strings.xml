@@ -27,9 +27,11 @@
     <string name="resume_btn">Resume</string>
 
     <string name="screen_profile_title">Profile</string>
+    <string name="screen_profile_choose_avatar">Choose avatar</string>
     <string name="screen_winner_title">Winner</string>
 
     <string name="admob_app_ID">ca-app-pub-9786986871932218~6262489813</string>
     <string name="admod_ad_ID">ca-app-pub-9786986871932218/1354548577</string>
+    <string name="profile_name_description">The name and profile image will identify you to others</string>
 
 </resources>

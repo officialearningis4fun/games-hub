@@ -1,6 +1,7 @@
 package com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.profile
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,8 +25,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,6 +49,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @OptIn(ExperimentalCoroutinesApi::class)
 fun NavGraphBuilder.profileScreenComposable(
     onBackClick: () -> Unit,
+    onEditProfile: () -> Unit
 ) {
     composable<ProfileScreenRoute>(
         enterTransition = {
@@ -61,12 +61,13 @@ fun NavGraphBuilder.profileScreenComposable(
     ) {
 
         val profileViewModel: ProfileViewModel = hiltViewModel()
-        val userProfileInfo by profileViewModel.userProfileInfo.collectAsStateWithLifecycle()
+        val userProfileInfo by profileViewModel.profileState.collectAsStateWithLifecycle()
         println("profile viewModel: ${profileViewModel.hashCode()}")
 
         ProfileScreen(
-            userProfileInfo = userProfileInfo,
+            userProfileInfo = userProfileInfo.user,
             onBackClick = onBackClick,
+            onEditProfile = onEditProfile
         )
     }
 }
@@ -76,13 +77,12 @@ fun NavGraphBuilder.profileScreenComposable(
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
+    onEditProfile: () -> Unit = {},
     userProfileInfo: Player
 ) {
     val backgroundColor = Color(0xffff8800)
 
-    val userImage by remember {
-        mutableIntStateOf(userProfileInfo.imageUrl.toIntOrNull() ?: R.drawable.avatar_man1)
-    }
+    val userImage = userProfileInfo.imageUrl.toIntOrNull() ?: R.drawable.avatar_man1
 
     Scaffold(
         modifier = modifier,
@@ -117,15 +117,15 @@ fun ProfileScreen(
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                    .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
                 Row(
                     modifier = Modifier
+                        .clickable { onEditProfile() }
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
+                        .padding(vertical = 16.dp, horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Image(
@@ -185,7 +185,8 @@ private fun ProfileScreenPrev() {
     ProfileScreen(
         userProfileInfo = Player(
             profileName = "Hlompho",
-            email = "hlomphoshadrakmohapi@gmail.com"
+            email = "hlomphoshadrakmohapi@gmail.com",
+            imageUrl = R.drawable.avatar_boy2.toString()
         )
     )
 }

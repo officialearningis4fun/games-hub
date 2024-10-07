@@ -52,7 +52,7 @@
             android:paddingTop="8dp"
             android:paddingEnd="16dp"
             android:paddingBottom="8dp"
-            android:text="The name and profile image will identify you to others"
+            android:text="@string/profile_name_description"
             android:textAlignment="center"
             app:layout_constraintTop_toBottomOf="@id/name_layout" />
 
