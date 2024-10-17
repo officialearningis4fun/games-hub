@@ -1,7 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,12 +11,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -67,6 +69,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.JokerActions
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.PlayCardsScreenRoute
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.green
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
@@ -150,7 +154,6 @@ fun PlayCardsScreen(
             println("has winner called")
         }
     }
-    val backgroundColor = Color(0xffff8800)
 
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
 
@@ -175,15 +178,14 @@ fun PlayCardsScreen(
 
     Scaffold(
         modifier = modifier,
-        containerColor = backgroundColor,
+        containerColor = MaterialTheme.colorScheme.primary,
         topBar = {
-
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = backgroundColor,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White,
-                    titleContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     if (playCardsState.isLoading.not() && playCardsState.error == null) {
@@ -191,7 +193,6 @@ fun PlayCardsScreen(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             style = MaterialTheme.typography.titleSmall,
                             text = "PLAYERS",
-                            color = Color.White
                         )
                     }
                 },
@@ -286,6 +287,7 @@ fun PlayCardsDataRoot(
                     onEvent(PlayCardsEvent.PlayCard(it))
                 }
             )
+            Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
         }
 
         if (playCardsState.showDefineJokerActions) {
@@ -329,7 +331,7 @@ fun PlayCardsErrorScreen(
 ) {
 
     Box(
-        modifier = modifier,
+        modifier = modifier.background(MaterialTheme.colorScheme.primaryContainer),
         contentAlignment = Alignment.Center
     ) {
         Text(text = error)
@@ -369,7 +371,11 @@ fun PlayersSectionScreen(
                     modifier = Modifier,
                     playerScreenInfo = player1
                 )
-                Heading(modifier = Modifier, text = duration)
+                Heading(
+                    modifier = Modifier,
+                    text = duration,
+                    textColor = MaterialTheme.colorScheme.onPrimary
+                )
 
                 PlayerItem(
                     modifier = Modifier,
@@ -426,7 +432,7 @@ private fun PlayerItem(
                         .align(Alignment.TopEnd)
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.error)
+                        .background(MaterialTheme.colorScheme.errorContainer)
                 ) {
                     Text(
                         modifier = Modifier
@@ -540,7 +546,11 @@ private fun DustbinSection(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Heading(modifier = Modifier, text = "Dustbin")
+        Heading(
+            modifier = Modifier,
+            text = "Dustbin",
+            textColor = MaterialTheme.colorScheme.onSurface
+        )
 
         Box {
             Image(
@@ -573,13 +583,13 @@ private fun MessagesSection(
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(8.dp),
-                color = Color.White
+                color = MaterialTheme.colorScheme.onSurface
             )
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Text(
-            text = message, color = Color.White,
+            text = message, color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1
         )
@@ -588,7 +598,6 @@ private fun MessagesSection(
 }
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun UserCardsSection(
     modifier: Modifier,
@@ -600,7 +609,11 @@ private fun UserCardsSection(
         modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Heading(modifier = Modifier.padding(top = 16.dp), text = "Your Cards")
+        Heading(
+            modifier = Modifier.padding(top = 16.dp),
+            text = "Your Cards",
+            textColor = MaterialTheme.colorScheme.onSurface
+        )
 
         UserCardsSummary(
             modifier = Modifier
@@ -619,7 +632,7 @@ private fun UserCardsSection(
                 val image = it.image.toIntOrNull() ?: R.drawable.card_base
                 Image(
                     modifier = Modifier
-                        .animateItemPlacement()
+                        .animateItem(fadeInSpec = null, fadeOutSpec = null)
                         .clickable { onClick(it) }
                         .aspectRatio(0.7f),
                     painter = painterResource(id = image),
@@ -681,9 +694,10 @@ fun UserCardsSummaryItem(
         Icon(
             modifier = Modifier.size(24.dp),
             painter = painterResource(id = icon),
-            contentDescription = null
+            contentDescription = null,
+            tint = Color.Black
         )
-        Text(text = text)
+        Text(text = text, color = Color.Black)
     }
 }
 
@@ -694,11 +708,19 @@ private fun ChooseCardTypeScreen(
     onClick: (String) -> Unit
 ) {
 
-    Box {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
-                .background(Color.White)
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -764,11 +786,18 @@ private fun DefineJokerActionScreen(
     modifier: Modifier,
     onClick: (JokerActions) -> Unit
 ) {
-    Box {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White,
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        )
+    ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))
-                .background(Color.White)
                 .padding(horizontal = 16.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -790,7 +819,7 @@ private fun DefineJokerActionScreen(
                 },
                 text = "Change",
                 imageResource = R.drawable.ic_baseline_swap,
-                buttonColor = Color.Green
+                buttonColor = green
             )
         }
     }
@@ -804,31 +833,30 @@ private fun JokerActionButton(
     imageResource: Int,
     buttonColor: Color
 ) {
-    Box {
-        Column(
-            modifier = modifier
-                .background(Color.White),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                modifier = Modifier
-                    .clip(RectangleShape)
-                    .size(56.dp)
-                    .aspectRatio(1f)
-                    .clickable { onClick() }
-                    .border(color = Color.LightGray, width = 1.dp)
-                    .padding(8.dp),
-                painter = painterResource(id = imageResource),
-                contentDescription = "spade",
-                colorFilter = ColorFilter.tint(buttonColor)
-            )
-            Heading(
-                modifier = Modifier,
-                text = text,
-                textColor = Color.Black
-            )
-        }
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(
+            modifier = Modifier
+                .clip(RectangleShape)
+                .size(56.dp)
+                .aspectRatio(1f)
+                .clickable { onClick() }
+                .border(color = Color.LightGray, width = 1.dp)
+                .padding(8.dp),
+            painter = painterResource(id = imageResource),
+            contentDescription = "spade",
+            colorFilter = ColorFilter.tint(buttonColor)
+        )
+        Heading(
+            modifier = Modifier,
+            text = text,
+            textColor = Color.Black
+        )
     }
+
 }
 
 @Composable
@@ -853,13 +881,15 @@ private fun AllowOthersPlayScreen(
             modifier = Modifier.padding(bottom = 16.dp),
             text = "Allow others play",
             style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = Color.Black
         )
 
         Icon(
             modifier = Modifier.size(36.dp),
             imageVector = Icons.Default.Check,
-            contentDescription = null
+            contentDescription = null,
+            tint = Color.Black
         )
 
     }
@@ -882,29 +912,44 @@ fun Heading(
 
 @Preview
 @Composable
-fun PlayCardsDefaultScreenPrev() {
-    val backgroundColor = Color(0xffff8800)
-    PlayCardsScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
-        testing = true,
-        gameDuration = "00:01",
-        playCardsState = DefaultPlayCardsState.copy(
-            isLoading = false,
-            error = null
+fun PlayCardsDefaultScreenLightPrev() {
+    GamesHubAppTheme() {
+        PlayCardsScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            testing = true,
+            gameDuration = "00:01",
+            playCardsState = DefaultPlayCardsState.copy(
+                isLoading = false,
+                error = null
+            )
         )
-    )
+    }
+}
+
+@Preview
+@Composable
+fun PlayCardsDefaultScreenDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        PlayCardsScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            testing = true,
+            gameDuration = "00:01",
+            playCardsState = DefaultPlayCardsState.copy(
+                isLoading = false,
+                error = null
+            )
+        )
+    }
 }
 
 @Preview
 @Composable
 fun PlayCardsLoadingScreenPrev() {
-    val backgroundColor = Color(0xffff8800)
     PlayCardsScreen(
         modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
+            .fillMaxSize(),
         testing = true,
         gameDuration = "00:01",
         playCardsState = PlayCardsState()
@@ -914,11 +959,9 @@ fun PlayCardsLoadingScreenPrev() {
 @Preview
 @Composable
 fun PlayCardsErrorScreenPrev() {
-    val backgroundColor = Color(0xffff8800)
     PlayCardsScreen(
         modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
+            .fillMaxSize(),
         testing = true,
         gameDuration = "00:01",
         playCardsState = PlayCardsState(error = "Unexpected error occurred", isLoading = false)
@@ -927,34 +970,68 @@ fun PlayCardsErrorScreenPrev() {
 
 @Preview
 @Composable
-fun PlayCardsChangeJokerActionScreenPrev() {
-    val backgroundColor = Color(0xffff8800)
-    PlayCardsScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
-        testing = true,
-        gameDuration = "00:01",
-        playCardsState = DefaultPlayCardsState.copy(
-            showDefineJokerActions = true,
+fun PlayCardsChangeJokerActionScreenDarkPrev() {
+
+    GamesHubAppTheme(darkTheme = true) {
+        PlayCardsScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            testing = true,
+            gameDuration = "00:01",
+            playCardsState = DefaultPlayCardsState.copy(
+                showDefineJokerActions = true,
+            )
         )
-    )
+    }
 }
 
 @Preview
 @Composable
-fun PlayCardsChangeCardTypeScreenPrev() {
-    val backgroundColor = Color(0xffff8800)
-    PlayCardsScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
-        testing = true,
-        gameDuration = "00:01",
-        playCardsState = DefaultPlayCardsState.copy(
-            showChooseCardTypeScreen = true
+fun PlayCardsChangeJokerActionScreenLightPrev() {
+
+    GamesHubAppTheme {
+        PlayCardsScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            testing = true,
+            gameDuration = "00:01",
+            playCardsState = DefaultPlayCardsState.copy(
+                showDefineJokerActions = true,
+            )
         )
-    )
+    }
+}
+
+@Preview
+@Composable
+fun PlayCardsChangeCardTypeScreenLightPrev() {
+    GamesHubAppTheme {
+        PlayCardsScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            testing = true,
+            gameDuration = "00:01",
+            playCardsState = DefaultPlayCardsState.copy(
+                showChooseCardTypeScreen = true
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PlayCardsChangeCardTypeScreenDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        PlayCardsScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            testing = true,
+            gameDuration = "00:01",
+            playCardsState = DefaultPlayCardsState.copy(
+                showChooseCardTypeScreen = true
+            )
+        )
+    }
 }
 
 
@@ -980,6 +1057,7 @@ private val DefaultPlayCardsState = PlayCardsState(
     showCurrentCardType = Pair(true, Constants.CardTypes.DIAMOND),
     showDefineJokerActions = false,
     showChooseCardTypeScreen = false,
+    allowOthersPlay = true,
     playedCards = listOf(
         UserCard(
             gameCardId = "1",

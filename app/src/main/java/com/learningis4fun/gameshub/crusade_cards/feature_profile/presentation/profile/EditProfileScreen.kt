@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
@@ -25,6 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,9 +37,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,6 +51,7 @@ import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.EditProfileRoute
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.Heading
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.ProfileEvents
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
@@ -101,17 +106,20 @@ private fun EditProfileScreen(
     updateUserAvatar: (Int) -> Unit = {},
     onSaveProfileClick: () -> Unit = {}
 ) {
-    val backgroundColor = Color(0xffff8800)
 
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
+                modifier = Modifier.shadow(
+                    elevation = 5.dp,
+                    spotColor = Color.LightGray
+                ),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = backgroundColor,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White,
-                    titleContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     Text(text = stringResource(id = R.string.screen_profile_choose_avatar))
@@ -129,7 +137,7 @@ private fun EditProfileScreen(
                         modifier = Modifier,
                         enabled = profileState.isEnableSaveButton,
                         colors = ButtonDefaults.textButtonColors(
-                            contentColor = Color.White,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
                             disabledContentColor = Color.LightGray
                         ),
                         onClick = { onSaveProfileClick() }
@@ -142,6 +150,7 @@ private fun EditProfileScreen(
     ) { paddingValues ->
         Box(
             modifier = Modifier
+                .background(MaterialTheme.colorScheme.surface)
                 .fillMaxSize()
                 .padding(paddingValues),
             contentAlignment = Alignment.CenterEnd
@@ -184,6 +193,15 @@ private fun EditProfileScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                        focusedBorderColor = MaterialTheme.colorScheme.primary
+                    ),
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        autoCorrectEnabled = false
+                    ),
                     value = profileState.user.profileName,
                     onValueChange = {
                         updateUsername(it.trim())
@@ -204,7 +222,6 @@ private fun ChooseProfileAvatarSection(
     selectedAvatar: Int?,
     updateUserAvatar: (Int) -> Unit
 ) {
-    val backgroundColor = Color(0xffff8800)
 
     LazyVerticalGrid(
         modifier = modifier
@@ -236,7 +253,7 @@ private fun ChooseProfileAvatarSection(
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
-                            .background(Color.White)
+                            .background(MaterialTheme.colorScheme.surface)
                             .align(Alignment.BottomEnd),
                         contentAlignment = Alignment.Center
                     ) {
@@ -245,7 +262,7 @@ private fun ChooseProfileAvatarSection(
                                 .fillMaxSize(),
                             imageVector = Icons.Default.CheckCircle,
                             contentDescription = "checkmark",
-                            tint = backgroundColor
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -256,13 +273,33 @@ private fun ChooseProfileAvatarSection(
 
 @Preview
 @Composable
-private fun ChooseProfileAvatarScreenPrev() {
-    EditProfileScreen(
-        profileState = ProfileState(
-            avatars = defaultAvatars,
-            user = Player(
-                imageUrl = R.drawable.avatar_man1.toString()
+private fun ChooseProfileAvatarScreenLightPrev() {
+    GamesHubAppTheme {
+        EditProfileScreen(
+            profileState = ProfileState(
+                avatars = defaultAvatars,
+                user = Player(
+                    imageUrl = R.drawable.avatar_man1.toString()
+                )
             )
         )
-    )
+    }
+}
+
+@Preview
+@Composable
+private fun ChooseProfileAvatarScreenDarkPrev() {
+    GamesHubAppTheme(
+        darkTheme = true
+    ) {
+        EditProfileScreen(
+            profileState = ProfileState(
+                avatars = defaultAvatars,
+                user = Player(
+                    imageUrl = R.drawable.avatar_man1.toString()
+                ),
+                isEnableSaveButton = true
+            )
+        )
+    }
 }

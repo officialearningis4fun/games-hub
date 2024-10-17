@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -49,6 +50,7 @@ import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 
@@ -97,10 +99,10 @@ fun PlayedGameWinner(
         topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    navigationIconContentColor = Color.Black,
-                    actionIconContentColor = Color.Black,
-                    titleContentColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     Text(text = stringResource(id = R.string.screen_winner_title))
@@ -112,12 +114,15 @@ fun PlayedGameWinner(
                             contentDescription = null
                         )
                     }
-                }
+                },
             )
         }
     ) { paddingValues ->
         Column(
-            modifier = modifier.padding(paddingValues),
+            modifier = modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(paddingValues),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -213,7 +218,8 @@ private fun WinnerSection(
             modifier = Modifier.padding(8.dp),
             onClick = onStartGame,
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xffff8800)
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onSurface
             )
         ) {
             Icon(
@@ -228,7 +234,20 @@ private fun WinnerSection(
 
 @Preview
 @Composable
-private fun PlayedGameWinnerLoadingPrev() {
+private fun PlayedGameWinnerLoadingLightPrev() {
+    MaterialTheme {
+        PlayedGameWinner(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            playedGameWinnerState = PlayedGameWinnerState()
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PlayedGameWinnerLoadingDarkPrev() {
     MaterialTheme {
         PlayedGameWinner(
             modifier = Modifier
@@ -242,7 +261,37 @@ private fun PlayedGameWinnerLoadingPrev() {
 @Preview
 @Composable
 private fun PlayedGameWinnerPrev() {
-    MaterialTheme {
+    GamesHubAppTheme(darkTheme = false) {
+        PlayedGameWinner(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
+            playedGameWinnerState = PlayedGameWinnerState(
+                loading = false,
+                gameDuration = (80000000000L).toTimeFormatted(),
+                otherPlayers = listOf(
+                    Player(
+                        "id",
+                        profileName = "Hlompho",
+                        imageUrl = R.drawable.avatar_boy1.toString()
+                    ),
+                    Player(
+                        "id2",
+                        profileName = "Android",
+                        imageUrl = R.drawable.ai_platform.toString()
+                    ),
+                ),
+                winnerNames = "Hlompho",
+                winnerImageUrl = R.drawable.avatar_boy1.toString()
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PlayedGameWinnerDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
         PlayedGameWinner(
             modifier = Modifier
                 .fillMaxSize()

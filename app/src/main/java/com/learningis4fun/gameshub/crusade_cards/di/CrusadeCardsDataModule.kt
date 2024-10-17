@@ -3,16 +3,20 @@ package com.learningis4fun.gameshub.crusade_cards.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.CrusadeCardsPreferencesManagerImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.remote.GamesHubAPI
-import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.*
+import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.CardRepositoryImpl
+import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.DefaultCardRepositoryImpl
+import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.GameCardRepositoryImpl
+import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.GameRepositoryImpl
+import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.UserRepositoryImpl
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.*
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetAllCards
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetAllCardsImpl
@@ -21,7 +25,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
@@ -111,33 +119,6 @@ object CrusadeCardsDataModule {
         .addCallback(cardsCallback)
         .build()
 
-    @DefaultGlideInstance
-    @Singleton
-    @Provides
-    fun providesDefaultGlideInstance(
-        @ApplicationContext context: Context
-    ) = Glide.with(context).setDefaultRequestOptions(
-        RequestOptions().placeholder(R.color.white)
-    )
-
-    @CardGlideInstance
-    @Singleton
-    @Provides
-    fun providesCardGlideInstance(
-        @ApplicationContext context: Context
-    ) = Glide.with(context).setDefaultRequestOptions(
-        RequestOptions().placeholder(R.drawable.card_base)
-    )
-
-    @ProfileGlideInstance
-    @Singleton
-    @Provides
-    fun providesProfileGlideInstance(
-        @ApplicationContext context: Context
-    ) = Glide.with(context).setDefaultRequestOptions(
-        RequestOptions().placeholder(R.drawable.game_test_profile)
-    )
-
     @MainDispatcher
     @Provides
     fun providesMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
@@ -169,18 +150,4 @@ object CrusadeCardsDataModule {
     @Retention(AnnotationRetention.RUNTIME)
     @Qualifier
     annotation class DefaultDispatcher
-
-
-    // different glide instances
-    @Retention(AnnotationRetention.RUNTIME)
-    @Qualifier
-    annotation class CardGlideInstance
-
-    @Retention(AnnotationRetention.RUNTIME)
-    @Qualifier
-    annotation class DefaultGlideInstance
-
-    @Retention(AnnotationRetention.RUNTIME)
-    @Qualifier
-    annotation class ProfileGlideInstance
 }

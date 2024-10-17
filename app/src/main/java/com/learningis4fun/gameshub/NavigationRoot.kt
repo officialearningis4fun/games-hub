@@ -1,6 +1,9 @@
 package com.learningis4fun.gameshub
 
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.EditProfileRoute
@@ -20,7 +23,11 @@ fun NavigationRoot() {
     val navController = rememberNavController()
 
 
-    NavHost(navController = navController, startDestination = StartScreenRoute) {
+    NavHost(
+        modifier = Modifier.background(Color.White),
+        navController = navController,
+        startDestination = StartScreenRoute
+    ) {
 
         cardsStartScreenComposable(
             onStartClick = {

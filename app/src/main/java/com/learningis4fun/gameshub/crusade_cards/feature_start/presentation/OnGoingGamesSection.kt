@@ -23,6 +23,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,6 +43,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
 
 @Composable
@@ -75,6 +77,7 @@ private fun OnGoingGameItem(
     Column(
         modifier
             .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -140,7 +143,7 @@ private fun OnGoingGameItem(
         Text(
             modifier = Modifier.padding(vertical = 8.dp),
             text = gameWithPlayers.game.gameDuration.toTimeFormatted(),
-            color = Color.Black
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         LazyRow(
@@ -166,7 +169,8 @@ private fun OnGoingGameItem(
                     onResumeClick(ongoingGame.gameWithPlayers.game.id)
                 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xffff8800)
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
                 Text(text = "RESUME")
@@ -179,6 +183,7 @@ private fun OnGoingGameItem(
                     pressedElevation = 4.dp
                 ),
                 containerColor = Color.White,
+                contentColor = Color.Black,
                 onClick = { onDeleteGame(ongoingGame.gameWithPlayers.game.id) }
             ) {
                 Icon(
@@ -231,39 +236,57 @@ private fun imageOfCard(cards: List<Card>, index: Int): Int {
 
 @Preview
 @Composable
-private fun OnGoingGamesSectionPrev() {
-    OngoingGamesSection(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White),
-        ongoingGamesState = OngoingGamesState(
-            listOf(
-                OnGoingGame(
-                    threeCards = Constants
-                        .Cards
-                        .cards
-                        .take(3).mapIndexed { index, card ->
-                            card.copy(
-                                id = "$index"
-                            )
-                        },
-                    gameWithPlayers = GameWithPlayers(
-                        game = Game(),
-                        players = listOf(
-                            Player(
-                                uniqueId = "id1",
-                                profileName = "Android",
-                                imageUrl = R.drawable.avatar_boy2.toString()
-                            ),
-                            Player(
-                                uniqueId = "id2",
-                                profileName = "Hlompho",
-                                imageUrl = R.drawable.ai_platform.toString()
-                            )
-                        )
+private fun OnGoingGamesSectionLightPrev() {
+    GamesHubAppTheme(darkTheme = false) {
+        OngoingGamesSection(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White),
+            ongoingGamesState = ongoingGamesState
+        )
+    }
+}
+
+
+@Preview
+@Composable
+private fun OnGoingGamesSectionDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        OngoingGamesSection(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White),
+            ongoingGamesState = ongoingGamesState
+        )
+    }
+}
+
+val ongoingGamesState = OngoingGamesState(
+    listOf(
+        OnGoingGame(
+            threeCards = Constants
+                .Cards
+                .cards
+                .take(3).mapIndexed { index, card ->
+                    card.copy(
+                        id = "$index"
+                    )
+                },
+            gameWithPlayers = GameWithPlayers(
+                game = Game(),
+                players = listOf(
+                    Player(
+                        uniqueId = "id1",
+                        profileName = "Android",
+                        imageUrl = R.drawable.avatar_boy2.toString()
+                    ),
+                    Player(
+                        uniqueId = "id2",
+                        profileName = "Hlompho",
+                        imageUrl = R.drawable.ai_platform.toString()
                     )
                 )
             )
         )
     )
-}
+)

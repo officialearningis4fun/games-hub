@@ -660,45 +660,46 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         }
     }
 
-    fun onAllowOthersPlayBtnClick() = viewModelScope.launch(defaultCoroutineDispatcher) {
+    private fun onAllowOthersPlayBtnClick() = viewModelScope.launch(defaultCoroutineDispatcher) {
         loggedUserCardsController.userRequestToAllowOthersPlay(user.first().uniqueId)
     }
 
-    fun onUserCardClick(userCard: UserCard) = viewModelScope.launch(defaultCoroutineDispatcher) {
+    private fun onUserCardClick(userCard: UserCard) =
+        viewModelScope.launch(defaultCoroutineDispatcher) {
 
-        // hit back or play or error
-        when (val currentCardState = preference.recentCardState.first()) {
-            is CardStates.Play -> {
+            // hit back or play or error
+            when (val currentCardState = preference.recentCardState.first()) {
+                is CardStates.Play -> {
 
-                if (currentCardState.playerId == user.first().uniqueId) {
+                    if (currentCardState.playerId == user.first().uniqueId) {
 
-                    loggedUserCardsController.userRequestToPlay(
-                        userCard = userCard,
-                        canPick = currentCardState.canPick
-                    )
+                        loggedUserCardsController.userRequestToPlay(
+                            userCard = userCard,
+                            canPick = currentCardState.canPick
+                        )
+                    }
+
                 }
 
-            }
+                is CardStates.Hit -> {
 
-            is CardStates.Hit -> {
+                    if (currentCardState.playerId == user.first().uniqueId) {
 
-                if (currentCardState.playerId == user.first().uniqueId) {
-
-                    loggedUserCardsController.userRequestToHitBack(
-                        playerId = currentCardState.playerId,
-                        cardsToPick = currentCardState.cardsToPick,
-                        userCard = userCard
-                    )
+                        loggedUserCardsController.userRequestToHitBack(
+                            playerId = currentCardState.playerId,
+                            cardsToPick = currentCardState.cardsToPick,
+                            userCard = userCard
+                        )
+                    }
                 }
-            }
 
-            else -> {
-                playCardsStateFlow.update {
-                    it.copy(warning = "Hold on, it might not be your turn")
+                else -> {
+                    playCardsStateFlow.update {
+                        it.copy(warning = "Hold on, it might not be your turn")
+                    }
                 }
             }
         }
-    }
 
     private fun onJokerActionClick(action: JokerActions) =
         viewModelScope.launch(defaultCoroutineDispatcher) {
@@ -743,7 +744,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         }
     }
 
-    fun onDustbinClick() = viewModelScope.launch(defaultCoroutineDispatcher) {
+    private fun onDustbinClick() = viewModelScope.launch(defaultCoroutineDispatcher) {
 
         // pick cards
         val currentCardState = preference.recentCardState.first()
@@ -770,22 +771,34 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     }
 
     @Throws
-    private suspend fun resumeGame() {
+    private suspend fun resumeGame(): String {
         val gameId = gameRepository.getCurrentGameId().first()
         if (gameId.isNotEmpty()) {
             resumeGameUseCase.resumeGame(gameId).getDataOrThrowException()
         }
+        return gameId
     }
 
     private suspend fun createOrResumeGame() {
         try {
 
             val gameId = gameRepository.getCurrentGameId().first()
-            if (gameId.isEmpty()) {
+            val updatedGameId: String = if (gameId.isEmpty()) {
                 createGameBtwUserAndDeviceAndReturnGameId().getDataOrThrowException()
             } else {
                 resumeGame()
             }
+            //resume duration
+            val game = gameRepository.getGame(updatedGameId).first()
+            _gameDuration.update { duration ->
+                game?.gameDuration?.let {
+                    duration.copy(
+                        first = duration.first,
+                        second = it
+                    )
+                } ?: duration
+            }
+
         } catch (e: Exception) {
             e.printStackTrace()
         }

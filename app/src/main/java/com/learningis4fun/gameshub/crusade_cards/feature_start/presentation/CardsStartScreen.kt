@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -14,6 +15,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -21,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,8 +37,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.StartScreenRoute
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.feature_start.CardsStartViewModel
-import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -54,7 +57,8 @@ fun NavGraphBuilder.cardsStartScreenComposable(
         val cardsStartState by cardsStartViewModel.cardsStartState.collectAsStateWithLifecycle()
 
         CardsStartScreen(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize(),
             cardsStartState = cardsStartState,
             onStartClick = onStartClick,
             onResumeClick = onResumeClick,
@@ -80,18 +84,19 @@ fun CardsStartScreen(
     onDeleteGame: (String) -> Unit = {}
 ) {
 
-    val cardHeight = 96.dp
-    val backgroundColor = Color(0xffff8800)
-
     Scaffold(
         modifier = modifier,
         topBar = {
             CenterAlignedTopAppBar(
+                modifier = Modifier.shadow(
+                    elevation = 5.dp,
+                    spotColor = Color.LightGray
+                ),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = backgroundColor,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White,
-                    titleContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     Text(text = stringResource(id = R.string.app_name))
@@ -109,12 +114,15 @@ fun CardsStartScreen(
     ) { paddingValues ->
         if (cardsStartState.isLoading) {
             CardsStartLoadingScreen(
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(paddingValues)
             )
         } else {
             CardsStartDataScreen(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues),
                 completedGamesState = cardsStartState.completedGamesState,
                 ongoingGamesState = cardsStartState.ongoingGamesState,
@@ -140,7 +148,9 @@ fun CardsStartLoadingScreen(
             .padding(top = 16.dp),
         contentAlignment = Alignment.TopCenter
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(
+            modifier = Modifier.size(24.dp)
+        )
     }
 
 }
@@ -174,6 +184,7 @@ fun CardsStartDataScreen(
 
     Box(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.background)
             .fillMaxSize()
     ) {
         Column(modifier) {
@@ -189,7 +200,7 @@ fun CardsStartDataScreen(
                 Heading(
                     text = "Ongoing games",
                     modifier = Modifier.padding(16.dp),
-                    textColor = Color.Black
+                    textColor = MaterialTheme.colorScheme.onBackground
                 )
 
                 OngoingGamesSection(
@@ -213,172 +224,129 @@ fun CardsStartDataScreen(
 
 @Preview
 @Composable
-private fun CardsStartScreenLoadingPrev() {
-    CardsStartScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        cardsStartState = CardsStartState()
-    )
+private fun CardsStartScreenLoadingLightPrev() {
+    GamesHubAppTheme {
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = CardsStartState()
+        )
+    }
 }
 
 @Preview
 @Composable
-private fun CardsStartScreenWithEmptyCompletedGamesPrev() {
-    CardsStartScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        cardsStartState = CardsStartState(
-            isLoading = false,
-            completedGamesState = CompletedGamesState(),
-            ongoingGamesState = OngoingGamesState(
-                games = listOf(
-                    OnGoingGame(
+private fun CardsStartScreenLoadingDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = CardsStartState()
+        )
+    }
+}
 
-                        threeCards = Constants
-                            .Cards
-                            .cards
-                            .take(3).mapIndexed { index, card ->
-                                card.copy(
-                                    id = "$index"
-                                )
-                            },
-                        gameWithPlayers = GameWithPlayers(
-                            game = Game(),
-                            players = listOf(
-                                Player(
-                                    uniqueId = "id1",
-                                    profileName = "Android"
-                                ),
-                                Player(
-                                    uniqueId = "id2",
-                                    profileName = "Hlompho"
-                                )
-                            )
+@Preview
+@Composable
+private fun CardsStartScreenWithEmptyCompletedGamesLightPrev() {
+    GamesHubAppTheme {
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = cardsStartState
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CardsStartScreenWithEmptyCompletedGamesDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = cardsStartState
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CardsStartScreenLightPrev() {
+    GamesHubAppTheme {
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = cardsStartState.copy(isLoading = false)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CardsStartScreenDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = cardsStartState.copy(isLoading = false)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CardsStartScreenWithOngoingGamesLightPrev() {
+    GamesHubAppTheme {
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = cardsStartState.copy(isLoading = false, showOngoingGame = true)
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CardsStartScreenWithOngoingGamesDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = cardsStartState.copy(isLoading = false, showOngoingGame = true)
+        )
+    }
+}
+
+val cardsStartState = CardsStartState(
+    isLoading = false,
+    completedGamesState = CompletedGamesState(),
+    ongoingGamesState = OngoingGamesState(
+        games = listOf(
+            OnGoingGame(
+
+                threeCards = Constants
+                    .Cards
+                    .cards
+                    .take(3).mapIndexed { index, card ->
+                        card.copy(
+                            id = "$index"
+                        )
+                    },
+                gameWithPlayers = GameWithPlayers(
+                    game = Game(),
+                    players = listOf(
+                        Player(
+                            uniqueId = "id1",
+                            profileName = "Android"
+                        ),
+                        Player(
+                            uniqueId = "id2",
+                            profileName = "Hlompho"
                         )
                     )
                 )
             )
         )
     )
-}
-
-@Preview
-@Composable
-private fun CardsStartScreenPrev() {
-    CardsStartScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        cardsStartState = CardsStartState(
-            isLoading = false,
-            completedGamesState = CompletedGamesState(
-                completedGames = listOf(
-                    CompletedGame(
-                        game = Game(id = "", name = "Game 01", winnerId = "id"),
-                        players = listOf(
-                            Player("id", profileName = "Hlompho"),
-                            Player("id2", profileName = "Android"),
-                        )
-                    ),
-                    CompletedGame(
-                        game = Game(id = "", name = "Game 01", winnerId = "id"),
-                        players = listOf(
-                            Player("id", profileName = "Hlompho"),
-                            Player("id2", profileName = "Android"),
-                        )
-                    )
-                )
-            ),
-            ongoingGamesState = OngoingGamesState(
-                games = listOf(
-                    OnGoingGame(
-
-                        threeCards = Constants
-                            .Cards
-                            .cards
-                            .take(3).mapIndexed { index, card ->
-                                card.copy(
-                                    id = "$index"
-                                )
-                            },
-                        gameWithPlayers = GameWithPlayers(
-                            game = Game(),
-                            players = listOf(
-                                Player(
-                                    uniqueId = "id1",
-                                    profileName = "Android"
-                                ),
-                                Player(
-                                    uniqueId = "id2",
-                                    profileName = "Hlompho"
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
-}
-
-@Preview
-@Composable
-private fun CardsStartScreenWithOngoingGamesPrev() {
-    CardsStartScreen(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White),
-        cardsStartState = CardsStartState(
-            isLoading = false,
-            showOngoingGame = true,
-            completedGamesState = CompletedGamesState(
-                completedGames = listOf(
-                    CompletedGame(
-                        game = Game(id = "", name = "Game 01", winnerId = "id"),
-                        players = listOf(
-                            Player("id", profileName = "Hlompho"),
-                            Player("id2", profileName = "Android"),
-                        )
-                    ),
-                    CompletedGame(
-                        game = Game(id = "", name = "Game 01", winnerId = "id"),
-                        players = listOf(
-                            Player("id", profileName = "Hlompho"),
-                            Player("id2", profileName = "Android"),
-                        )
-                    )
-                )
-            ),
-            ongoingGamesState = OngoingGamesState(
-                games = listOf(
-                    OnGoingGame(
-
-                        threeCards = Constants
-                            .Cards
-                            .cards
-                            .take(3).mapIndexed { index, card ->
-                                card.copy(
-                                    id = "$index"
-                                )
-                            },
-                        gameWithPlayers = GameWithPlayers(
-                            game = Game(),
-                            players = listOf(
-                                Player(
-                                    uniqueId = "id1",
-                                    profileName = "Android"
-                                ),
-                                Player(
-                                    uniqueId = "id2",
-                                    profileName = "Hlompho"
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
-}
+)

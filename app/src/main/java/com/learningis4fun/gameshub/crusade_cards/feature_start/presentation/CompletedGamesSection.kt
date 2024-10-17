@@ -37,6 +37,7 @@ import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 
 @Composable
@@ -48,13 +49,13 @@ fun CompletedGamesSection(
 
     val completedGames = completedGamesState.completedGames
 
-    Column(modifier) {
-        if(completedGamesState.isLoading){
+    Column(
+        modifier.background(MaterialTheme.colorScheme.background)) {
+        if (completedGamesState.isLoading) {
             CompletedGamesLoadingScreen(
                 modifier = Modifier.fillMaxWidth()
             )
-        }
-        else if (completedGames.isEmpty()) {
+        } else if (completedGames.isEmpty()) {
             EmptyListScreen()
         } else {
             CompletedGamesDataSection(
@@ -81,8 +82,8 @@ fun CompletedGamesDataSection(
 
         Heading(
             text = "Completed games",
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp),
-            textColor = Color.Black
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp),
+            textColor = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier)
 
@@ -114,7 +115,7 @@ private fun EmptyListScreen(
             text = "Completed games",
             modifier = Modifier
                 .padding(start = 16.dp, top = 8.dp),
-            textColor = Color.Black
+            textColor = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier)
 
@@ -129,12 +130,14 @@ private fun EmptyListScreen(
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 2.dp
                     ),
-                    shape = RoundedCornerShape(6.dp)
+                    shape = RoundedCornerShape(6.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
                 ) {
                     Column(
                         modifier = modifier
                             .fillMaxWidth()
-                            .background(Color.White)
                             .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
 
@@ -209,7 +212,7 @@ fun CompletedGamesLoadingScreen(
             text = "Completed games",
             modifier = Modifier
                 .padding(start = 16.dp, top = 8.dp),
-            textColor = Color.Black
+            textColor = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier)
 
@@ -222,14 +225,16 @@ fun CompletedGamesLoadingScreen(
             items(5) {
                 Card(
                     elevation = CardDefaults.cardElevation(
-                        defaultElevation = 2.dp
+                        defaultElevation = 5.dp
                     ),
-                    shape = RoundedCornerShape(6.dp)
+                    shape = RoundedCornerShape(6.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
                 ) {
                     Column(
                         modifier = modifier
                             .fillMaxWidth()
-                            .background(Color.White)
                             .padding(horizontal = 16.dp, vertical = 16.dp)
                     ) {
 
@@ -313,12 +318,15 @@ private fun CompletedGameItem(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp
         ),
-        shape = RoundedCornerShape(6.dp)
+        shape = RoundedCornerShape(6.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
     ) {
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .background(MaterialTheme.colorScheme.secondaryContainer)
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
 
@@ -331,7 +339,11 @@ private fun CompletedGameItem(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .border(width = 1.dp, color = Color.LightGray, CircleShape),
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.surface,
+                            CircleShape
+                        ),
                     contentScale = ContentScale.Crop,
                     painter = painterResource(id = winnerImage),
                     contentDescription = null
@@ -346,7 +358,8 @@ private fun CompletedGameItem(
                         text = "",
                         style = MaterialTheme.typography.labelSmall,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onBackground
                     )
 
                     Row {
@@ -355,7 +368,11 @@ private fun CompletedGameItem(
                                 modifier = Modifier
                                     .size(28.dp)
                                     .clip(CircleShape)
-                                    .border(width = 1.dp, color = Color.LightGray, CircleShape),
+                                    .border(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.surface,
+                                        CircleShape
+                                    ),
                                 contentScale = ContentScale.Crop,
                                 painter = painterResource(id = playerImage),
                                 contentDescription = null
@@ -365,7 +382,7 @@ private fun CompletedGameItem(
 
                     Heading(
                         text = completedGame.duration.toTimeFormatted(),
-                        textColor = Color.Black
+                        textColor = MaterialTheme.colorScheme.onBackground
                     )
                 }
             }
@@ -373,7 +390,7 @@ private fun CompletedGameItem(
             Heading(
                 modifier = Modifier.padding(top = 8.dp),
                 text = completedGame.game.name,
-                textColor = Color.Black
+                textColor = MaterialTheme.colorScheme.onBackground
             )
 
         }
@@ -399,55 +416,120 @@ fun Heading(
 @Preview
 @Composable
 private fun CompletedGameItemPrev() {
-    CompletedGameItem(
-        modifier = Modifier,
-        completedGame = CompletedGame(
-            game = Game(id = "", name = "Game 01", winnerId = "id"),
-            players = listOf(
-                Player("id", profileName = "Hlompho"),
-                Player("id2", profileName = "Android"),
+    GamesHubAppTheme {
+        CompletedGameItem(
+            modifier = Modifier,
+            completedGame = CompletedGame(
+                game = Game(id = "", name = "Game 01", winnerId = "id"),
+                players = listOf(
+                    Player("id", profileName = "Hlompho"),
+                    Player("id2", profileName = "Android"),
+                )
             )
         )
-    )
+    }
+}
+
+@Preview
+@Composable
+private fun CompletedGameItemDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        CompletedGameItem(
+            modifier = Modifier,
+            completedGame = CompletedGame(
+                game = Game(id = "", name = "Game 01", winnerId = "id"),
+                players = listOf(
+                    Player("id", profileName = "Hlompho"),
+                    Player("id2", profileName = "Android"),
+                )
+            )
+        )
+    }
 }
 
 @Preview
 @Composable
 private fun CompletedGamesScreenPrev() {
-    CompletedGamesSection(
-        modifier = Modifier
-            .background(Color.White)
-            .fillMaxWidth(),
-        completedGamesState = CompletedGamesState(
-            completedGames = listOf(
-                CompletedGame(
-                    game = Game(id = "", name = "Game 01", winnerId = "id"),
-                    players = listOf(
-                        Player("id", profileName = "Hlompho"),
-                        Player("id2", profileName = "Android"),
-                    )
-                ),
-                CompletedGame(
-                    game = Game(id = "", name = "Game 01", winnerId = "id"),
-                    players = listOf(
-                        Player("id", profileName = "Hlompho"),
-                        Player("id2", profileName = "Android"),
+    GamesHubAppTheme {
+        CompletedGamesSection(
+            modifier = Modifier
+                .fillMaxWidth(),
+            completedGamesState = CompletedGamesState(
+                completedGames = listOf(
+                    CompletedGame(
+                        game = Game(id = "", name = "Game 01", winnerId = "id"),
+                        players = listOf(
+                            Player("id", profileName = "Hlompho"),
+                            Player("id2", profileName = "Android"),
+                        )
+                    ),
+                    CompletedGame(
+                        game = Game(id = "", name = "Game 01", winnerId = "id"),
+                        players = listOf(
+                            Player("id", profileName = "Hlompho"),
+                            Player("id2", profileName = "Android"),
+                        )
                     )
                 )
             )
         )
-    )
+    }
+}
+
+@Preview
+@Composable
+private fun CompletedGamesScreenDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        CompletedGamesSection(
+            modifier = Modifier
+                .fillMaxWidth(),
+            completedGamesState = CompletedGamesState(
+                completedGames = listOf(
+                    CompletedGame(
+                        game = Game(id = "", name = "Game 01", winnerId = "id"),
+                        players = listOf(
+                            Player("id", profileName = "Hlompho"),
+                            Player("id2", profileName = "Android"),
+                        )
+                    ),
+                    CompletedGame(
+                        game = Game(id = "", name = "Game 01", winnerId = "id"),
+                        players = listOf(
+                            Player("id", profileName = "Hlompho"),
+                            Player("id2", profileName = "Android"),
+                        )
+                    )
+                )
+            )
+        )
+    }
 }
 
 @Preview
 @Composable
 private fun CompletedGamesEmptyScreenPrev() {
-    CompletedGamesSection(
-        modifier = Modifier
-            .background(Color.White)
-            .fillMaxWidth(),
-        completedGamesState = CompletedGamesState(
-            completedGames = emptyList()
+    GamesHubAppTheme(darkTheme = false) {
+        CompletedGamesSection(
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxWidth(),
+            completedGamesState = CompletedGamesState(
+                completedGames = emptyList()
+            )
         )
-    )
+    }
+}
+
+@Preview
+@Composable
+private fun CompletedGamesEmptyScreenDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        CompletedGamesSection(
+            modifier = Modifier
+                .fillMaxWidth(),
+            completedGamesState = CompletedGamesState(
+                completedGames = emptyList()
+            )
+        )
+    }
 }

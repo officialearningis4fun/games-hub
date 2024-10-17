@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 
 @Composable
 fun CreateGameSection(
@@ -39,7 +40,9 @@ fun CreateGameSection(
 ) {
 
     Column(
-        modifier.padding(16.dp),
+        modifier
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -118,7 +121,7 @@ fun CreateGameSection(
                     }
                     .wrapContentHeight(),
                 text = stringResource(id = R.string.challenge_your_phone_to_a_crusade),
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Normal
                 ),
@@ -147,11 +150,24 @@ fun CreateGameSection(
 
 @Preview
 @Composable
-private fun CreateGameSectionPrev() {
-    CreateGameSection(
-        Modifier
-            .fillMaxWidth()
-            .background(Color.White),
-        cardHeight = 96.dp
-    )
+private fun CreateGameSectionLightPrev() {
+    GamesHubAppTheme {
+        CreateGameSection(
+            Modifier
+                .fillMaxWidth(),
+            cardHeight = 96.dp
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun CreateGameSectionDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        CreateGameSection(
+            Modifier
+                .fillMaxWidth(),
+            cardHeight = 96.dp
+        )
+    }
 }

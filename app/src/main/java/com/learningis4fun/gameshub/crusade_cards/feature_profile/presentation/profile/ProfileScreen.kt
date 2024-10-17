@@ -1,6 +1,8 @@
 package com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.profile
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +30,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,6 +46,7 @@ import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.ProfileScreenRoute
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -80,7 +85,6 @@ fun ProfileScreen(
     onEditProfile: () -> Unit = {},
     userProfileInfo: Player
 ) {
-    val backgroundColor = Color(0xffff8800)
 
     val userImage = userProfileInfo.imageUrl.toIntOrNull() ?: R.drawable.avatar_man1
 
@@ -88,11 +92,15 @@ fun ProfileScreen(
         modifier = modifier,
         topBar = {
             TopAppBar(
+                modifier = Modifier.shadow(
+                    elevation = 5.dp,
+                    spotColor = Color.LightGray
+                ),
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = backgroundColor,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White,
-                    titleContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 ),
                 title = {
                     Text(text = stringResource(id = R.string.screen_profile_title))
@@ -111,6 +119,7 @@ fun ProfileScreen(
     ) { paddingValues ->
         Box(
             modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
                 .fillMaxSize()
                 .padding(paddingValues),
             contentAlignment = Alignment.CenterEnd
@@ -181,12 +190,32 @@ fun ProfileScreen(
 
 @Preview
 @Composable
-private fun ProfileScreenPrev() {
-    ProfileScreen(
-        userProfileInfo = Player(
-            profileName = "Hlompho",
-            email = "hlomphoshadrakmohapi@gmail.com",
-            imageUrl = R.drawable.avatar_boy2.toString()
+private fun ProfileScreenLightPrev() {
+    GamesHubAppTheme(
+        darkTheme = false
+    ) {
+        ProfileScreen(
+            userProfileInfo = Player(
+                profileName = "Hlompho",
+                email = "hlomphoshadrakmohapi@gmail.com",
+                imageUrl = R.drawable.avatar_boy2.toString()
+            )
         )
-    )
+    }
+}
+
+@Preview
+@Composable
+private fun ProfileScreenDarkPrev() {
+    GamesHubAppTheme(
+        darkTheme = true
+    ) {
+        ProfileScreen(
+            userProfileInfo = Player(
+                profileName = "Hlompho",
+                email = "hlomphoshadrakmohapi@gmail.com",
+                imageUrl = R.drawable.avatar_boy2.toString()
+            )
+        )
+    }
 }

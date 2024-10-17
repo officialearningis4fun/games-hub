@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 
 @Composable
@@ -31,7 +33,11 @@ fun PlayedCardsSection(
         modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Heading(modifier = Modifier, text = "Played")
+        Heading(
+            modifier = Modifier,
+            text = "Played",
+            textColor = MaterialTheme.colorScheme.onSurface
+        )
 
         val card3Img = getImageOrDefault(cards, 0)
         val card2Img = getImageOrDefault(cards, 1)
@@ -89,7 +95,8 @@ fun PlayedCardsSection(
                             start.linkTo(endImg.start)
                             end.linkTo(endImg.end)
                             bottom.linkTo(endImg.bottom)
-                        }.aspectRatio(0.7f),
+                        }
+                        .aspectRatio(0.7f),
                     showCurrentCardType = showCurrentCardType
                 )
 
@@ -148,50 +155,100 @@ private fun CurrentCardTypeScreen(
 
 @Preview
 @Composable
-private fun PlayedCardsSectionPrev() {
-    val color = Color(0xffff8800)
-    PlayedCardsSection(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = color),
-        cards = listOf(
-            UserCard(
-                gameCardId = "1",
-                playerId = "id2",
-                cardId = "1d1",
-                name = "",
-                type = "",
-                gameId = "id",
-                isPlayed = true,
-                image = R.drawable.diamond_king.toString(),
-                playTime = 0L,
-                pickedTime = 0L
+private fun PlayedCardsSectionLightPrev() {
+    GamesHubAppTheme {
+        PlayedCardsSection(
+            modifier = Modifier
+                .fillMaxWidth(),
+            cards = listOf(
+                UserCard(
+                    gameCardId = "1",
+                    playerId = "id2",
+                    cardId = "1d1",
+                    name = "",
+                    type = "",
+                    gameId = "id",
+                    isPlayed = true,
+                    image = R.drawable.diamond_king.toString(),
+                    playTime = 0L,
+                    pickedTime = 0L
+                ),
+                UserCard(
+                    gameCardId = "1",
+                    playerId = "id2",
+                    cardId = "1d2",
+                    name = "",
+                    type = "",
+                    gameId = "id",
+                    isPlayed = true,
+                    image = R.drawable.diamond_2.toString(),
+                    playTime = 0L,
+                    pickedTime = 0L
+                ),
+                UserCard(
+                    gameCardId = "1",
+                    playerId = "id2",
+                    cardId = "1d3",
+                    name = "",
+                    type = "",
+                    gameId = "id",
+                    isPlayed = true,
+                    image = R.drawable.diamond_3.toString(),
+                    playTime = 0L,
+                    pickedTime = 0L
+                )
             ),
-            UserCard(
-                gameCardId = "1",
-                playerId = "id2",
-                cardId = "1d2",
-                name = "",
-                type = "",
-                gameId = "id",
-                isPlayed = true,
-                image = R.drawable.diamond_2.toString(),
-                playTime = 0L,
-                pickedTime = 0L
+            showCurrentCardType = Pair(true, R.drawable.suit_club.toString()),
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun PlayedCardsSectionDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        PlayedCardsSection(
+            modifier = Modifier
+                .fillMaxWidth(),
+            cards = listOf(
+                UserCard(
+                    gameCardId = "1",
+                    playerId = "id2",
+                    cardId = "1d1",
+                    name = "",
+                    type = "",
+                    gameId = "id",
+                    isPlayed = true,
+                    image = R.drawable.diamond_king.toString(),
+                    playTime = 0L,
+                    pickedTime = 0L
+                ),
+                UserCard(
+                    gameCardId = "1",
+                    playerId = "id2",
+                    cardId = "1d2",
+                    name = "",
+                    type = "",
+                    gameId = "id",
+                    isPlayed = true,
+                    image = R.drawable.diamond_2.toString(),
+                    playTime = 0L,
+                    pickedTime = 0L
+                ),
+                UserCard(
+                    gameCardId = "1",
+                    playerId = "id2",
+                    cardId = "1d3",
+                    name = "",
+                    type = "",
+                    gameId = "id",
+                    isPlayed = true,
+                    image = R.drawable.diamond_3.toString(),
+                    playTime = 0L,
+                    pickedTime = 0L
+                )
             ),
-            UserCard(
-                gameCardId = "1",
-                playerId = "id2",
-                cardId = "1d3",
-                name = "",
-                type = "",
-                gameId = "id",
-                isPlayed = true,
-                image = R.drawable.diamond_3.toString(),
-                playTime = 0L,
-                pickedTime = 0L
-            )
-        ),
-        showCurrentCardType = Pair(true, R.drawable.suit_club.toString()),
-    )
+            showCurrentCardType = Pair(true, R.drawable.suit_club.toString()),
+        )
+    }
 }
