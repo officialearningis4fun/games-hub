@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toWinnerNames
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -58,39 +59,38 @@ class PlayedGameWinnerViewModel @Inject constructor(
         gameWithPlayers: GameWithPlayers
     ): PlayedGameWinnerState {
         return try {
-            val completedGameId: String = gameWithPlayers.game.id
 
-            println("completed gameId: $completedGameId")
             val completedGame = gameWithPlayers
                 .toCompletedGame()
 
             val loggedInUser = userRepository.getPlayerSignInDetails().first()
 
+            val otherPlayers = completedGame.otherPlayers.map { player ->
+                player.copy(
+                    profileName = loggedInUser.uniqueId.toWinnerNames(player)
+                )
+            }
+
             val winner = completedGame.winner
                 ?: throw Exception("Unexpected error occurred; please restart the app")
-
-            val winnerNames: String =
-                if (loggedInUser.uniqueId == winner.uniqueId) {
-                    "You"
-                } else completedGame.winner.profileName
 
             playedGameWinnerStateFlow.update {
                 it.copy(
                     winnerImageUrl = completedGame.winner.imageUrl,
-                    gameDuration = completedGame.duration.toTimeFormatted(),
-                    otherPlayers = completedGame.otherPlayers,
+                    gameDuration = completedGame.duration.toUIDuration(),
+                    otherPlayers = otherPlayers,
                     loading = false,
-                    winnerNames = winnerNames,
+                    winnerNames = loggedInUser.uniqueId.toWinnerNames(winner),
                     error = null
                 )
             }
 
             PlayedGameWinnerState(
                 winnerImageUrl = completedGame.winner.imageUrl,
-                gameDuration = completedGame.duration.toTimeFormatted(),
-                otherPlayers = completedGame.otherPlayers,
+                gameDuration = completedGame.duration.toUIDuration(),
+                otherPlayers = otherPlayers,
                 loading = false,
-                winnerNames = winnerNames,
+                winnerNames = loggedInUser.uniqueId.toWinnerNames(winner),
                 error = null
             )
 

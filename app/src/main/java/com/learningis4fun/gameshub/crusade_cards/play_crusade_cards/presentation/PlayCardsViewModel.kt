@@ -22,6 +22,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.TrackingPlay
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toWinnerNames
 import com.learningis4fun.gameshub.crusade_cards.di.CrusadeCardsDataModule
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardsActionMessage
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
@@ -476,10 +477,32 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         )
 
         playCardsStateFlow.update {
+
+            val oldUserCards = it.userUnPlayedCards.first
+            val newUserCards = uiState.userCards
+
+            val newlyAddedCards =
+                newUserCards
+                    .filter { newCard ->
+                        newCard.gameCardId !in oldUserCards
+                            .map { oldCard -> oldCard.gameCardId }
+                    }
+
+            val updatedUserCards: Pair<List<UserCard>, UserCard?> = if (newlyAddedCards.size == 1) {
+                Pair(newUserCards, newlyAddedCards.firstOrNull())
+            } else {
+                Pair(newUserCards, null)
+            }
+
+            println("cards: new cards: $newUserCards")
+            println("cards: old cards: $oldUserCards")
+            println("cards: newly added: $newlyAddedCards")
+
+
             it.copy(
                 playersScreenInfo = uiState.playersScreenInfo,
                 playedCards = uiState.lastThreePlayedCards,
-                userUnPlayedCards = uiState.userCards,
+                userUnPlayedCards = updatedUserCards,
                 message = uiState.messages.message,
                 allowOthersPlay = uiState.allowOthersPlay,
                 showDefineJokerActions = uiState.showDefineJokerActions,
@@ -619,8 +642,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     it.profileName.length
                 }
 
-            val smallLength = playersIds.first().profileName.length
-
             playersIds.map { player ->
 
                 val numOfCardsLeft = gameCardRepository.numOfUnPlayedCardsForPlayer(
@@ -628,7 +649,9 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     playerId = player.uniqueId
                 ).first()
                     .toString()
-                val playerName = player.profileName.slice(0 until smallLength)
+
+                val playerName = userId.toWinnerNames(player)
+
 
                 PlayerScreenInfo(
                     playerId = player.uniqueId,
@@ -657,6 +680,13 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             PlayCardsEvent.PickCardFromDustbin -> onDustbinClick()
             is PlayCardsEvent.PlayCard -> onUserCardClick(event.userCard)
             is PlayCardsEvent.SetNewCardType -> onCardTypeClick(event.type)
+            PlayCardsEvent.ScrollToItemPositionConsumed -> {
+                playCardsStateFlow.update {
+                    it.copy(
+                        userUnPlayedCards = it.userUnPlayedCards.copy(second = null)
+                    )
+                }
+            }
         }
     }
 
@@ -829,13 +859,13 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     }
 
     data class PlayingScreenState(
-        val playersScreenInfo: List<PlayerScreenInfo>,//done
-        val lastThreePlayedCards: List<UserCard>,//done
-        val messages: CardsActionMessage, //done
-        val userCards: List<UserCard>,//done
+        val playersScreenInfo: List<PlayerScreenInfo>,
+        val lastThreePlayedCards: List<UserCard>,
+        val messages: CardsActionMessage,
+        val userCards: List<UserCard>,
         val allowOthersPlay: Boolean,
         val showChooseCardTypeScreen: Boolean,
         val showDefineJokerActions: Boolean,
-        val showCurrentCardType: Pair<Boolean, String> // done
+        val showCurrentCardType: Pair<Boolean, String>
     )
 }

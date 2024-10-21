@@ -1,15 +1,13 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 
-import android.app.Activity
-import android.content.Context
-import android.view.View
-import android.view.inputmethod.InputMethodManager
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import java.io.Serializable
 import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.Triple
+import java.util.Locale
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 fun GameCardWithCard.toUserCard() = UserCard(
     gameCardId = this.gameCard.id,
@@ -24,86 +22,71 @@ fun GameCardWithCard.toUserCard() = UserCard(
     pickedTime = this.gameCard.pickedTime
 )
 
-fun Int.toHiddenCardsCountAboveThree() : String{
-   return if(this > 3){
+fun Int.toHiddenCardsCountAboveThree(): String {
+    return if (this > 3) {
         "3+"
-    }else {
+    } else {
         "$this"
     }
 }
 
-fun Long.toTimeFormatted(): String{
+fun Long.toUIDuration(): String = this.toDuration(DurationUnit.MILLISECONDS).toString()
+
+fun Long.toTimeFormatted(): String {
+
     val timeFormat = SimpleDateFormat("mm:ss", Locale.getDefault())
+
     return timeFormat.format(this)
 }
 
-fun showKeyboard(view: View) {
-    view.post {
-        view.requestFocus()
-        if (view.requestFocus()) {
-            val inputMethodManager: InputMethodManager =
-                view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            inputMethodManager.showSoftInput(
-                view,
-                InputMethodManager.SHOW_IMPLICIT
-            )
-        }
-    }
+fun String?.toWinnerNames(player: Player?): String {
+    return if (player?.uniqueId == this) "You" else player?.profileName ?: ""
 }
 
-fun hideKeyBoard(activity: Activity?, view: View) {
-    if (activity == null) {
-        return
-    }
-    val inputMethodManager: InputMethodManager =
-        activity.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    if (inputMethodManager.isActive) {
-        inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
-    }
-}
-
-public data class Quadruple<out A, out B, out C, out D>(
-    public val first: A,
-    public val second: B,
-    public val third: C,
-    public val fourth: D,
+data class Quadruple<out A, out B, out C, out D>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
 ) : Serializable {
 
     /**
      * Returns string representation of the [Quadruple] including its [first], [second], [third] and [fourth] values.
      */
-    public override fun toString(): String = "($first, $second, $third, $fourth)"
+    override fun toString(): String = "($first, $second, $third, $fourth)"
 }
 
-public data class FiveFold<out A, out B, out C, out D, out E>(
-    public val first: A,
-    public val second: B,
-    public val third: C,
-    public val fourth: D,
-    public val fifth: E
+data class FiveFold<out A, out B, out C, out D, out E>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+    val fifth: E
 ) : Serializable {
 
     /**
-     * Returns string representation of the [Triple] including its [first], [second], [third], [fourth] and [firth] values.
+     * Returns string representation of the [Triple] including its [first], [second], [third], [fourth] and values.
      */
-    public override fun toString(): String = "($first, $second, $third, $fourth, $fifth)"
+    override fun toString(): String = "($first, $second, $third, $fourth, $fifth)"
 }
 
-public fun <T> FiveFold<T, T, T, T, T>.toList() : List<T> = listOf(first, second, third, fourth, fifth)
+fun <T> FiveFold<T, T, T, T, T>.toList(): List<T> =
+    listOf(first, second, third, fourth, fifth)
 
-public data class SixFold<out A, out B, out C, out D, out E, out F>(
-    public val first: A,
-    public val second: B,
-    public val third: C,
-    public val fourth: D,
-    public val fifth: E,
-    public val sixth: F
+data class SixFold<out A, out B, out C, out D, out E, out F>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+    val fifth: E,
+    val sixth: F
 ) : Serializable {
 
     /**
      * Returns string representation of the [Triple] including its [first], [second], [third], [fourth], [fifth] and [sixth] values.
      */
-    public override fun toString(): String = "($first, $second, $third, $fourth, $fifth, $sixth)"
+    override fun toString(): String = "($first, $second, $third, $fourth, $fifth, $sixth)"
 }
 
-public fun <T> SixFold<T, T, T, T, T, T>.toList() : List<T> = listOf(first, second, third, fourth, fifth, sixth)
+fun <T> SixFold<T, T, T, T, T, T>.toList(): List<T> =
+    listOf(first, second, third, fourth, fifth, sixth)

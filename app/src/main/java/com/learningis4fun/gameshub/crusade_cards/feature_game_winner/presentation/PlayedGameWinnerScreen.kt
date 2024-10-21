@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -48,7 +47,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
@@ -207,10 +206,20 @@ private fun WinnerSection(
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             otherPlayers.forEach {
-                com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.PlayerItem(
-                    modifier = Modifier.size(42.dp),
-                    player = it
-                )
+                Column(
+                    modifier = Modifier,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.PlayerItem(
+                        modifier = Modifier.size(42.dp),
+                        player = it
+                    )
+                    Text(
+                        text = it.profileName,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
 
@@ -268,17 +277,12 @@ private fun PlayedGameWinnerPrev() {
                 .background(Color.White),
             playedGameWinnerState = PlayedGameWinnerState(
                 loading = false,
-                gameDuration = (80000000000L).toTimeFormatted(),
+                gameDuration = (80000L).toUIDuration(),
                 otherPlayers = listOf(
                     Player(
                         "id",
                         profileName = "Hlompho",
                         imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                    Player(
-                        "id2",
-                        profileName = "Android",
-                        imageUrl = R.drawable.ai_platform.toString()
                     ),
                 ),
                 winnerNames = "Hlompho",
@@ -298,7 +302,7 @@ private fun PlayedGameWinnerDarkPrev() {
                 .background(Color.White),
             playedGameWinnerState = PlayedGameWinnerState(
                 loading = false,
-                gameDuration = (80000000000L).toTimeFormatted(),
+                gameDuration = (8L).toUIDuration(),
                 otherPlayers = listOf(
                     Player(
                         "id",

@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 
@@ -50,7 +50,8 @@ fun CompletedGamesSection(
     val completedGames = completedGamesState.completedGames
 
     Column(
-        modifier.background(MaterialTheme.colorScheme.background)) {
+        modifier.background(MaterialTheme.colorScheme.background)
+    ) {
         if (completedGamesState.isLoading) {
             CompletedGamesLoadingScreen(
                 modifier = Modifier.fillMaxWidth()
@@ -94,10 +95,10 @@ fun CompletedGamesDataSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             items(completedGames) {
+                Modifier
+                    .clickable { onGameClick(it.game.id) }
                 CompletedGameItem(
-                    modifier = Modifier
-                        .clickable { onGameClick(it.game.id) }
-                        .animateItemPlacement(),
+                    modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
                     completedGame = it
                 )
             }
@@ -381,7 +382,8 @@ private fun CompletedGameItem(
                     }
 
                     Heading(
-                        text = completedGame.duration.toTimeFormatted(),
+                        isUppercase = false,
+                        text = completedGame.duration.toUIDuration(),
                         textColor = MaterialTheme.colorScheme.onBackground
                     )
                 }
@@ -401,11 +403,12 @@ private fun CompletedGameItem(
 fun Heading(
     modifier: Modifier = Modifier,
     text: String,
+    isUppercase: Boolean = true,
     textColor: Color = Color.White
 ) {
     Text(
         modifier = modifier,
-        text = text.uppercase(),
+        text = if (isUppercase) text.uppercase() else text.lowercase(),
         color = textColor,
         style = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.Normal

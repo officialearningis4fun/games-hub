@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,6 +44,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +78,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
@@ -285,6 +288,9 @@ fun PlayCardsDataRoot(
                 cards = playCardsState.userUnPlayedCards,
                 onClick = {
                     onEvent(PlayCardsEvent.PlayCard(it))
+                },
+                scrollToItemConsumed = {
+                    onEvent(PlayCardsEvent.ScrollToItemPositionConsumed)
                 }
             )
             Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
@@ -498,43 +504,6 @@ private fun PlayedAndDustbinSection(
 }
 
 @Composable
-private fun CurrentCardTypeScreen(
-    modifier: Modifier,
-    showCurrentCardType: Pair<Boolean, String?>
-) {
-
-    showCurrentCardType.second?.let {
-        val show = showCurrentCardType.first
-        if (show) {
-            val cardTypeImage = it.toIntOrNull()
-            cardTypeImage?.let {
-                Column(
-                    modifier = modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .fillMaxWidth()
-                        .aspectRatio(0.7f)
-                        .background(Color.Black.copy(alpha = 0.5f))
-                        .background(Color.White.copy(alpha = 0.7f))
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-
-                    Image(
-                        modifier = Modifier.size(48.dp),
-                        painter = painterResource(id = cardTypeImage),
-                        contentDescription = null
-                    )
-
-                }
-            }
-        }
-    }
-
-
-}
-
-@Composable
 private fun DustbinSection(
     modifier: Modifier,
     showAllowOthersPlay: Boolean,
@@ -601,9 +570,25 @@ private fun MessagesSection(
 @Composable
 private fun UserCardsSection(
     modifier: Modifier,
-    cards: List<UserCard>,
-    onClick: (UserCard) -> Unit
+    cards: Pair<List<UserCard>, UserCard?>,
+    onClick: (UserCard) -> Unit,
+    scrollToItemConsumed: () -> Unit
 ) {
+
+    val userCardsState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = cards.second) {
+        if (cards.second != null) {
+            val indexOfNewUserCard = cards.first.indexOf(cards.second)
+            if (indexOfNewUserCard != -1) {
+                coroutineScope.launch {
+                    userCardsState.animateScrollToItem(indexOfNewUserCard)
+                    scrollToItemConsumed()
+                }
+            }
+        }
+    }
 
     Column(
         modifier,
@@ -618,7 +603,7 @@ private fun UserCardsSection(
         UserCardsSummary(
             modifier = Modifier
                 .padding(bottom = 16.dp, top = 8.dp),
-            cards = cards.map { it.toCard() }
+            cards = cards.first.map { it.toCard() }
         )
 
         LazyRow(
@@ -627,8 +612,9 @@ private fun UserCardsSection(
                 .padding(bottom = 16.dp),
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
+            state = userCardsState
         ) {
-            items(cards, key = { it.cardId }) {
+            items(cards.first, key = { it.cardId }) {
                 val image = it.image.toIntOrNull() ?: R.drawable.card_base
                 Image(
                     modifier = Modifier
@@ -1097,21 +1083,24 @@ private val DefaultPlayCardsState = PlayCardsState(
         )
     ),
     message = "We getting the game ready for you...",
-    userUnPlayedCards = Constants.Cards.cards.take(10).mapIndexed { index, card ->
-        val cardId = "$index"
-        UserCard(
-            gameCardId = "game",
-            playerId = "id2",
-            cardId = cardId,
-            name = card.name,
-            type = card.type,
-            gameId = "id",
-            isPlayed = true,
-            image = card.image,
-            playTime = 0L,
-            pickedTime = 0L
-        )
-    },
+    userUnPlayedCards = Pair(
+        Constants.Cards.cards.take(10).mapIndexed { index, card ->
+            val cardId = "$index"
+            UserCard(
+                gameCardId = "game",
+                playerId = "id2",
+                cardId = cardId,
+                name = card.name,
+                type = card.type,
+                gameId = "id",
+                isPlayed = true,
+                image = card.image,
+                playTime = 0L,
+                pickedTime = 0L
+            )
+        },
+        null
+    ),
     isLoading = false,
     error = null
 )

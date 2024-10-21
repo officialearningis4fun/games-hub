@@ -11,7 +11,7 @@ data class PlayCardsState(
     val playersScreenInfo: List<PlayerScreenInfo> = emptyList(),
     val playedCards: List<UserCard> = emptyList(),
     val dustbin: List<GameCard> = emptyList(),
-    val userUnPlayedCards: List<UserCard> = emptyList(),
+    val userUnPlayedCards: Pair<List<UserCard>, UserCard?> = Pair(emptyList(), null),
     val message: String = "",
     val allowOthersPlay: Boolean = false,
     val showCurrentCardType: Pair<Boolean, String> = Pair(false, ""),
