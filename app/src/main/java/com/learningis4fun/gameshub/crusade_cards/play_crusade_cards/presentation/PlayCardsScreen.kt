@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -23,7 +22,6 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -52,9 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -260,12 +256,22 @@ fun PlayCardsDataRoot(
         contentAlignment = Alignment.CenterEnd
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            PlayersSectionScreen(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                playersScreenInfo = playCardsState.playersScreenInfo,
-                duration = gameDuration
-            )
+            if (playCardsState.playersScreenInfo.size > 2) {
+                MultiplePlayersSectionScreen(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    playersScreenInfo = playCardsState.playersScreenInfo,
+                    duration = gameDuration
+                )
+            } else {
+
+                PlayersSectionScreen(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    playersScreenInfo = playCardsState.playersScreenInfo,
+                    duration = gameDuration
+                )
+            }
 
             MessagesSection(
                 modifier = Modifier.fillMaxWidth(),
@@ -342,131 +348,6 @@ fun PlayCardsErrorScreen(
     ) {
         Text(text = error)
     }
-
-}
-
-@Composable
-fun PlayersSectionScreen(
-    modifier: Modifier = Modifier,
-    playersScreenInfo: List<PlayerScreenInfo>,
-    duration: String
-) {
-
-    val playerImgHeight = 64.dp
-
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        val player1 = if (playersScreenInfo.isNotEmpty()) playersScreenInfo[0] else null
-
-        val player2 = if (playersScreenInfo.size >= 2) playersScreenInfo[1] else null
-
-        Row(
-            modifier = Modifier,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (player2 == null || player1 == null) {
-                Spacer(modifier = Modifier.height(playerImgHeight))
-            } else {
-
-                PlayerItem(
-                    modifier = Modifier,
-                    playerScreenInfo = player1
-                )
-                Heading(
-                    modifier = Modifier,
-                    text = duration,
-                    textColor = MaterialTheme.colorScheme.onPrimary
-                )
-
-                PlayerItem(
-                    modifier = Modifier,
-                    playerScreenInfo = player2
-                )
-            }
-
-        }
-    }
-
-}
-
-@Composable
-private fun PlayerItem(
-    modifier: Modifier,
-    playerScreenInfo: PlayerScreenInfo
-) {
-
-    val image = playerScreenInfo.imageUrl?.toIntOrNull() ?: playerScreenInfo.defaultAvatar
-
-    val isPlaying = playerScreenInfo.isCurrentlyPlaying
-
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Card(
-            modifier = Modifier,
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent
-            )
-        ) {
-            Box(
-                modifier = Modifier
-            ) {
-
-                Image(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .border(
-                            width = 3.dp,
-                            shape = CircleShape,
-                            color = if (isPlaying) Color.White else Color.LightGray.copy(alpha = 0.8f)
-                        ),
-                    contentScale = ContentScale.Crop,
-                    painter = painterResource(id = image),
-                    contentDescription = null
-                )
-
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.errorContainer)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .align(Alignment.Center),
-                        text = playerScreenInfo.numOfCardsLeft,
-                        color = MaterialTheme.colorScheme.onError,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-            }
-        }
-
-        Text(
-            modifier = Modifier
-                .padding(vertical = 4.dp, horizontal = 8.dp),
-            text = playerScreenInfo.playerName,
-            color = MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontWeight = FontWeight.Medium
-            ),
-            maxLines = 1
-        )
-    }
-
 
 }
 
@@ -899,7 +780,7 @@ fun Heading(
 @Preview
 @Composable
 fun PlayCardsDefaultScreenLightPrev() {
-    GamesHubAppTheme() {
+    GamesHubAppTheme {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
@@ -925,6 +806,42 @@ fun PlayCardsDefaultScreenDarkPrev() {
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
                 error = null
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PlayCardsDefaultScreenWithMultiPlayerLightPrev() {
+    GamesHubAppTheme {
+        PlayCardsScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            testing = true,
+            gameDuration = "00:01",
+            playCardsState = DefaultPlayCardsState.copy(
+                isLoading = false,
+                error = null,
+                playersScreenInfo = playersScreenInfo
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PlayCardsDefaultScreenWithMultiPlayerDarkPrev() {
+    GamesHubAppTheme(darkTheme = true) {
+        PlayCardsScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            testing = true,
+            gameDuration = "00:01",
+            playCardsState = DefaultPlayCardsState.copy(
+                isLoading = false,
+                error = null,
+                playersScreenInfo = playersScreenInfo
             )
         )
     }
@@ -1105,3 +1022,29 @@ private val DefaultPlayCardsState = PlayCardsState(
     error = null
 )
 
+private val playersScreenInfo = listOf(
+    PlayerScreenInfo(
+        "id1",
+        "You",
+        "",
+        R.drawable.game_test_profile,
+        "7",
+        false,
+    ),
+    PlayerScreenInfo(
+        "id2",
+        "Dev1",
+        "",
+        R.drawable.game_test_profile,
+        "4",
+        false,
+    ),
+    PlayerScreenInfo(
+        "id3",
+        "Dev2",
+        "",
+        R.drawable.game_test_profile,
+        "4",
+        true,
+    )
+)

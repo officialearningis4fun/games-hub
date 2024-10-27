@@ -38,6 +38,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.StartScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.feature_start.CardsStartEvents
 import com.learningis4fun.gameshub.crusade_cards.feature_start.CardsStartViewModel
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -64,9 +65,7 @@ fun NavGraphBuilder.cardsStartScreenComposable(
             onResumeClick = onResumeClick,
             onProfileClick = onProfileClick,
             onGameClick = onGameClick,
-            onDeleteGame = { gameId ->
-                cardsStartViewModel.onDeleteGame(gameId)
-            }
+            onEvent = cardsStartViewModel::onEvent
         )
     }
 }
@@ -81,7 +80,7 @@ fun CardsStartScreen(
     onResumeClick: (String) -> Unit = {},
     onProfileClick: () -> Unit = {},
     onGameClick: (String) -> Unit = {},
-    onDeleteGame: (String) -> Unit = {}
+    onEvent: (CardsStartEvents) -> Unit = {}
 ) {
 
     Scaffold(
@@ -130,7 +129,11 @@ fun CardsStartScreen(
                 onStartClick = onStartClick,
                 onResumeClick = onResumeClick,
                 onGameClick = onGameClick,
-                onDeleteGame = onDeleteGame
+                onDeleteGame = {
+                    onEvent(CardsStartEvents.DeleteGame(it))
+                },
+                numberOfCardsPerPlayer = cardsStartState.numberOfCardsPerPlayer,
+                onEvent = onEvent
             )
         }
     }
@@ -175,11 +178,13 @@ fun CardsStartDataScreen(
     modifier: Modifier,
     completedGamesState: CompletedGamesState,
     ongoingGamesState: OngoingGamesState,
+    numberOfCardsPerPlayer: Int,
     showOngoingGame: Boolean,
     onStartClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onGameClick: (String) -> Unit = {},
-    onDeleteGame: (String) -> Unit = {}
+    onDeleteGame: (String) -> Unit = {},
+    onEvent: (CardsStartEvents) -> Unit = {}
 ) {
 
     Box(
@@ -213,7 +218,9 @@ fun CardsStartDataScreen(
             } else {
                 CreateGameSection(
                     modifier = Modifier.fillMaxWidth(),
-                    onStartClick = onStartClick
+                    numberOfCardsPerPlayer = numberOfCardsPerPlayer,
+                    onStartClick = onStartClick,
+                    onEvent = onEvent
                 )
             }
         }

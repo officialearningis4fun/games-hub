@@ -2,7 +2,6 @@ package com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.p
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -67,12 +65,11 @@ fun NavGraphBuilder.profileScreenComposable(
 
         val profileViewModel: ProfileViewModel = hiltViewModel()
         val userProfileInfo by profileViewModel.profileState.collectAsStateWithLifecycle()
-        println("profile viewModel: ${profileViewModel.hashCode()}")
 
         ProfileScreen(
-            userProfileInfo = userProfileInfo.user,
             onBackClick = onBackClick,
-            onEditProfile = onEditProfile
+            onEditProfile = onEditProfile,
+            profileState = userProfileInfo
         )
     }
 }
@@ -83,8 +80,11 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     onEditProfile: () -> Unit = {},
-    userProfileInfo: Player
+    profileState: ProfileState
 ) {
+
+    val userProfileInfo = profileState.user
+
 
     val userImage = userProfileInfo.imageUrl.toIntOrNull() ?: R.drawable.avatar_man1
 
@@ -195,10 +195,12 @@ private fun ProfileScreenLightPrev() {
         darkTheme = false
     ) {
         ProfileScreen(
-            userProfileInfo = Player(
-                profileName = "Hlompho",
-                email = "hlomphoshadrakmohapi@gmail.com",
-                imageUrl = R.drawable.avatar_boy2.toString()
+            profileState = ProfileState(
+                user = Player(
+                    profileName = "Hlompho",
+                    email = "hlomphoshadrakmohapi@gmail.com",
+                    imageUrl = R.drawable.avatar_boy2.toString()
+                )
             )
         )
     }
@@ -211,10 +213,12 @@ private fun ProfileScreenDarkPrev() {
         darkTheme = true
     ) {
         ProfileScreen(
-            userProfileInfo = Player(
-                profileName = "Hlompho",
-                email = "hlomphoshadrakmohapi@gmail.com",
-                imageUrl = R.drawable.avatar_boy2.toString()
+            profileState = ProfileState(
+                user = Player(
+                    profileName = "Hlompho",
+                    email = "hlomphoshadrakmohapi@gmail.com",
+                    imageUrl = R.drawable.avatar_boy2.toString()
+                )
             )
         )
     }

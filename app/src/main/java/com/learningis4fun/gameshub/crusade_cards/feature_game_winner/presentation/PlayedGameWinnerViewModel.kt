@@ -4,8 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toWinnerNames
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
@@ -15,6 +17,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
@@ -22,11 +25,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class PlayedGameWinnerViewModel @Inject constructor(
+class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
+@Inject constructor(
     savedStateHandle: SavedStateHandle,
-    val gameRepository: GameRepository,
-    private val userRepository: UserRepository
+    gameRepository: GameRepository,
+    private val userRepository: UserRepository,
+    private val preferences: CrusadeCardsPreferencesManager
 ) : ViewModel() {
 
     private val gameId = savedStateHandle.toRoute<WinnerScreenRoute>().wonGameId
@@ -48,8 +54,45 @@ class PlayedGameWinnerViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            completedGame.collect { state ->
-                playedGameWinnerStateFlow.update { state }
+            combine(
+                completedGame,
+                preferences.numberOfCardsPerPlayer
+            ) { completedGame, numberOfCardsPerPlayer ->
+                Pair(
+                    completedGame,
+                    numberOfCardsPerPlayer
+                )
+            }.collect { (completedGame, numberOfCardsPerPlayer) ->
+                playedGameWinnerStateFlow.update {
+                    completedGame.copy(
+                        numberOfCardsPerPlayer = numberOfCardsPerPlayer
+                    )
+                }
+            }
+        }
+
+    }
+
+    fun onEvent(event: PlayedGameWinnerEvents) {
+        when (event) {
+            PlayedGameWinnerEvents.DecreaseNumberOfCards -> {
+                viewModelScope.launch {
+                    val numberOfCardsPerPlayer =
+                        playedGameWinnerStateFlow.value.numberOfCardsPerPlayer - 1
+                    if (numberOfCardsPerPlayer >= Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER) {
+                        preferences.updateNumberOfCardsPerPlayer(numberOfCardsPerPlayer)
+                    }
+                }
+            }
+
+            PlayedGameWinnerEvents.IncreaseNumberOfCards -> {
+                viewModelScope.launch {
+                    val numberOfCardsPerPlayer =
+                        playedGameWinnerStateFlow.value.numberOfCardsPerPlayer + 1
+                    if (numberOfCardsPerPlayer <= Constants.NumberOfCardsOptions.HIGHEST_CARDS_PER_PLAYER) {
+                        preferences.updateNumberOfCardsPerPlayer(numberOfCardsPerPlayer)
+                    }
+                }
             }
         }
     }

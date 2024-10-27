@@ -11,7 +11,6 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.mappers.toGameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -28,9 +27,9 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
     suspend fun getCurrentGameId(): String = gameRepository.getCurrentGameId().first()
 
-    suspend fun getCurrentCardName(): String = cardRepository.getCurrCardName()
+    private suspend fun getCurrentCardName(): String = cardRepository.getCurrCardName()
 
-    suspend fun getCurrentCardType(): String = cardRepository.getCurrentCardType()
+    private suspend fun getCurrentCardType(): String = cardRepository.getCurrentCardType()
 
     /**
      * No tests present
@@ -59,9 +58,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         type: String
     ): CardStates {
 
-        val result = allowChangeType(playerId = playerId, type = type)
-
-        return when (result) {
+        return when (val result = allowChangeType(playerId = playerId, type = type)) {
             is Response.Error -> CardStates.Error(message = result.message.toString())
             is Response.Success -> CardStates.ChangedType(
                 playerId = playerId
@@ -173,7 +170,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         }
     }
 
-    suspend fun requestHitOfAlreadyPlayedCard(
+    private suspend fun requestHitOfAlreadyPlayedCard(
         userCardName: String,
         playerId: String
     ): CardStates {
@@ -208,9 +205,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                         val newCardType = if (userCard.name == Constants.CardNames.JOKER) ""
                         else userCard.type
 
-                        val response = repository.changeCurrentCardType(newCardType)
-
-                        when (response) {
+                        when (val response = repository.changeCurrentCardType(newCardType)) {
                             is Response.Error -> {
                                 CardStates.Error("${response.message} while hitting back")
                             }
@@ -239,7 +234,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         }
     }
 
-    fun howManyUsersToSkip(players: List<String>): Int {
+    private fun howManyUsersToSkip(players: List<String>): Int {
         val size = players.size
         return when (size) {
             in 3..5 -> 2
@@ -270,7 +265,6 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                 players[indexOfCurrPlayer + howManyToSkip]
             }
         }
-        return currPlayerId
     }
 
     suspend fun findPreviousPlayerToPlayAboveJack(currPlayerId: String, gameId: String): String? {
@@ -376,9 +370,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                 when (updateResult) {
                     is Response.Success -> {
 
-                        val response = repository.changeCurrentCardType("")
-
-                        when (response) {
+                        when (val response = repository.changeCurrentCardType("")) {
                             is Response.Error -> {
 
                                 CardStates.Error("${response.message} while asked to define card action...")
@@ -406,9 +398,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                 when (updateResult) {
                     is Response.Success -> {
 
-                        val response = repository.changeCurrentCardType(userCard.type)
-
-                        when (response) {
+                        when (val response = repository.changeCurrentCardType(userCard.type)) {
                             is Response.Error -> {
                                 CardStates.Error("${response.message} while being given a chance to play another card...")
                             }
@@ -447,9 +437,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                 when (updateResult) {
                     is Response.Success -> {
 
-                        val response = repository.changeCurrentCardType(userCard.type)
-
-                        when (response) {
+                        when (val response = repository.changeCurrentCardType(userCard.type)) {
                             is Response.Error -> {
                                 CardStates.Error("${response.message} while being given a chance to play another card...")
                             }
@@ -489,9 +477,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
                     is Response.Success -> {
 
-                        val response = repository.changeCurrentCardType(userCard.type)
-
-                        when (response) {
+                        when (val response = repository.changeCurrentCardType(userCard.type)) {
                             is Response.Error -> {
                                 CardStates.Error("${response.message} Error while playing a card...")
                             }

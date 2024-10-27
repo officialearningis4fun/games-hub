@@ -2,5 +2,5 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentatio
 
 sealed interface ProfileEvents {
     data class UpdateUserName(val username: String) : ProfileEvents
-    data class UpdateUserAvatar(val avatar: Int): ProfileEvents
+    data class UpdateUserAvatar(val avatar: Int) : ProfileEvents
 }

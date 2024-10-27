@@ -2,7 +2,10 @@ package com.learningis4fun.gameshub.crusade_cards.feature_start.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,11 +13,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.sharp.ArrowBack
+import androidx.compose.material.icons.automirrored.sharp.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,12 +40,16 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toDoubleDigits
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.feature_start.CardsStartEvents
 
 @Composable
 fun CreateGameSection(
     modifier: Modifier = Modifier,
     cardHeight: Dp = 72.dp,
+    numberOfCardsPerPlayer: Int,
+    onEvent: (CardsStartEvents) -> Unit = {},
     onStartClick: () -> Unit = {}
 ) {
 
@@ -122,7 +136,7 @@ fun CreateGameSection(
                     .wrapContentHeight(),
                 text = stringResource(id = R.string.challenge_your_phone_to_a_crusade),
                 color = MaterialTheme.colorScheme.onBackground,
-                style = MaterialTheme.typography.titleLarge.copy(
+                style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Normal
                 ),
                 textAlign = TextAlign.Center
@@ -131,8 +145,25 @@ fun CreateGameSection(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        HorizontalDivider()
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        NumberOfCardsPerPlayerSection(
+            modifier = Modifier.fillMaxWidth(),
+            numberOfCardsPerPlayer = numberOfCardsPerPlayer,
+            onDecreaseNumberOfCards = {
+                onEvent(CardsStartEvents.DecreaseNumberOfCards)
+            },
+            onIncreaseNumberOfCards = {
+                onEvent(CardsStartEvents.IncreaseNumberOfCards)
+            }
+        )
+
         Button(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             onClick = onStartClick,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xffff8800)
@@ -148,6 +179,77 @@ fun CreateGameSection(
     }
 }
 
+@Composable
+fun NumberOfCardsPerPlayerSection(
+    modifier: Modifier,
+    numberOfCardsPerPlayer: Int,
+    onDecreaseNumberOfCards: () -> Unit,
+    onIncreaseNumberOfCards: () -> Unit,
+) {
+
+    Column(
+        modifier = modifier,
+    ) {
+        Text(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            text = "Number of cards per player",
+            style = MaterialTheme.typography.labelLarge
+        )
+
+        Row(
+            modifier = Modifier
+                .wrapContentWidth()
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 8.dp)
+                .border(
+                    width = 1.dp,
+                    MaterialTheme.colorScheme.onBackground,
+                    shape = MaterialTheme.shapes.medium
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            IconButton(
+                modifier = Modifier,
+                onClick = onDecreaseNumberOfCards
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .rotate(90f),
+                    imageVector = Icons.AutoMirrored.Sharp.ArrowForward,
+                    contentDescription = "decrease"
+                )
+            }
+
+            VerticalDivider(
+                modifier = Modifier.height(24.dp)
+            )
+
+            Text(
+                modifier = Modifier.padding(horizontal = 24.dp),
+                text = numberOfCardsPerPlayer.toDoubleDigits(),
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            VerticalDivider(
+                modifier = Modifier.height(24.dp)
+            )
+
+            IconButton(
+                modifier = Modifier,
+                onClick = onIncreaseNumberOfCards
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .rotate(90f),
+                    imageVector = Icons.AutoMirrored.Sharp.ArrowBack,
+                    contentDescription = "Increase"
+                )
+            }
+        }
+    }
+}
+
 @Preview
 @Composable
 private fun CreateGameSectionLightPrev() {
@@ -155,6 +257,7 @@ private fun CreateGameSectionLightPrev() {
         CreateGameSection(
             Modifier
                 .fillMaxWidth(),
+            numberOfCardsPerPlayer = 5,
             cardHeight = 96.dp
         )
     }
@@ -166,7 +269,9 @@ private fun CreateGameSectionDarkPrev() {
     GamesHubAppTheme(darkTheme = true) {
         CreateGameSection(
             Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background),
+            numberOfCardsPerPlayer = 5,
             cardHeight = 96.dp
         )
     }

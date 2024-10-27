@@ -25,6 +25,8 @@ interface CrusadeCardsPreferencesManager {
 
     val AndroidUser: Flow<Player>
 
+    val  numberOfCardsPerPlayer: Flow<Int>
+
     suspend fun updatePlayer(player: Player): Response<Unit>
 
     suspend fun updateAndroidPlayer(player: Player): Response<Unit>
@@ -38,5 +40,9 @@ interface CrusadeCardsPreferencesManager {
     suspend fun updateRecentCardType(recentType: String): Response<Unit>
 
     suspend fun updateRecentGameId(gameId: String): Response<Unit>
+
+    suspend fun updateNumberOfCardsPerPlayer(numOfCards: Int): Response<Unit>
+
+
 
 }

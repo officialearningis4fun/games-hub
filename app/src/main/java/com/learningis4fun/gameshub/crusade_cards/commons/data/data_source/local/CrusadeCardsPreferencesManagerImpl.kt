@@ -13,6 +13,7 @@ import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toCardState
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
@@ -189,6 +190,24 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override val numberOfCardsPerPlayer: Flow<Int>
+        get() = context.dataStore.data.map {
+            it[PreferencesKeys.NUMBER_OF_CARDS_PER_PLAYER] ?: Constants.DEFAULT_CARDS_PER_USER
+        }
+
+    override suspend fun updateNumberOfCardsPerPlayer(numOfCards: Int): Response<Unit> {
+        return try {
+            context.dataStore.edit {
+                it[PreferencesKeys.NUMBER_OF_CARDS_PER_PLAYER] = numOfCards
+            }
+            Response.Success(Unit)
+        } catch (exception: Exception) {
+            Response.Error(
+                "Failed to change number of cards: ${exception.localizedMessage}"
+            )
+        }
+    }
+
     object PreferencesKeys {
         val RECENT_GAME_ID = stringPreferencesKey("curr-game-id")
         val RECENT_CARD_TYPE = stringPreferencesKey("recent-card-type")
@@ -196,6 +215,8 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
         val USER_CARDS_SORT_BY = stringPreferencesKey("user-cards-sort-by")
 
         val USER_ID = stringPreferencesKey("user-id")
+
+        val NUMBER_OF_CARDS_PER_PLAYER = intPreferencesKey("number-of-cards-per-player")
 
         object CardStatesPreferences {
             val CARD_STATE_NAME = stringPreferencesKey("card-state-name")

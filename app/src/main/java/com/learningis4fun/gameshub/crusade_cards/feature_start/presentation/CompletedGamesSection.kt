@@ -69,7 +69,6 @@ fun CompletedGamesSection(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CompletedGamesDataSection(
     modifier: Modifier = Modifier,
@@ -95,10 +94,10 @@ fun CompletedGamesDataSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             items(completedGames) {
-                Modifier
-                    .clickable { onGameClick(it.game.id) }
                 CompletedGameItem(
-                    modifier = Modifier.animateItem(fadeInSpec = null, fadeOutSpec = null),
+                    modifier = Modifier
+                        .clickable { onGameClick(it.game.id) }
+                        .animateItem(fadeInSpec = null, fadeOutSpec = null),
                     completedGame = it
                 )
             }

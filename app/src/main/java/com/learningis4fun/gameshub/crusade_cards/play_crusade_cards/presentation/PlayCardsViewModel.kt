@@ -175,7 +175,15 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         // create or resume game
         viewModelScope.launch {
-            createOrResumeGame()
+            val response = createOrResumeGame()
+
+            if (response is Response.Error) {
+                playCardsStateFlow.update {
+                    it.copy(
+                        error = response.message
+                    )
+                }
+            }
         }
 
         viewModelScope.launch {
@@ -535,9 +543,13 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             if (gameId.isEmpty()) {
                 throw Exception("Game identifier not available")
             }
+            val numOfCardsPerPlayer = preference.numberOfCardsPerPlayer.first()
+
             val assigned = assignCardsUseCase.assignCards(
-                gameId = gameId
+                gameId = gameId,
+                howManyCardsPerPlayer = numOfCardsPerPlayer
             )
+
             if (!assigned) {
                 throw Exception("Cards not assigned yet")
             }
@@ -809,8 +821,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         return gameId
     }
 
-    private suspend fun createOrResumeGame() {
-        try {
+    private suspend fun createOrResumeGame(): Response<Unit> {
+        return try {
 
             val gameId = gameRepository.getCurrentGameId().first()
             val updatedGameId: String = if (gameId.isEmpty()) {
@@ -828,9 +840,10 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     )
                 } ?: duration
             }
-
+            Response.Success(Unit)
         } catch (e: Exception) {
             e.printStackTrace()
+            Response.Error("Failed to start the game, please start the game again.")
         }
     }
 

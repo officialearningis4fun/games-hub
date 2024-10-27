@@ -62,6 +62,12 @@ object Constants {
 
     const val DEFAULT_CARDS_PER_USER = 5
 
+    object NumberOfCardsOptions{
+        val DEFAULT_CARDS_PER_PLAYER = 5
+        val MIDDLE_CARDS_PER_PLAYER = 8
+        val HIGHEST_CARDS_PER_PLAYER = 10
+    }
+
     object TestData {
         val playerId = Players.GUEST_PLAYER.id
         val gameId = "gameId"

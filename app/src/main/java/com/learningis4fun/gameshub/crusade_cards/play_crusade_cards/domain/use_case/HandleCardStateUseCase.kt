@@ -28,6 +28,10 @@ class HandleCardStateUseCase @Inject constructor(
     private val user = userRepository.getPlayerSignInDetails()
     private val androidUser = userRepository.getAndroidPlayerSignInDetails()
 
+    private val computerPlayers = listOf(
+        androidUser
+    )
+
     /**
      * from start to Computer Play
      *

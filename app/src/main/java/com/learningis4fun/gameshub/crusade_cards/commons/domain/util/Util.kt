@@ -30,6 +30,10 @@ fun Int.toHiddenCardsCountAboveThree(): String {
     }
 }
 
+fun Int.toDoubleDigits(): String {
+    return if (this < 10) "0${this}" else "$this"
+}
+
 fun Long.toUIDuration(): String = this.toDuration(DurationUnit.MILLISECONDS).toString()
 
 fun Long.toTimeFormatted(): String {

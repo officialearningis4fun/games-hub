@@ -2,6 +2,7 @@ package com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.p
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
@@ -18,7 +19,8 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val preferences: CrusadeCardsPreferencesManager
 ) : ViewModel() {
 
     private val userProfileFlow = MutableStateFlow(Player())
@@ -69,7 +71,8 @@ class ProfileViewModel @Inject constructor(
         profileStateFlow.update { it.copy(isEnableSaveButton = false) }
         viewModelScope.launch {
             try {
-                userRepository.updatePlayerLogin(profileStateFlow.value.user).getDataOrThrowException()
+                userRepository.updatePlayerLogin(profileStateFlow.value.user)
+                    .getDataOrThrowException()
                 success()
             } catch (e: Exception) {
                 e.printStackTrace()

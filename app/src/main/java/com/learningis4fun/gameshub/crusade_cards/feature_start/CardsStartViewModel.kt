@@ -2,11 +2,13 @@ package com.learningis4fun.gameshub.crusade_cards.feature_start
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CardsStartState
@@ -31,7 +33,8 @@ class CardsStartViewModel @Inject constructor(
     val repository: DefaultCardRepository,
     private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
-    private val gameCardRepository: GameCardRepository
+    private val gameCardRepository: GameCardRepository,
+    private val preferences: CrusadeCardsPreferencesManager
 ) : ViewModel() {
 
     private val ongoingGamesStateFlow = MutableStateFlow(OngoingGamesState())
@@ -126,9 +129,45 @@ class CardsStartViewModel @Inject constructor(
                     }
                 }
         }
+
+        viewModelScope.launch {
+            preferences.numberOfCardsPerPlayer.collectLatest { numOfCards ->
+                cardsStartStateFlow.update {
+                    it.copy(numberOfCardsPerPlayer = numOfCards)
+                }
+            }
+        }
     }
 
-    fun onDeleteGame(gameId: String) {
+    fun onEvent(event: CardsStartEvents) {
+        when (event) {
+            CardsStartEvents.DecreaseNumberOfCards -> {
+                viewModelScope.launch {
+                    val numberOfCardsPerPlayer =
+                        cardsStartStateFlow.value.numberOfCardsPerPlayer - 1
+                    if (numberOfCardsPerPlayer >= Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER) {
+                        preferences.updateNumberOfCardsPerPlayer(numberOfCardsPerPlayer)
+                    }
+                }
+            }
+
+            CardsStartEvents.IncreaseNumberOfCards -> {
+                viewModelScope.launch {
+                    val numberOfCardsPerPlayer =
+                        cardsStartStateFlow.value.numberOfCardsPerPlayer + 1
+                    if (numberOfCardsPerPlayer <= Constants.NumberOfCardsOptions.HIGHEST_CARDS_PER_PLAYER) {
+                        preferences.updateNumberOfCardsPerPlayer(numberOfCardsPerPlayer)
+                    }
+                }
+            }
+
+            is CardsStartEvents.DeleteGame -> {
+                onDeleteGame(event.gameId)
+            }
+        }
+    }
+
+    private fun onDeleteGame(gameId: String) {
         viewModelScope.launch {
             try {
                 gameRepository.deleteGame(gameId).getDataOrThrowException()

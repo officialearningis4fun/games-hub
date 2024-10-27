@@ -21,6 +21,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +51,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.NumberOfCardsPerPlayerSection
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 
@@ -70,15 +72,14 @@ fun NavGraphBuilder.playedGameWinnerComposable(
 
         val playedGameWinnerState by viewModel.playedGameWinnerState.collectAsStateWithLifecycle()
 
-        println("viewModel hash: ${viewModel.hashCode()}")
-
         PlayedGameWinner(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
             playedGameWinnerState = playedGameWinnerState,
             onStartGame = onStartGame,
-            onCloseClick = onCloseClick
+            onCloseClick = onCloseClick,
+            onEvent = viewModel::onEvent
         )
     }
 }
@@ -90,7 +91,8 @@ fun PlayedGameWinner(
     modifier: Modifier = Modifier,
     playedGameWinnerState: PlayedGameWinnerState,
     onStartGame: () -> Unit = {},
-    onCloseClick: () -> Unit = {}
+    onCloseClick: () -> Unit = {},
+    onEvent: (PlayedGameWinnerEvents) -> Unit = {}
 ) {
 
     Scaffold(
@@ -133,7 +135,10 @@ fun PlayedGameWinner(
                     winnerImageUrl = playedGameWinnerState.winnerImageUrl,
                     winnerNames = playedGameWinnerState.winnerNames,
                     duration = playedGameWinnerState.gameDuration,
-                    otherPlayers = playedGameWinnerState.otherPlayers, onStartGame = onStartGame,
+                    numberOfCardsPerPlayer = playedGameWinnerState.numberOfCardsPerPlayer,
+                    otherPlayers = playedGameWinnerState.otherPlayers,
+                    onStartGame = onStartGame,
+                    onEvent = onEvent
                 )
             }
         }
@@ -148,8 +153,10 @@ private fun WinnerSection(
     winnerImageUrl: String,
     winnerNames: String,
     duration: String,
+    numberOfCardsPerPlayer: Int,
     otherPlayers: List<Player>,
     onStartGame: () -> Unit,
+    onEvent: (PlayedGameWinnerEvents) -> Unit = {}
 ) {
     val winnerImage by remember {
         mutableIntStateOf(
@@ -223,8 +230,25 @@ private fun WinnerSection(
             }
         }
 
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        NumberOfCardsPerPlayerSection(
+            modifier = Modifier.fillMaxWidth(),
+            numberOfCardsPerPlayer = numberOfCardsPerPlayer,
+            onDecreaseNumberOfCards = {
+                onEvent(PlayedGameWinnerEvents.DecreaseNumberOfCards)
+            },
+            onIncreaseNumberOfCards = {
+                onEvent(PlayedGameWinnerEvents.IncreaseNumberOfCards)
+            }
+        )
+
         Button(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             onClick = onStartGame,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
