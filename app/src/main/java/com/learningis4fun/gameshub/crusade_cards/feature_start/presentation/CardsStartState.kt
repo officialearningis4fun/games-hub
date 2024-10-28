@@ -7,5 +7,6 @@ data class CardsStartState(
     val showOngoingGame: Boolean = false,
     val ongoingGamesState: OngoingGamesState = OngoingGamesState(),
     val isLoading: Boolean = true,
-    val numberOfCardsPerPlayer: Int = Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER
+    val numberOfCardsPerPlayer: Int = Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER,
+    val numberOfParticipants: Int = Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME
 )

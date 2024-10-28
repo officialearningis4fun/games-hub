@@ -64,7 +64,7 @@ class FakeUserRepositoryImpl : UserRepository {
         return flowOf(Player(uniqueId = Constants.Players.GUEST_PLAYER.id))
     }
 
-    override fun getAndroidPlayerSignInDetails(): Flow<Player> {
+    override fun getDevice1PlayerSignInDetails(): Flow<Player> {
         return flowOf(Player(uniqueId = Constants.Players.ANDROID_PLAYER.id))
     }
 

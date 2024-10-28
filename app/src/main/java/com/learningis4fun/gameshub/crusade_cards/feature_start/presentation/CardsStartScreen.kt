@@ -36,6 +36,9 @@ import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.StartScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.feature_start.CardsStartEvents
@@ -54,18 +57,22 @@ fun NavGraphBuilder.cardsStartScreenComposable(
     composable<StartScreenRoute> {
 
         val cardsStartViewModel: CardsStartViewModel = hiltViewModel()
-
         val cardsStartState by cardsStartViewModel.cardsStartState.collectAsStateWithLifecycle()
+
+        val createNewGameToolsViewModel = hiltViewModel<CreateNewGameToolsViewModel>()
+        val createNewGameToolsState by createNewGameToolsViewModel.createNewGameToolsState.collectAsStateWithLifecycle()
 
         CardsStartScreen(
             modifier = Modifier
                 .fillMaxSize(),
             cardsStartState = cardsStartState,
+            createNewGameToolsState = createNewGameToolsState,
             onStartClick = onStartClick,
             onResumeClick = onResumeClick,
             onProfileClick = onProfileClick,
             onGameClick = onGameClick,
-            onEvent = cardsStartViewModel::onEvent
+            onEvent = cardsStartViewModel::onEvent,
+            onCreateGameEvent = createNewGameToolsViewModel::onEvent
         )
     }
 }
@@ -76,11 +83,13 @@ fun NavGraphBuilder.cardsStartScreenComposable(
 fun CardsStartScreen(
     modifier: Modifier,
     cardsStartState: CardsStartState,
+    createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
     onStartClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onProfileClick: () -> Unit = {},
     onGameClick: (String) -> Unit = {},
-    onEvent: (CardsStartEvents) -> Unit = {}
+    onEvent: (CardsStartEvents) -> Unit = {},
+    onCreateGameEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
 
     Scaffold(
@@ -132,8 +141,8 @@ fun CardsStartScreen(
                 onDeleteGame = {
                     onEvent(CardsStartEvents.DeleteGame(it))
                 },
-                numberOfCardsPerPlayer = cardsStartState.numberOfCardsPerPlayer,
-                onEvent = onEvent
+                createNewGameToolsState = createNewGameToolsState,
+                onEvent = onCreateGameEvent
             )
         }
     }
@@ -178,13 +187,13 @@ fun CardsStartDataScreen(
     modifier: Modifier,
     completedGamesState: CompletedGamesState,
     ongoingGamesState: OngoingGamesState,
-    numberOfCardsPerPlayer: Int,
+    createNewGameToolsState: CreateNewGameToolsState,
     showOngoingGame: Boolean,
     onStartClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onGameClick: (String) -> Unit = {},
     onDeleteGame: (String) -> Unit = {},
-    onEvent: (CardsStartEvents) -> Unit = {}
+    onEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
 
     Box(
@@ -218,9 +227,10 @@ fun CardsStartDataScreen(
             } else {
                 CreateGameSection(
                     modifier = Modifier.fillMaxWidth(),
-                    numberOfCardsPerPlayer = numberOfCardsPerPlayer,
                     onStartClick = onStartClick,
+                    createNewGameToolsState = createNewGameToolsState,
                     onEvent = onEvent
+
                 )
             }
         }

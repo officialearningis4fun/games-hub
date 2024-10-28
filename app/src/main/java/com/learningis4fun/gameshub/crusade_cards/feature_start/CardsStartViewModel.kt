@@ -129,14 +129,6 @@ class CardsStartViewModel @Inject constructor(
                     }
                 }
         }
-
-        viewModelScope.launch {
-            preferences.numberOfCardsPerPlayer.collectLatest { numOfCards ->
-                cardsStartStateFlow.update {
-                    it.copy(numberOfCardsPerPlayer = numOfCards)
-                }
-            }
-        }
     }
 
     fun onEvent(event: CardsStartEvents) {
@@ -163,6 +155,24 @@ class CardsStartViewModel @Inject constructor(
 
             is CardsStartEvents.DeleteGame -> {
                 onDeleteGame(event.gameId)
+            }
+
+            CardsStartEvents.DecreaseNumberOfParticipants -> {
+                viewModelScope.launch {
+                    val numberOfParticipants = cardsStartStateFlow.value.numberOfParticipants - 1
+                    if (numberOfParticipants >= Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME) {
+                        preferences.updateNumberOfCardsPerPlayer(numberOfParticipants)
+                    }
+                }
+            }
+
+            CardsStartEvents.IncreaseNumberOfParticipants -> {
+                viewModelScope.launch {
+                    val numberOfParticipants = cardsStartStateFlow.value.numberOfParticipants + 1
+                    if (numberOfParticipants <= Constants.MAX_PARTICIPANTS_IN_CRUSADE_GAME) {
+                        preferences.updateNumberOfCardsPerPlayer(numberOfParticipants)
+                    }
+                }
             }
         }
     }

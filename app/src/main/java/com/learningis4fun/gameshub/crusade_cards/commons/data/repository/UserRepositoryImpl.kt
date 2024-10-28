@@ -83,12 +83,24 @@ class UserRepositoryImpl @ExperimentalCoroutinesApi
         return crusadeCardsPreferencesManager.user
     }
 
-    override fun getAndroidPlayerSignInDetails(): Flow<Player> {
-        return crusadeCardsPreferencesManager.AndroidUser
+    override fun getDevice1PlayerSignInDetails(): Flow<Player> {
+        return crusadeCardsPreferencesManager.device1
     }
 
-    override suspend fun getAndroidUserId(): String {
-        return getAndroidPlayerSignInDetails().first().uniqueId
+    override fun getDevice2PlayerSignInDetails(): Flow<Player> {
+        return crusadeCardsPreferencesManager.device2
+    }
+
+    override fun getDevice3PlayerSignInDetails(): Flow<Player> {
+        return crusadeCardsPreferencesManager.device3
+    }
+
+    override suspend fun getComputerPlayerIds(): List<String> {
+        return listOf(
+            getDevice1PlayerSignInDetails().first().uniqueId,
+            getDevice2PlayerSignInDetails().first().uniqueId,
+            getDevice3PlayerSignInDetails().first().uniqueId,
+        )
     }
 
     override suspend fun getUserId(): String {

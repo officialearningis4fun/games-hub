@@ -1,15 +1,15 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case
 
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.yield
@@ -25,11 +25,10 @@ class HandleCardStateUseCase @Inject constructor(
     private val computerCardsController: CrusadeComputerCardsController
 ) {
 
-    private val user = userRepository.getPlayerSignInDetails()
-    private val androidUser = userRepository.getAndroidPlayerSignInDetails()
-
     private val computerPlayers = listOf(
-        androidUser
+        userRepository.getDevice1PlayerSignInDetails(),
+        userRepository.getDevice2PlayerSignInDetails(),
+        userRepository.getDevice3PlayerSignInDetails()
     )
 
     /**
@@ -87,10 +86,12 @@ class HandleCardStateUseCase @Inject constructor(
      * from com start to play with same playerId
      */
 
-    suspend fun handleCardState(state: CardStates): GamePlayerActions? {
+    suspend fun handleCardState(state: CardStates, gameId: String): GamePlayerActions? {
 
         var currPlayerId = ""
         var message = ""
+
+        val computerPlayersIds = computerPlayers.map { it.first().uniqueId }
 
         var cardState: CardStates? = null
         var playCardState: GamePlayerActions? = null
@@ -103,17 +104,22 @@ class HandleCardStateUseCase @Inject constructor(
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.DefineCardAction -> {
 
-                if (state.playerId == androidUser.first().uniqueId) {
+                if (state.playerId in computerPlayersIds) {
                     val action = defaultCardRepository.jokerCardActionByComputer()
                     cardState = if (action == Constants.CardJokerActions.changeType) {
                         CardStates.ChangeType(
                             playerId = state.playerId
                         )
                     } else {
+                        val nextPlayerId = cardsController.getIdOfTheNextPlayer(
+                            state.playerId,
+                            gameId = gameId
+                        )
                         CardStates.Hit(
-                            playerId = user.first().uniqueId,
+                            playerId = nextPlayerId,
                             cardsToPick = 4
                         )
                     }
@@ -126,8 +132,9 @@ class HandleCardStateUseCase @Inject constructor(
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.Hit -> {
-                if (state.playerId == androidUser.first().uniqueId) {
+                if (state.playerId in computerPlayersIds) {
                     val userCard = computerCardsController.cardForComputerToHit(
                         playerId = state.playerId
                     )
@@ -157,6 +164,7 @@ class HandleCardStateUseCase @Inject constructor(
                 currPlayerId = state.playerId
                 message = state.message.toString()
             }
+
             is CardStates.Pick -> {
                 cardState = cardsController.requestPlayerPick(
                     playerId = state.playerId,
@@ -166,6 +174,7 @@ class HandleCardStateUseCase @Inject constructor(
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.Picked -> {
                 cardState = if (state.canPlay) {
 
@@ -175,22 +184,21 @@ class HandleCardStateUseCase @Inject constructor(
                         message = CardStatesDefaultMsg.PlayOnly
                     )
                 } else {
-                    val playerId = if (state.playerId == androidUser.first().uniqueId) {
-                        user.first().uniqueId
-                    } else {
-                        androidUser.first().uniqueId
-                    }
 
                     CardStates.Play(
-                        playerId = playerId
+                        playerId = cardsController.getIdOfTheNextPlayer(
+                            currentPlayer = state.playerId,
+                            gameId = gameId
+                        )
                     )
                 }
 
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.Play -> {
-                if (state.playerId == androidUser.first().uniqueId) {
+                if (state.playerId in computerPlayersIds) {
                     val card = computerCardsController.playCardForComputer(
                         playerId = state.playerId
                     )
@@ -199,7 +207,7 @@ class HandleCardStateUseCase @Inject constructor(
                             card = card,
                             canPick = state.canPick
                         )
-                    } ?: if(state.canPick){
+                    } ?: if (state.canPick) {
                         CardStates.Pick(
                             playerId = state.playerId,
                         )
@@ -226,22 +234,21 @@ class HandleCardStateUseCase @Inject constructor(
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.Played -> {
-                cardState = if (state.playerId == androidUser.first().uniqueId) {
-                    CardStates.Play(
-                        playerId = user.first().uniqueId
+                cardState = CardStates.Play(
+                    playerId = cardsController.getIdOfTheNextPlayer(
+                        currentPlayer = state.playerId,
+                        gameId = gameId
                     )
-                } else {
-                    CardStates.Play(
-                        playerId = androidUser.first().uniqueId
-                    )
-                }
+                )
 
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.ChangeType -> {
-                if (state.playerId == androidUser.first().uniqueId) {
+                if (state.playerId in computerPlayersIds) {
                     val newCardType = computerCardsController.newCardType(state.playerId)
                     cardState = cardsController.requestPlayerChangeType(
                         playerId = state.playerId,
@@ -257,50 +264,47 @@ class HandleCardStateUseCase @Inject constructor(
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.ChangedType -> {
-                cardState = if (state.playerId == androidUser.first().uniqueId) {
-                    CardStates.Play(
-                        playerId = user.first().uniqueId
+                cardState = CardStates.Play(
+                    playerId = cardsController.getIdOfTheNextPlayer(
+                        currentPlayer = state.playerId,
+                        gameId = gameId
                     )
-                } else {
-                    CardStates.Play(
-                        playerId = androidUser.first().uniqueId
-                    )
-                }
+                )
 
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.NoAvailableCard -> {
 
-                cardState = if (state.playerId == androidUser.first().uniqueId) {
-                    CardStates.Play(
-                        playerId = user.first().uniqueId
+                cardState = CardStates.Play(
+                    playerId = cardsController.getIdOfTheNextPlayer(
+                        currentPlayer = state.playerId,
+                        gameId = gameId
                     )
-                } else {
-                    CardStates.Play(
-                        playerId = androidUser.first().uniqueId,
-                    )
-                }
+                )
 
                 currPlayerId = state.playerId
                 message = state.message
             }
+
             is CardStates.Start -> {
                 // computer always start the game for now
                 cardState = CardStates.Play(
-                    playerId = androidUser.first().uniqueId,
+                    playerId = computerPlayersIds.first(),
                     canPick = false
                 )
 
             }
+
             is CardStates.Error -> {
                 // send errors through -> TODO()
             }
         }
         cardState?.let {
             println("cardStates In DB:${cardState}")
-            yield()
             saveCardStateToPreferences(it)
         }
 
@@ -309,10 +313,11 @@ class HandleCardStateUseCase @Inject constructor(
             is CardStates.Play,
             is CardStates.Hit,
             is CardStates.DefineCardAction -> Unit
+
             else -> playCardState = GamePlayerActions.Default
         }
 
-        if (currPlayerId.isNotEmpty() && currPlayerId == androidUser.first().uniqueId) {
+        if (currPlayerId.isNotEmpty() && currPlayerId in computerPlayersIds) {
             playCardState = GamePlayerActions.ActionMessages(message)
         }
 
@@ -328,6 +333,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             is CardStates.ChangeType -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -335,6 +341,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             is CardStates.ChangedType -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -342,6 +349,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             is CardStates.DefineCardAction -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -350,12 +358,14 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             is CardStates.Error -> {
                 CardStateEntity(
                     cardStateName = state.name,
                     message = state.message
                 )
             }
+
             is CardStates.Hit -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -364,6 +374,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message.toString()
                 )
             }
+
             is CardStates.NoAvailableCard -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -371,6 +382,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             is CardStates.Pick -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -380,6 +392,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             is CardStates.Picked -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -389,6 +402,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             is CardStates.Play -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -397,6 +411,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             is CardStates.Played -> {
                 CardStateEntity(
                     cardStateName = state.name,
@@ -404,6 +419,7 @@ class HandleCardStateUseCase @Inject constructor(
                     message = state.message
                 )
             }
+
             CardStates.Start -> {
                 CardStateEntity(
                     cardStateName = state.name

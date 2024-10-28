@@ -24,7 +24,7 @@ class AddParticipantsViewModel @Inject constructor(
 ) :ViewModel(){
 
     val user = userRepository.getPlayerSignInDetails()
-    val androidUser = userRepository.getAndroidPlayerSignInDetails()
+    val androidUser = userRepository.getDevice1PlayerSignInDetails()
 
     val _gameDuration = MutableStateFlow(Pair(false, 0L))
     private var lastCurrentTime = 0L

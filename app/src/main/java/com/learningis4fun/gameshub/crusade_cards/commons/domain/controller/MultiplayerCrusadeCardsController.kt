@@ -14,6 +14,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
+import kotlin.math.abs
 
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
@@ -148,7 +149,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                     )
                 } else {
                     // same user requested to play with error message of previous card
-                    if (playerId == userRepository.getAndroidUserId()) {
+                    if (playerId == userRepository.getComputerPlayerIds().first()) {
                         if (canPick) {
                             CardStates.Pick(
                                 playerId = playerId
@@ -237,7 +238,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     private fun howManyUsersToSkip(players: List<String>): Int {
         val size = players.size
         return when (size) {
-            in 3..5 -> 2
+            in 4..5 -> 2
             in 6..7 -> 3
             in 8..10 -> 4
             else -> 1
@@ -250,8 +251,11 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     }
 
     @ExperimentalStdlibApi
-    suspend fun findNextPlayerToPlayAboveSeven(currPlayerId: String, gameId: String): String? {
+    suspend fun findNextPlayerToPlayAboveSeven(currPlayerId: String, gameId: String): String {
         val players = playerIds(gameId = gameId)
+
+        println("gameId: $gameId")
+        println("players: $players")
 
         return if (players.size == 2) {
             currPlayerId
@@ -259,11 +263,15 @@ class MultiplayerCrusadeCardsController @Inject constructor(
             val howManyToSkip = howManyUsersToSkip(players = players)
             val indexOfCurrPlayer = players.indexOf(currPlayerId)
 
-            if (indexOfCurrPlayer + howManyToSkip > players.lastIndex) {
-                null
+            val pos = players.lastIndex - (indexOfCurrPlayer + howManyToSkip + 1)
+
+            val indexOfId = if (pos < 0) {
+                abs(pos) - 1
             } else {
-                players[indexOfCurrPlayer + howManyToSkip]
+                players.lastIndex - pos
             }
+
+            players[indexOfId]
         }
     }
 
@@ -609,12 +617,12 @@ class MultiplayerCrusadeCardsController @Inject constructor(
             )
         }
 
-        val idOfOtherPlayer = getIdOfTheNextPlayerToHit(
-            playerRequestingToHit = playerId,
+        val idOfOtherPlayer = getIdOfTheNextPlayer(
+            currentPlayer = playerId,
             gameId = getCurrentGameId()
         )
 
-        if (idOfOtherPlayer.isNullOrEmpty()) {
+        if (idOfOtherPlayer.isEmpty()) {
             return CardStates.Error("Error while hitting, couldn't find the other player to hit")
         }
 
@@ -638,30 +646,26 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         )
     }
 
-    suspend fun getIdOfTheNextPlayerToHit(playerRequestingToHit: String, gameId: String): String? {
+    suspend fun getIdOfTheNextPlayer(currentPlayer: String, gameId: String): String {
         val players = playerIds(gameId = gameId)
 
         if (players.size == 2) {
-            return players.first { it != playerRequestingToHit }
+            return players.first { it != currentPlayer }
         }
 
-        val indexOfPlayerToHit = players.indexOf(playerRequestingToHit)
-
-        if (indexOfPlayerToHit == -1) {
-            return null
-        }
+        val indexOfNextPlayer = players.indexOf(currentPlayer)
 
         return when {
-            indexOfPlayerToHit == players.lastIndex -> {
+            indexOfNextPlayer == players.lastIndex -> {
                 players.first()
             }
 
-            indexOfPlayerToHit < players.lastIndex -> {
-                players[indexOfPlayerToHit + 1]
+            indexOfNextPlayer < players.lastIndex -> {
+                players[indexOfNextPlayer + 1]
             }
 
             else -> {
-                null
+                ""
             }
         }
     }

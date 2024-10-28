@@ -189,7 +189,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         viewModelScope.launch {
             gameRepository.getCurrentGameId().flatMapLatest {
                 gameRepository.getGame(it)
-            }.collectLatest { game ->
+            }.collect { game ->
                 game?.gameState?.let {
                     when (toState(game.gameState)) {
                         GameState.Completed,
@@ -316,7 +316,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 if (hasWinner != null && !isCardSevenOrJack) {
                     TrackingPlay.HasWinner(player = hasWinner, gameId = gameId)
                 } else {
-                    val playCardState = handleCardStateUseCase.handleCardState(cardState)
+                    val playCardState =
+                        handleCardStateUseCase.handleCardState(cardState, gameId = gameId)
                     // game action messages
                     gamePlayerActionsFlow.update {
                         playCardState ?: it
@@ -380,7 +381,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     private suspend fun gameActionMessages(state: CardStates): CardsActionMessage {
         return when (state) {
             is CardStates.ChangeType -> {
-                if (state.playerId == userRepository.getAndroidUserId()) {
+                if (state.playerId in userRepository.getComputerPlayerIds()) {
                     CardsActionMessage("...", true)
                 } else {
                     CardsActionMessage(
@@ -390,7 +391,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
 
             is CardStates.DefineCardAction -> {
-                if (state.playerId == userRepository.getAndroidUserId()) {
+                if (state.playerId in userRepository.getComputerPlayerIds()) {
                     CardsActionMessage("...", true)
                 } else {
                     CardsActionMessage(
@@ -401,7 +402,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             is CardStates.Error -> CardsActionMessage(message = state.message)
             is CardStates.Hit -> {
-                if (state.playerId == userRepository.getAndroidUserId()) {
+                if (state.playerId in userRepository.getComputerPlayerIds()) {
                     CardsActionMessage("...", true)
                 } else {
                     val message = "${CardStatesDefaultMsg.HitBackOrPick} ${state.cardsToPick} cards"
@@ -421,7 +422,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
 
             is CardStates.Play -> {
-                if (state.playerId == userRepository.getAndroidUserId()) {
+                if (state.playerId in userRepository.getComputerPlayerIds()) {
                     CardsActionMessage("...", true)
                 } else {
                     val message = if (state.canPick) {
@@ -526,10 +527,18 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         return try {
             val loggedUser = user.first()
 
-            val participants = listOf(
-                loggedUser,
-                userRepository.getAndroidPlayerSignInDetails().first()
-            )
+            val numOfCardsPerPlayer = preference.numberOfCardsPerPlayer.first()
+            val numberOfParticipants = preference.numberOfParticipantsInCrusadeGame.first()
+
+            val devicesPlayers = listOf(
+                userRepository.getDevice1PlayerSignInDetails().first(),
+                userRepository.getDevice2PlayerSignInDetails().first(),
+                userRepository.getDevice3PlayerSignInDetails().first(),
+            ).take(numberOfParticipants - 1)
+
+            val participants = listOf(loggedUser)
+                .union(devicesPlayers)
+                .toList()
 
             participants.forEach { player ->
                 userRepository.savePlayer(player).getDataOrThrowException()
@@ -543,7 +552,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             if (gameId.isEmpty()) {
                 throw Exception("Game identifier not available")
             }
-            val numOfCardsPerPlayer = preference.numberOfCardsPerPlayer.first()
+
 
             val assigned = assignCardsUseCase.assignCards(
                 gameId = gameId,
@@ -623,7 +632,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
 
             CardStates.Start -> {
-                playerId == userRepository.getAndroidUserId()
+                playerId == userRepository.getComputerPlayerIds().first()
             }
 
             else -> false

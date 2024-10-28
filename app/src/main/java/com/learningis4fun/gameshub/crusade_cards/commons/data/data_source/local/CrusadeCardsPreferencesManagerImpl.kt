@@ -79,15 +79,33 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
         )
     }
 
-    override val AndroidUser: Flow<Player> = context.dataStore.data.map {
+    override val device1: Flow<Player> = context.dataStore.data.map {
         Player(
-            uniqueId = it[PreferencesKeys.AndroidPlayer.UNIQUE_ID]
-                ?: "7iooVf8Vu9T8NR2JcwgqLbgr0OC3",
-            email = it[PreferencesKeys.AndroidPlayer.EMAIL] ?: "",
-            phone = it[PreferencesKeys.AndroidPlayer.PHONE] ?: "",
-            imageUrl = it[PreferencesKeys.AndroidPlayer.IMAGE_URL]
-                ?: R.drawable.ai_platform.toString(),
-            profileName = it[PreferencesKeys.AndroidPlayer.PROFILE_NAME] ?: "Device"
+            uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3dev1",
+            email = "",
+            phone = "",
+            imageUrl = R.drawable.ai_platform.toString(),
+            profileName = it[PreferencesKeys.AndroidPlayer.PROFILE_NAME] ?: "Dev1"
+        )
+    }
+
+    override val device2: Flow<Player> = context.dataStore.data.map {
+        Player(
+            uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3dev2",
+            email = "",
+            phone = "",
+            imageUrl = R.drawable.ai_platform.toString(),
+            profileName = "Dev2"
+        )
+    }
+
+    override val device3: Flow<Player> = context.dataStore.data.map {
+        Player(
+            uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3dev3",
+            email = "",
+            phone = "",
+            imageUrl = R.drawable.ai_platform.toString(),
+            profileName = "Dev3"
         )
     }
 
@@ -195,6 +213,11 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
             it[PreferencesKeys.NUMBER_OF_CARDS_PER_PLAYER] ?: Constants.DEFAULT_CARDS_PER_USER
         }
 
+    override val numberOfParticipantsInCrusadeGame: Flow<Int>
+        get() = context.dataStore.data.map {
+        it[PreferencesKeys.NUMBER_OF_PARTICIPANTS_IN_CRUSADE_GAME] ?: Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME
+    }
+
     override suspend fun updateNumberOfCardsPerPlayer(numOfCards: Int): Response<Unit> {
         return try {
             context.dataStore.edit {
@@ -208,6 +231,19 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
         }
     }
 
+    override suspend fun updateNumberOfParticipantsInCrusadeGame(numOfParticipants: Int): Response<Unit> {
+        return try {
+            context.dataStore.edit {
+                it[PreferencesKeys.NUMBER_OF_PARTICIPANTS_IN_CRUSADE_GAME] = numOfParticipants
+            }
+            Response.Success(Unit)
+        } catch (exception: Exception) {
+            Response.Error(
+                "Failed to change number of participants: ${exception.localizedMessage}"
+            )
+        }
+    }
+
     object PreferencesKeys {
         val RECENT_GAME_ID = stringPreferencesKey("curr-game-id")
         val RECENT_CARD_TYPE = stringPreferencesKey("recent-card-type")
@@ -217,6 +253,7 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
         val USER_ID = stringPreferencesKey("user-id")
 
         val NUMBER_OF_CARDS_PER_PLAYER = intPreferencesKey("number-of-cards-per-player")
+        val NUMBER_OF_PARTICIPANTS_IN_CRUSADE_GAME = intPreferencesKey("number-of-participants-in-crusade-game")
 
         object CardStatesPreferences {
             val CARD_STATE_NAME = stringPreferencesKey("card-state-name")

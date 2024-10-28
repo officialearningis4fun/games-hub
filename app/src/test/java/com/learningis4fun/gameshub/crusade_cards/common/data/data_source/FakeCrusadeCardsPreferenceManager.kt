@@ -34,7 +34,7 @@ class FakeCrusadeCardsPreferenceManager : CrusadeCardsPreferencesManager {
         get() = flowOf(_userId)
     override val user: Flow<Player>
         get() = flowOf(_user)
-    override val AndroidUser: Flow<Player>
+    override val device1: Flow<Player>
         get() = flowOf(_androidUser)
 
     override suspend fun updatePlayer(player: Player): Response<String> {

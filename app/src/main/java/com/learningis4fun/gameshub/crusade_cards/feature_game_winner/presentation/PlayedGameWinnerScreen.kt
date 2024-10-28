@@ -7,21 +7,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,9 +44,12 @@ import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsSection
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
-import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.NumberOfCardsPerPlayerSection
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 
@@ -69,17 +67,21 @@ fun NavGraphBuilder.playedGameWinnerComposable(
     ) {
 
         val viewModel: PlayedGameWinnerViewModel = hiltViewModel()
-
         val playedGameWinnerState by viewModel.playedGameWinnerState.collectAsStateWithLifecycle()
+
+        val createNewGameToolsViewModel: CreateNewGameToolsViewModel = hiltViewModel()
+        val createNewGameToolsState by createNewGameToolsViewModel.createNewGameToolsState.collectAsStateWithLifecycle()
 
         PlayedGameWinner(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
             playedGameWinnerState = playedGameWinnerState,
+            createNewGameToolsState = createNewGameToolsState,
             onStartGame = onStartGame,
             onCloseClick = onCloseClick,
-            onEvent = viewModel::onEvent
+            onEvent = viewModel::onEvent,
+            onCreateEvent = createNewGameToolsViewModel::onEvent
         )
     }
 }
@@ -90,9 +92,11 @@ fun NavGraphBuilder.playedGameWinnerComposable(
 fun PlayedGameWinner(
     modifier: Modifier = Modifier,
     playedGameWinnerState: PlayedGameWinnerState,
+    createNewGameToolsState: CreateNewGameToolsState,
     onStartGame: () -> Unit = {},
     onCloseClick: () -> Unit = {},
-    onEvent: (PlayedGameWinnerEvents) -> Unit = {}
+    onEvent: (PlayedGameWinnerEvents) -> Unit = {},
+    onCreateEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
 
     Scaffold(
@@ -135,10 +139,11 @@ fun PlayedGameWinner(
                     winnerImageUrl = playedGameWinnerState.winnerImageUrl,
                     winnerNames = playedGameWinnerState.winnerNames,
                     duration = playedGameWinnerState.gameDuration,
-                    numberOfCardsPerPlayer = playedGameWinnerState.numberOfCardsPerPlayer,
+                    createNewGameToolsState = createNewGameToolsState,
                     otherPlayers = playedGameWinnerState.otherPlayers,
                     onStartGame = onStartGame,
-                    onEvent = onEvent
+                    onEvent = onEvent,
+                    onCreateEvent = onCreateEvent
                 )
             }
         }
@@ -153,10 +158,11 @@ private fun WinnerSection(
     winnerImageUrl: String,
     winnerNames: String,
     duration: String,
-    numberOfCardsPerPlayer: Int,
+    createNewGameToolsState: CreateNewGameToolsState,
     otherPlayers: List<Player>,
     onStartGame: () -> Unit,
-    onEvent: (PlayedGameWinnerEvents) -> Unit = {}
+    onEvent: (PlayedGameWinnerEvents) -> Unit = {},
+    onCreateEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
     val winnerImage by remember {
         mutableIntStateOf(
@@ -230,38 +236,15 @@ private fun WinnerSection(
             }
         }
 
-        HorizontalDivider(
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-
-        NumberOfCardsPerPlayerSection(
-            modifier = Modifier.fillMaxWidth(),
-            numberOfCardsPerPlayer = numberOfCardsPerPlayer,
-            onDecreaseNumberOfCards = {
-                onEvent(PlayedGameWinnerEvents.DecreaseNumberOfCards)
-            },
-            onIncreaseNumberOfCards = {
-                onEvent(PlayedGameWinnerEvents.IncreaseNumberOfCards)
-            }
-        )
-
-        Button(
+        CreateNewGameToolsSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
-            onClick = onStartGame,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            )
-        ) {
-            Icon(
-                painterResource(id = R.drawable.ic_outline_phone_android),
-                contentDescription = null
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "PLAY ANOTHER GAME")
-        }
+            createGameButtonText = "Play another game",
+            createNewGameToolsState = createNewGameToolsState,
+            onEvent = onCreateEvent,
+            onStartGame = onStartGame
+        )
     }
 }
 
@@ -273,7 +256,8 @@ private fun PlayedGameWinnerLoadingLightPrev() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
-            playedGameWinnerState = PlayedGameWinnerState()
+            playedGameWinnerState = PlayedGameWinnerState(),
+            createNewGameToolsState = CreateNewGameToolsState()
         )
     }
 }
@@ -286,7 +270,8 @@ private fun PlayedGameWinnerLoadingDarkPrev() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
-            playedGameWinnerState = PlayedGameWinnerState()
+            playedGameWinnerState = PlayedGameWinnerState(),
+            createNewGameToolsState = CreateNewGameToolsState()
         )
     }
 }
@@ -311,7 +296,8 @@ private fun PlayedGameWinnerPrev() {
                 ),
                 winnerNames = "Hlompho",
                 winnerImageUrl = R.drawable.avatar_boy1.toString()
-            )
+            ),
+            createNewGameToolsState = CreateNewGameToolsState()
         )
     }
 }
@@ -341,7 +327,8 @@ private fun PlayedGameWinnerDarkPrev() {
                 ),
                 winnerNames = "Hlompho",
                 winnerImageUrl = R.drawable.avatar_boy1.toString()
-            )
+            ),
+            createNewGameToolsState = CreateNewGameToolsState()
         )
     }
 }

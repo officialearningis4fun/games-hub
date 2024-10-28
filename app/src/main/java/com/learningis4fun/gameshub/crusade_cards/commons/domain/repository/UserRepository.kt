@@ -1,6 +1,5 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.repository
 
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.AuthStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import kotlinx.coroutines.flow.Flow
@@ -11,7 +10,7 @@ interface UserRepository {
 
     suspend fun getUserId(): String
 
-    suspend fun getAndroidUserId(): String
+    suspend fun getComputerPlayerIds(): List<String>
 
     suspend fun updatePlayerLogin(player: Player): Response<Unit>
 
@@ -23,7 +22,9 @@ interface UserRepository {
 
     fun getPlayerSignInDetails(): Flow<Player>
 
-    fun getAndroidPlayerSignInDetails(): Flow<Player>
+    fun getDevice1PlayerSignInDetails(): Flow<Player>
+    fun getDevice2PlayerSignInDetails(): Flow<Player>
+    fun getDevice3PlayerSignInDetails(): Flow<Player>
 
     fun getPlayers(): Flow<List<Player>>
 }

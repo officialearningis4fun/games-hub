@@ -901,8 +901,8 @@ class MultiplayerCrusadeCardsControllerTest {
                 gameName = "game",
                 participants = participants
             )
-            val actual = cardsController.getIdOfTheNextPlayerToHit(
-                playerRequestingToHit = comUserId,
+            val actual = cardsController.getIdOfTheNextPlayer(
+                currentPlayer = comUserId,
                 gameId = gameId
             )
             assertThat(actual).isNotEqualTo(comUserId)
@@ -926,8 +926,8 @@ class MultiplayerCrusadeCardsControllerTest {
                 participants = participants
             )
 
-            val actual = cardsController.getIdOfTheNextPlayerToHit(
-                playerRequestingToHit = comUserId,
+            val actual = cardsController.getIdOfTheNextPlayer(
+                currentPlayer = comUserId,
                 gameId = gameId
             )
 

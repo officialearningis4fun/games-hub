@@ -1,10 +1,10 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 
+import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.User
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
-import com.learningis4fun.gameshub.R
 
 
 object Constants {
@@ -38,21 +38,21 @@ object Constants {
         const val JOKER = "joker"
     }
 
-    object CardJokerActions{
+    object CardJokerActions {
         val hit = "hit"
         val changeType = "change-type"
     }
 
-     val HITTING_CARD_NAMES = listOf(
-         CardNames.TWO,
-         CardNames.JOKER,
+    val HITTING_CARD_NAMES = listOf(
+        CardNames.TWO,
+        CardNames.JOKER,
     )
 
     const val NUM_OF_CARDS_TO_PICK_FOR_JOKER = 4
     const val GAME_DURATION_INTERVAL = 1000L
 
     object CardsImages {
-         val ONE_CLUB_IMG = R.drawable.club_1
+        val ONE_CLUB_IMG = R.drawable.club_1
     }
 
     object Players {
@@ -62,7 +62,10 @@ object Constants {
 
     const val DEFAULT_CARDS_PER_USER = 5
 
-    object NumberOfCardsOptions{
+    const val DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME = 2
+    const val MAX_PARTICIPANTS_IN_CRUSADE_GAME = 4
+
+    object NumberOfCardsOptions {
         val DEFAULT_CARDS_PER_PLAYER = 5
         val MIDDLE_CARDS_PER_PLAYER = 8
         val HIGHEST_CARDS_PER_PLAYER = 10
