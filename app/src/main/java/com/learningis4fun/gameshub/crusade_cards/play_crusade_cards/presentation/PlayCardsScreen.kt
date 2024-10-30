@@ -191,7 +191,7 @@ fun PlayCardsScreen(
                         Text(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             style = MaterialTheme.typography.titleSmall,
-                            text = "PLAYERS",
+                            text = if(playCardsState.playersScreenInfo.size > 2) gameDuration else "PLAYERS",
                         )
                     }
                 },
@@ -261,7 +261,6 @@ fun PlayCardsDataRoot(
                     modifier = Modifier
                         .fillMaxWidth(),
                     playersScreenInfo = playCardsState.playersScreenInfo,
-                    duration = gameDuration
                 )
             } else {
 

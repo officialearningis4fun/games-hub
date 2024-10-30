@@ -24,7 +24,7 @@ import javax.inject.Provider
 @Database(
     entities = [Player::class, Card::class, Game::class, GameCard::class, GameUserCrossRef::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class GamesDatabase : RoomDatabase() {
     abstract fun gameUserCrossRef(): GameUserCrossRefDao

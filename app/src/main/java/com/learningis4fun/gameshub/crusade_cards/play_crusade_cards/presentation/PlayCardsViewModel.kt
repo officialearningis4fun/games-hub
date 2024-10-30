@@ -96,22 +96,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 preference.recentCardState,
                 updateOnGameStartedFlow
             ) { cardState, update -> Pair(cardState, update) }.collect {
-                when (val tracking = playCardsGameWhenOnCardStateChange()) {
-                    is TrackingPlay.HasWinner -> {
-                        requestedToEndGame(
-                            winner = tracking.player,
-                            gameId = tracking.gameId
-                        )
-                    }
-
-                    TrackingPlay.ContinuePlaying -> {
-                        println("tracker: continue playing")
-                    }
-
-                    is TrackingPlay.Error -> {
-                        println("tracker:error: ${tracking.msg} ")
-                    }
-                }
+                playCardsGameWhenOnCardStateChange()
             }
         }
 
@@ -270,61 +255,76 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
         }
 
-    private suspend fun playCardsGameWhenOnCardStateChange(): TrackingPlay {
-        val gameId = gameRepository.getCurrentGameId().first()
-        val cardState = preference.recentCardState.first()
+    private suspend fun playCardsGameWhenOnCardStateChange() {
+        try {
+            val gameId = gameRepository.getCurrentGameId().first()
+            val cardState = preference.recentCardState.first()
 
-        if (gameId.isEmpty()) {
-            return TrackingPlay.Error("Game not found")
-        }
-
-        val currGame = gameRepository.getGame(gameId).first()
-            ?: return TrackingPlay.Error("Game not found")
-
-        val gameState = toState(currGame.gameState)
-
-        return when (gameState) {
-            GameState.Completed -> {
-                TrackingPlay.Error("game is completed")
+            println("playing: cardState $cardState")
+            if (gameId.isEmpty()) {
+                throw Exception("Game not found: gameId empty")
             }
 
-            GameState.NotStarted -> {
-                TrackingPlay.Error("game is not started")
-            }
+            val currGame = gameRepository.getGame(gameId).first()
+                ?: throw Exception("Game not found")
 
-            GameState.Paused -> {
-                TrackingPlay.Error("Game is paused")
-            }
+            val gameState = toState(currGame.gameState)
 
-            GameState.Started -> {
-                // check if any user has no cards - if yes, they wom so, end game
-                val hasWinner = anyPlayedAllCards(gameId = gameId)
-                val playerIds = gameRepository.getGameWithPlayers(gameId = gameId)
-                    .first()
-                    .players
-                    .map { it.uniqueId }
+            println("playing: gameState $gameState")
 
-                val topCard = gameCardRepository.getTopPlayedCard(
-                    gameId = gameId,
-                    playerIds = playerIds
-                )
-                    .first()?.card
+            when (gameState) {
+                GameState.Completed -> {
+                    throw Exception("Game is completed")
+                }
 
-                val isCardSevenOrJack = topCard?.name == Constants.CardNames.SEVEN
-                        || topCard?.name == Constants.CardNames.JACK
+                GameState.NotStarted -> {
+                    throw Exception("Game is not started")
+                }
 
-                if (hasWinner != null && !isCardSevenOrJack) {
-                    TrackingPlay.HasWinner(player = hasWinner, gameId = gameId)
-                } else {
-                    val playCardState =
-                        handleCardStateUseCase.handleCardState(cardState, gameId = gameId)
-                    // game action messages
-                    gamePlayerActionsFlow.update {
-                        playCardState ?: it
+                GameState.Paused -> {
+                    throw Exception("Game is paused")
+                }
+
+                GameState.Started -> {
+                    // check if any user has no cards - if yes, they wom so, end game
+                    val hasWinner = anyPlayedAllCards(gameId = gameId)
+                    println("hasWinner: $hasWinner")
+
+                    val playerIds = gameRepository.getGameWithPlayers(gameId = gameId)
+                        .first()
+                        .players
+                        .map { it.uniqueId }
+
+                    val topCard = gameCardRepository.getTopPlayedCard(
+                        gameId = gameId,
+                        playerIds = playerIds
+                    )
+                        .first()?.card
+
+                    val isCardSevenOrJack = topCard?.name == Constants.CardNames.SEVEN
+                            || topCard?.name == Constants.CardNames.JACK
+
+                    if (hasWinner != null && !isCardSevenOrJack) {
+                        requestedToEndGame(
+                            winner = hasWinner,
+                            gameId = gameId
+                        )
+                    } else {
+                        println("handleCardStateUseCase started...")
+                        val playCardState = handleCardStateUseCase
+                            .handleCardState(state = cardState, gameId = gameId)
+                        println("handleCardStateUseCase ended...")
+                        println("nextPlayState: $playCardState")
+                        // game action messages
+                        gamePlayerActionsFlow.update {
+                            playCardState ?: it
+                        }
                     }
-                    TrackingPlay.ContinuePlaying
                 }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            TrackingPlay.Error(e.message.toString())
         }
 
     }
@@ -502,11 +502,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             } else {
                 Pair(newUserCards, null)
             }
-
-            println("cards: new cards: $newUserCards")
-            println("cards: old cards: $oldUserCards")
-            println("cards: newly added: $newlyAddedCards")
-
 
             it.copy(
                 playersScreenInfo = uiState.playersScreenInfo,

@@ -9,6 +9,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.getPlayerId
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -199,19 +200,24 @@ class HandleCardStateUseCase @Inject constructor(
 
             is CardStates.Play -> {
                 if (state.playerId in computerPlayersIds) {
+                    println("${state.playerId} is playing")
                     val card = computerCardsController.playCardForComputer(
                         playerId = state.playerId
                     )
+                    println("the available card is ${card?.card}")
                     cardState = card?.let {
+                        println("${state.playerId} is playing the card")
                         cardsController.requestUserPlay(
                             card = card,
                             canPick = state.canPick
                         )
                     } ?: if (state.canPick) {
+                        println("${state.playerId} is requesting to pick a card")
                         CardStates.Pick(
                             playerId = state.playerId,
                         )
                     } else {
+                        println("${state.playerId} is doesn't have a card")
                         CardStates.NoAvailableCard(
                             playerId = state.playerId
                         )
@@ -300,11 +306,11 @@ class HandleCardStateUseCase @Inject constructor(
             }
 
             is CardStates.Error -> {
-                // send errors through -> TODO()
+                println("There is an error while playing...")
             }
         }
         cardState?.let {
-            println("cardStates In DB:${cardState}")
+            yield()
             saveCardStateToPreferences(it)
         }
 

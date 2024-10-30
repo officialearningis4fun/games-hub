@@ -148,8 +148,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                         userCard = userCard
                     )
                 } else {
+                    // the card should not be played...
+                    println("same user requested to play with error message of previous card")
                     // same user requested to play with error message of previous card
-                    if (playerId == userRepository.getComputerPlayerIds().first()) {
+                    if (playerId in userRepository.getComputerPlayerIds()) {
                         if (canPick) {
                             CardStates.Pick(
                                 playerId = playerId

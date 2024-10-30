@@ -6,21 +6,23 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,41 +41,34 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 fun MultiplePlayersSectionScreen(
     modifier: Modifier = Modifier,
     playersScreenInfo: List<PlayerScreenInfo>,
-    duration: String
 ) {
 
-    Column(
-        modifier = modifier
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    val playersListState = rememberLazyListState()
 
-        Row(
-            modifier = Modifier.padding(start = 32.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.Start),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Heading(
-                modifier = Modifier,
-                text = duration,
-                textColor = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.width(8.dp))
+    LaunchedEffect(key1 = playersScreenInfo) {
+        val player = playersScreenInfo.firstOrNull { it.isCurrentlyPlaying }
 
-            LazyRow(
-                modifier = Modifier,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                itemsIndexed(playersScreenInfo) { _, player ->
-                    PlayerItem(
-                        modifier = Modifier,
-                        playerScreenInfo = player
-                    )
-                }
-            }
+        if (player != null) {
+            val index = playersScreenInfo.indexOf(player)
+            playersListState.animateScrollToItem(index = index)
         }
     }
+
+    LazyRow(
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        contentPadding = PaddingValues(horizontal = 16.dp)
+    ) {
+        itemsIndexed(playersScreenInfo) { _, player ->
+            PlayerItem(
+                modifier = Modifier,
+                playerScreenInfo = player
+            )
+        }
+    }
+
 
 }
 
@@ -228,7 +223,6 @@ private fun MultiPlayersSectionLightPrev() {
     GamesHubAppTheme {
         MultiplePlayersSectionScreen(
             playersScreenInfo = playersScreenInfo,
-            duration = "00:20"
         )
     }
 }
@@ -239,7 +233,6 @@ private fun MultiPlayersSectionDarkPrev() {
     GamesHubAppTheme(darkTheme = true) {
         MultiplePlayersSectionScreen(
             playersScreenInfo = playersScreenInfo,
-            duration = "00:20"
         )
     }
 }

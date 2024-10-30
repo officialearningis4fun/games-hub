@@ -2,6 +2,7 @@ package com.learningis4fun.gameshub.crusade_cards.di
 
 import android.app.Application
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Room
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.CrusadeCardsPreferencesManagerImpl
