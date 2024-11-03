@@ -5,6 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameStageRef
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.di.CrusadeCardsDataModule
@@ -13,6 +14,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_so
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.GameDao
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.PlayerDao
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.GameStageDao
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.GameUserCrossRefDao
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import kotlinx.coroutines.CoroutineScope
@@ -22,7 +24,7 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 @Database(
-    entities = [Player::class, Card::class, Game::class, GameCard::class, GameUserCrossRef::class],
+    entities = [Player::class, Card::class, Game::class, GameCard::class, GameUserCrossRef::class, GameStageRef::class],
     version = 1,
     exportSchema = true
 )
@@ -33,6 +35,7 @@ abstract class GamesDatabase : RoomDatabase() {
     abstract fun gameCardDao(): GameCardDao
     abstract fun gameDao(): GameDao
     abstract fun playerDao(): PlayerDao
+    abstract fun gameStageDao(): GameStageDao
 
     class InsertCardsCallback @ExperimentalCoroutinesApi
     @Inject constructor(

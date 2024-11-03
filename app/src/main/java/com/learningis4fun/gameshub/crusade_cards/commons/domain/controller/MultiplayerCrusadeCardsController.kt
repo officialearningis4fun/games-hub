@@ -248,7 +248,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     }
 
     suspend fun playerIds(gameId: String): List<String> {
-        return gameRepository.getGameWithPlayers(gameId = gameId)
+        return gameRepository.getGameWithLatestStagePlayers(gameId = gameId)
             .first().players.map { it.uniqueId }
     }
 

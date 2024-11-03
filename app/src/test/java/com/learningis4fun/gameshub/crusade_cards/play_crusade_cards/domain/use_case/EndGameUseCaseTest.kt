@@ -16,7 +16,7 @@ import org.junit.Before
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
-class EndGameUseCaseTest {
+class invokeUseCaseTest {
 
     private lateinit var endGameUseCase: EndGameUseCase
     private lateinit var createGameUseCase: CreateGameUseCase
@@ -79,7 +79,7 @@ class EndGameUseCaseTest {
 
             val gameId = createGameUseCase.createGame("test-game", participants)
 
-            endGameUseCase.endGame(
+            endGameUseCase.invoke(
                 currGameId = gameId,
                 duration = gameDurationCount,
                 winnerId = winnerName
@@ -96,7 +96,7 @@ class EndGameUseCaseTest {
             var gamePlayersSize = 2
 
             val job1 = launch {
-                gamePlayersSize = fakeGameRepositoryImpl.getGameWithPlayers(gameId)
+                gamePlayersSize = fakeGameRepositoryImpl.getGameWithLatestStagePlayers(gameId)
                     .first()
                     .players
                     .size

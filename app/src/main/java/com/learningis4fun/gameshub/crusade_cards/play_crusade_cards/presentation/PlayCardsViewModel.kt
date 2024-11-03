@@ -212,7 +212,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     private fun lastThreePlayedCards(): Flow<List<UserCard>> =
         gameRepository.getCurrentGameId().flatMapLatest { currentGameId ->
             if (currentGameId.isEmpty()) return@flatMapLatest emptyFlow()
-            gameRepository.getGameWithPlayers(gameId = currentGameId)
+            gameRepository.getGameWithLatestStagePlayers(gameId = currentGameId)
                 .flatMapLatest { gameWithUsers ->
                     if (playCardsStateFlow.value.wonGame.gameId.isNotEmpty()) {
                         emptyFlow()
@@ -232,7 +232,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             if (gameId.isEmpty()) {
                 return@withContext null
             }
-            val playersOfGame = gameRepository.getGameWithPlayers(gameId = gameId).first().players
+            val playersOfGame = gameRepository.getGameWithLatestStagePlayers(gameId = gameId).first().players
             if (playersOfGame.isEmpty()) {
                 return@withContext null
             }
@@ -290,7 +290,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     val hasWinner = anyPlayedAllCards(gameId = gameId)
                     println("hasWinner: $hasWinner")
 
-                    val playerIds = gameRepository.getGameWithPlayers(gameId = gameId)
+                    val playerIds = gameRepository.getGameWithLatestStagePlayers(gameId = gameId)
                         .first()
                         .players
                         .map { it.uniqueId }
@@ -334,7 +334,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         gameId: String
     ) {
         try {
-            endGameUseCase.endGame(
+            endGameUseCase.invoke(
                 currGameId = gameId,
                 duration = _gameDuration.value.second,
                 winnerId = winner.uniqueId
@@ -578,7 +578,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 throw Exception("Game not available")
             }
             val playerIds =
-                gameRepository.getGameWithPlayers(currGameId).first().players.map { it.uniqueId }
+                gameRepository.getGameWithLatestStagePlayers(currGameId).first().players.map { it.uniqueId }
             val topPlayedCardName =
                 gameCardRepository.getTopPlayedCard(
                     gameId = currGameId,
@@ -644,7 +644,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
             val userId = user.first().uniqueId
 
-            val playersIds = gameRepository.getGameWithPlayers(currGameId)
+            val playersIds = gameRepository.getGameWithLatestStagePlayers(currGameId)
                 .first()
                 .players
                 .map {

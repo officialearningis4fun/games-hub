@@ -42,7 +42,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val completedGame = gameRepository
-        .getGameWithPlayers(gameId = gameId)
+        .getGameWithLatestStagePlayers(gameId = gameId)
         .flatMapLatest {
             flow {
                 val initialState = PlayedGameWinnerState()

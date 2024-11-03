@@ -2,7 +2,6 @@ package com.learningis4fun.gameshub.crusade_cards.di
 
 import android.app.Application
 import android.content.Context
-import androidx.room.AutoMigration
 import androidx.room.Room
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.CrusadeCardsPreferencesManagerImpl
@@ -12,11 +11,13 @@ import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.CardRep
 import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.DefaultCardRepositoryImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.GameCardRepositoryImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.GameRepositoryImpl
+import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.GameStageRepositoryImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.UserRepositoryImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetAllCards
@@ -110,6 +111,12 @@ object CrusadeCardsDataModule {
         db = db,
         crusadeCardsPreferencesManager = crusadeCardsPreferencesManager
     ) as GameRepository
+
+    @Singleton
+    @Provides
+    fun provideGameStageRepository(
+        db: GamesDatabase
+    ) = GameStageRepositoryImpl(db = db) as GameStageRepository
 
     @Singleton
     @Provides

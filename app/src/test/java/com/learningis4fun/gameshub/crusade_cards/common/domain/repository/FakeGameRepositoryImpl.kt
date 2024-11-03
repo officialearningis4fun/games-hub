@@ -62,7 +62,7 @@ class FakeGameRepositoryImpl(
         TODO("Not yet implemented")
     }
 
-    override fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers> {
+    override fun getGameWithLatestStagePlayers(gameId: String): Flow<GameWithPlayers> {
         val gameUserIds = defaultRepositoryImpl._gameUserCrossRefs.filter { it.gameId == gameId }.map { it.userId }
 
         val gameWithUsers = flow {

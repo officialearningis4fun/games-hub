@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
@@ -45,6 +46,26 @@ fun Long.toTimeFormatted(): String {
 
 fun String?.toWinnerNames(player: Player?): String {
     return if (player?.uniqueId == this) "You" else player?.profileName ?: ""
+}
+
+fun Card.numberRepresentation(): Int {
+    return when (this.name) {
+        Constants.CardNames.ACE -> 1
+        Constants.CardNames.TWO -> 2
+        Constants.CardNames.THREE -> 3
+        Constants.CardNames.FOUR -> 4
+        Constants.CardNames.FIVE -> 5
+        Constants.CardNames.SIX -> 6
+        Constants.CardNames.SEVEN -> 7
+        Constants.CardNames.EIGHT -> 8
+        Constants.CardNames.NINE -> 9
+        Constants.CardNames.TEN -> 10
+        Constants.CardNames.JACK -> 11
+        Constants.CardNames.QUEEN -> 12
+        Constants.CardNames.KING -> 13
+        Constants.CardNames.JOKER -> 14
+        else -> 0
+    }
 }
 
 data class Quadruple<out A, out B, out C, out D>(

@@ -5,6 +5,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.Crusad
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
@@ -13,12 +14,13 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapLatest
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
 class GameRepositoryImpl @Inject constructor(
     private val db: GamesDatabase,
-    private val crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager
+    private val crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager,
 ) : GameRepository {
 
     override suspend fun insertGame(game: Game): Response<Unit> {
@@ -54,6 +56,7 @@ class GameRepositoryImpl @Inject constructor(
                     )
                 }
                 db.gameDao().deleteGame(game.game)
+                db.gameStageDao().deleteGameStages(gameId = gameId)
                 val currentGameId = crusadeCardsPreferencesManager.recentGameId.first()
                 if (currentGameId == gameId) {
                     crusadeCardsPreferencesManager.updateRecentGameId("").getDataOrThrowException()
@@ -87,8 +90,22 @@ class GameRepositoryImpl @Inject constructor(
         crusadeCardsPreferencesManager.updateRecentCardState(stateEntity)
     }
 
-    override fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers> {
-        return db.gameDao().getGameWithPlayers(gameId)
+    override fun getGameWithLatestStagePlayers(gameId: String): Flow<GameWithPlayers> {
+
+        return db.gameDao().getGameWithPlayers(gameId).mapLatest {
+            val latestGameStage =
+                db.gameStageDao().getGameStages(gameId).map { gameStage -> gameStage.toGameStage() }
+                    .firstOrNull()
+
+            if (latestGameStage != null) {
+                it.copy(
+                    players = it.players.filter { player: Player -> player.uniqueId in latestGameStage.playerIds }
+                )
+            } else {
+                it
+            }
+
+        }
     }
 
     override fun getCompletedGamesWithPlayers(): Flow<List<GameWithPlayers>> {

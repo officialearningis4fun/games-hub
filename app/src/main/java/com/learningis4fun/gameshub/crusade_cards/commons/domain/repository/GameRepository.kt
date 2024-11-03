@@ -24,7 +24,7 @@ interface GameRepository {
 
     suspend fun saveGameCardState(stateEntity: CardStateEntity)
 
-    fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers>
+    fun getGameWithLatestStagePlayers(gameId: String): Flow<GameWithPlayers>
 
     fun getCompletedGamesWithPlayers(): Flow<List<GameWithPlayers>>
 

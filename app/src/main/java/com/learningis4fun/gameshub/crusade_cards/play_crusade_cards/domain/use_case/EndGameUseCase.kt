@@ -1,9 +1,12 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case
 
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
@@ -18,7 +21,10 @@ class EndGameUseCase @Inject constructor(
     private val preferenceManager: CrusadeCardsPreferencesManager,
     private val repository: DefaultCardRepository,
     private val gameRepository: GameRepository,
-    private val gameCardRepository: GameCardRepository
+    private val gameCardRepository: GameCardRepository,
+    private val eliminatePlayerFromGame: EliminatePlayerFromGame,
+    private val gameStageRepository: GameStageRepository,
+    private val setupNextStageGame: SetupNextStageGame
 ) {
 
 
@@ -35,33 +41,94 @@ class EndGameUseCase @Inject constructor(
      *
      * change playCardState to navigate to winScreen (popping off the playCardsScreen)
      */
-    suspend fun endGame(currGameId: String, duration: Long, winnerId: String): Response<Unit> {
+    suspend operator fun invoke(
+        currGameId: String,
+        duration: Long,
+        winnerId: String
+    ): Response<Unit> {
 
         return try {
-            val gameCompletedTime = System.currentTimeMillis()
 
+            val gameWithPlayers =
+                gameRepository.getGameWithLatestStagePlayers(gameId = currGameId).first()
 
-            val game = gameRepository.getGame(currGameId).first()
-                ?.copy(
-                    gameState = GameState.Completed.name,
-                    winnerId = winnerId,
-                    gameDuration = duration,
-                    completedTime = gameCompletedTime
+            val game = gameWithPlayers.game.copy(
+                gameDuration = duration,
+                gameState = GameState.Paused.name
+            )
+
+            val currentGameStage = gameStageRepository
+                .getGameStages(gameId = game.id)
+                .getDataOrThrowException()
+                .firstOrNull()
+                ?: throw Exception("The stage for a game not found")
+
+            val players = gameWithPlayers.players
+
+            return if (players.size == 2) {
+                // no next stage end game
+                endGame(
+                    game = game,
+                    winnerId = winnerId
                 )
+            } else {
+                val eliminatedPlayers: List<Pair<Player, Boolean>> = players
+                    .map { player ->
+                        val eliminate = eliminatePlayerFromGame(
+                            player = player,
+                            game = game
+                        ).getDataOrThrowException()
 
-            game?.let {
-                gameRepository.updateRecentGameId("").getDataOrThrowException()
-                gameRepository.updateGame(game).getDataOrThrowException()
-                repository.changeCurrentCardType("").getDataOrThrowException()
-                println("com: $game")
-                gameCardRepository.deleteAllGameCards().getDataOrThrowException()
-                preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
+                        Pair(player, eliminate)
+                    }
+
+                println(eliminatedPlayers)
+
+                val nextStagePlayerIds = eliminatedPlayers
+                    .filterNot { it.second }
+                    .map { it.first.uniqueId }
+                    .ifEmpty { null }
+
+                if (nextStagePlayerIds == null || nextStagePlayerIds.size == 1) {
+                    // end game
+                    endGame(
+                        game = game,
+                        winnerId = winnerId
+                    )
+                } else {
+                    val nextStage = currentGameStage.nextStage(playerIds = nextStagePlayerIds)
+                    setupNextStageGame(game = game, gameStage = nextStage)
+                }
+
+
             }
-            Response.Success(Unit)
         } catch (e: Exception) {
             e.printStackTrace()
             Response.Error(e.message.toString())
         }
 
+    }
+
+    private suspend fun endGame(
+        game: Game,
+        winnerId: String
+    ): Response<Unit> {
+        return try {
+            val gameCompletedTime = System.currentTimeMillis()
+
+            val gameToEnd = game.copy(
+                gameState = GameState.Completed.name,
+                winnerId = winnerId,
+                completedTime = gameCompletedTime
+            )
+            gameRepository.updateRecentGameId("").getDataOrThrowException()
+            gameRepository.updateGame(gameToEnd).getDataOrThrowException()
+            repository.changeCurrentCardType("").getDataOrThrowException()
+            gameCardRepository.deleteAllGameCards().getDataOrThrowException()
+            preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            Response.Error(e.message.toString())
+        }
     }
 }

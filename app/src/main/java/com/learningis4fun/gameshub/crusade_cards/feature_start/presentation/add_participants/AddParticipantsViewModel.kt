@@ -56,7 +56,7 @@ class AddParticipantsViewModel @Inject constructor(
 
                 participants
             } else {
-                gameRepository.getGameWithPlayers(gameId).map {
+                gameRepository.getGameWithLatestStagePlayers(gameId).map {
                     it.players
                 }
             }

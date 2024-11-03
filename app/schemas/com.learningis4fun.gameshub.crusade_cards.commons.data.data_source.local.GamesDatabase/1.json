@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "2f07132ee5db0a2fa85f0545b0983a2d",
+    "identityHash": "c370b0c0dbb36fa25a6843a4efd2f189",
     "entities": [
       {
         "tableName": "Player",
@@ -224,12 +224,45 @@
         },
         "indices": [],
         "foreignKeys": []
+      },
+      {
+        "tableName": "gameStage",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`gameId` TEXT NOT NULL, `stageNumber` INTEGER NOT NULL, `playerIds` TEXT NOT NULL, PRIMARY KEY(`gameId`, `stageNumber`))",
+        "fields": [
+          {
+            "fieldPath": "gameId",
+            "columnName": "gameId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stageNumber",
+            "columnName": "stageNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "playerIds",
+            "columnName": "playerIds",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "gameId",
+            "stageNumber"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2f07132ee5db0a2fa85f0545b0983a2d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c370b0c0dbb36fa25a6843a4efd2f189')"
     ]
   }
 }

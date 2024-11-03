@@ -57,7 +57,10 @@ fun MultiplePlayersSectionScreen(
     LazyRow(
         modifier = modifier
             .fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(
+            space = 16.dp,
+            alignment = Alignment.CenterHorizontally
+        ),
         verticalAlignment = Alignment.CenterVertically,
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {

@@ -63,7 +63,7 @@ class CardsStartViewModel @Inject constructor(
 
         viewModelScope.launch {
             gameRepository.getCurrentGameId().flatMapLatest {
-                gameRepository.getGameWithPlayers(it)
+                gameRepository.getGameWithLatestStagePlayers(it)
             }.collectLatest { gameWithPlayers ->
 
                 val showOngoing = try {

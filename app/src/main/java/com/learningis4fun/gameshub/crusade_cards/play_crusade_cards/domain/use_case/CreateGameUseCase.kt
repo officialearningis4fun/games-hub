@@ -1,12 +1,14 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case
 
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameStage
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,7 +19,8 @@ class CreateGameUseCase @Inject constructor(
     val repository: DefaultCardRepository,
     private val gameRepository: GameRepository,
     private val cardRepository: CardRepository,
-    private val gameCardRepository: GameCardRepository
+    private val gameCardRepository: GameCardRepository,
+    private val gameStageRepository: GameStageRepository
 ) {
 
     /**
@@ -71,7 +74,13 @@ class CreateGameUseCase @Inject constructor(
             gameCards.forEach { gameCard ->
                 gameCardRepository.insertGameCard(gameCard).getDataOrThrowException()
             }
-            gameRepository.insertGame(game)
+            val gameStage = GameStage(
+                gameId = gameId,
+                stageNumber = 1,
+                playerIds = participants.map { it.uniqueId }
+            )
+            gameRepository.insertGame(game).getDataOrThrowException()
+            gameStageRepository.saveGameStage(gameStage = gameStage).getDataOrThrowException()
             gameId
 
         } catch (e: Exception) {

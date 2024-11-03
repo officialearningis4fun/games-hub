@@ -23,7 +23,7 @@ class AssignCardsUseCase @Inject constructor(
         return try {
 
             val playersIds: List<String> =
-                gameRepository.getGameWithPlayers(gameId = gameId).first().players.map { it.uniqueId }
+                gameRepository.getGameWithLatestStagePlayers(gameId = gameId).first().players.map { it.uniqueId }
             val cardsToAssign = gameCardRepository.getGameCards(gameId)
                 .shuffled()
                 .take(howManyCardsPerPlayer * playersIds.size)
