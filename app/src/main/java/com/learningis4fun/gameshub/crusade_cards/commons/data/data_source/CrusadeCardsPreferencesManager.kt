@@ -31,6 +31,8 @@ interface CrusadeCardsPreferencesManager {
 
     val numberOfParticipantsInCrusadeGame: Flow<Int>
 
+    val eliminationCountLimitForCrusade: Flow<Int>
+
     suspend fun updatePlayer(player: Player): Response<Unit>
 
     suspend fun updateAndroidPlayer(player: Player): Response<Unit>
@@ -46,6 +48,9 @@ interface CrusadeCardsPreferencesManager {
     suspend fun updateRecentGameId(gameId: String): Response<Unit>
 
     suspend fun updateNumberOfCardsPerPlayer(numOfCards: Int): Response<Unit>
+    suspend fun updateEliminationCountLimitForCrusade(count: Int): Response<Unit>
+    suspend fun decreaseNumberOfCardsPerPlayer(): Response<Unit>
+    suspend fun increaseNumberOfCardsPerPlayer(): Response<Unit>
     suspend fun updateNumberOfParticipantsInCrusadeGame(numOfParticipants: Int): Response<Unit>
 
 

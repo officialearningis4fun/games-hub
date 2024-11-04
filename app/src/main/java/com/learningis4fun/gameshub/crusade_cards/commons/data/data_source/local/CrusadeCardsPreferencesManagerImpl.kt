@@ -20,6 +20,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -215,14 +216,93 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
 
     override val numberOfParticipantsInCrusadeGame: Flow<Int>
         get() = context.dataStore.data.map {
-        it[PreferencesKeys.NUMBER_OF_PARTICIPANTS_IN_CRUSADE_GAME] ?: Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME
+            it[PreferencesKeys.NUMBER_OF_PARTICIPANTS_IN_CRUSADE_GAME]
+                ?: Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME
+        }
+
+    override val eliminationCountLimitForCrusade: Flow<Int>
+        get() = context.dataStore.data.map {
+            it[PreferencesKeys.ELIMINATION_COUNT_LIMIT_FOR_CRUSADE]
+                ?: Constants.DEFAULT_CRUSADE_ELIMINATION_LIMIT
+        }
+
+    override suspend fun updateEliminationCountLimitForCrusade(count: Int): Response<Unit> {
+        return try {
+
+            if (count >= Constants.DEFAULT_CRUSADE_ELIMINATION_LIMIT
+                &&
+                count <= Constants.MAX_CRUSADE_ELIMINATION_LIMIT
+            ) {
+                context.dataStore.edit {
+                    it[PreferencesKeys.ELIMINATION_COUNT_LIMIT_FOR_CRUSADE] = count
+                }
+            }
+
+
+            Response.Success(Unit)
+        } catch (exception: Exception) {
+            Response.Error(
+                "Failed to change the elimination limit for crusade: ${exception.localizedMessage}"
+            )
+        }
+    }
+
+    override suspend fun decreaseNumberOfCardsPerPlayer(): Response<Unit> {
+        return try {
+            val numberOfCards = context.dataStore.data
+                .map {
+                    it[PreferencesKeys.NUMBER_OF_CARDS_PER_PLAYER]
+                        ?: Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER
+                }
+                .first()
+
+            updateNumberOfCardsPerPlayer(numberOfCards - 1)
+
+            Response.Success(Unit)
+        } catch (exception: Exception) {
+            Response.Error(
+                "Failed to change number of cards: ${exception.localizedMessage}"
+            )
+        }
+    }
+
+    override suspend fun increaseNumberOfCardsPerPlayer(): Response<Unit> {
+        return try {
+            val numberOfCards = context.dataStore.data
+                .map {
+                    it[PreferencesKeys.NUMBER_OF_CARDS_PER_PLAYER]
+                        ?: Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER
+                }
+                .first()
+
+            updateNumberOfCardsPerPlayer(numberOfCards + 1)
+
+            Response.Success(Unit)
+        } catch (exception: Exception) {
+            Response.Error(
+                "Failed to change number of cards: ${exception.localizedMessage}"
+            )
+        }
     }
 
     override suspend fun updateNumberOfCardsPerPlayer(numOfCards: Int): Response<Unit> {
         return try {
-            context.dataStore.edit {
-                it[PreferencesKeys.NUMBER_OF_CARDS_PER_PLAYER] = numOfCards
+            val numberOfCards = context.dataStore.data
+                .map {
+                    it[PreferencesKeys.NUMBER_OF_CARDS_PER_PLAYER]
+                        ?: Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER
+                }
+                .first()
+
+            if (
+                numberOfCards >= Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER &&
+                numberOfCards <= Constants.NumberOfCardsOptions.HIGHEST_CARDS_PER_PLAYER
+            ) {
+                context.dataStore.edit {
+                    it[PreferencesKeys.NUMBER_OF_CARDS_PER_PLAYER] = numOfCards
+                }
             }
+
             Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
@@ -233,6 +313,7 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
 
     override suspend fun updateNumberOfParticipantsInCrusadeGame(numOfParticipants: Int): Response<Unit> {
         return try {
+
             context.dataStore.edit {
                 it[PreferencesKeys.NUMBER_OF_PARTICIPANTS_IN_CRUSADE_GAME] = numOfParticipants
             }
@@ -253,7 +334,10 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
         val USER_ID = stringPreferencesKey("user-id")
 
         val NUMBER_OF_CARDS_PER_PLAYER = intPreferencesKey("number-of-cards-per-player")
-        val NUMBER_OF_PARTICIPANTS_IN_CRUSADE_GAME = intPreferencesKey("number-of-participants-in-crusade-game")
+        val NUMBER_OF_PARTICIPANTS_IN_CRUSADE_GAME =
+            intPreferencesKey("number-of-participants-in-crusade-game")
+        val ELIMINATION_COUNT_LIMIT_FOR_CRUSADE =
+            intPreferencesKey("elimination-count-limit-for-crusade")
 
         object CardStatesPreferences {
             val CARD_STATE_NAME = stringPreferencesKey("card-state-name")

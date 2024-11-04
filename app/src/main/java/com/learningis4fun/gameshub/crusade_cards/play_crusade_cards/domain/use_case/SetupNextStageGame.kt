@@ -3,6 +3,8 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameStage
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
@@ -10,6 +12,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameS
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -24,7 +27,8 @@ constructor(
     private val gameCardRepository: GameCardRepository,
     private val gameStageRepository: GameStageRepository,
     private val preferenceManager: CrusadeCardsPreferencesManager,
-    private val assignCardsUseCase: AssignCardsUseCase
+    private val assignCardsUseCase: AssignCardsUseCase,
+    private val cardRepository: CardRepository
 
 ) {
 
@@ -37,26 +41,30 @@ constructor(
      */
     suspend operator fun invoke(
         game: Game,
-        gameStage: GameStage
-    ): Response<Unit> {
+        gameStage: GameStage,
+        players: List<Pair<Player, Boolean>>
+    ): Response<List<Pair<Player, Boolean>>> {
 
         return try {
-
-            gameCardRepository.getGameCards(gameId = game.id).forEach { gameCard ->
-                gameCardRepository.updateGameCard(
-                    gameCard.copy(
-                        isPlayed = false,
-                        playerId = "",
-                        playTime = 0L,
-                        pickedTime = 0L
-                    )
-                ).getDataOrThrowException()
-            }
 
             gameStageRepository.saveGameStage(gameStage = gameStage).getDataOrThrowException()
             gameRepository.updateGame(game).getDataOrThrowException()
             repository.changeCurrentCardType("").getDataOrThrowException()
             preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
+            gameCardRepository.deleteAllGameCards().getDataOrThrowException()
+
+            val gameCardId = System.currentTimeMillis().toString()
+            val gameCards = cardRepository.getCards().mapIndexed { index, card ->
+                GameCard(
+                    id = gameCardId + index,
+                    gameId = game.id,
+                    cardId = card.id,
+                )
+            }
+
+            gameCards.forEach { gameCard ->
+                gameCardRepository.insertGameCard(gameCard).getDataOrThrowException()
+            }
 
             val numOfCardsPerPlayer = preferenceManager.numberOfCardsPerPlayer.first()
 
@@ -69,7 +77,7 @@ constructor(
                 throw Exception("Cards not assigned yet")
             }
 
-            Response.Success(Unit)
+            Response.Success(players)
         } catch (e: Exception) {
             e.printStackTrace()
             Response.Error(e.message.toString())

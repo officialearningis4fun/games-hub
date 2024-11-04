@@ -27,7 +27,6 @@ class EndGameUseCase @Inject constructor(
     private val setupNextStageGame: SetupNextStageGame
 ) {
 
-
     /**
      * stop the counting time
      *
@@ -45,7 +44,7 @@ class EndGameUseCase @Inject constructor(
         currGameId: String,
         duration: Long,
         winnerId: String
-    ): Response<Unit> {
+    ): Response<List<Pair<Player, Boolean>>> {
 
         return try {
 
@@ -54,7 +53,8 @@ class EndGameUseCase @Inject constructor(
 
             val game = gameWithPlayers.game.copy(
                 gameDuration = duration,
-                gameState = GameState.Paused.name
+                gameState = GameState.Paused.name,
+                winnerId = winnerId
             )
 
             val currentGameStage = gameStageRepository
@@ -72,11 +72,14 @@ class EndGameUseCase @Inject constructor(
                     winnerId = winnerId
                 )
             } else {
+                val eliminationLimit = preferenceManager.eliminationCountLimitForCrusade.first()
+
                 val eliminatedPlayers: List<Pair<Player, Boolean>> = players
                     .map { player ->
                         val eliminate = eliminatePlayerFromGame(
                             player = player,
-                            game = game
+                            game = game,
+                            eliminationLimitForCrusade = eliminationLimit
                         ).getDataOrThrowException()
 
                         Pair(player, eliminate)
@@ -97,7 +100,11 @@ class EndGameUseCase @Inject constructor(
                     )
                 } else {
                     val nextStage = currentGameStage.nextStage(playerIds = nextStagePlayerIds)
-                    setupNextStageGame(game = game, gameStage = nextStage)
+                    setupNextStageGame(
+                        game = game,
+                        gameStage = nextStage,
+                        players = eliminatedPlayers
+                    )
                 }
 
 
@@ -112,7 +119,7 @@ class EndGameUseCase @Inject constructor(
     private suspend fun endGame(
         game: Game,
         winnerId: String
-    ): Response<Unit> {
+    ): Response<List<Pair<Player, Boolean>>> {
         return try {
             val gameCompletedTime = System.currentTimeMillis()
 
@@ -126,7 +133,7 @@ class EndGameUseCase @Inject constructor(
             repository.changeCurrentCardType("").getDataOrThrowException()
             gameCardRepository.deleteAllGameCards().getDataOrThrowException()
             preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
-            Response.Success(Unit)
+            Response.Success(emptyList())
         } catch (e: Exception) {
             Response.Error(e.message.toString())
         }

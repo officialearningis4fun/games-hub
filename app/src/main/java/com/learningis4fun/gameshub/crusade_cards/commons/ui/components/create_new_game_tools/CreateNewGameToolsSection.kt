@@ -41,7 +41,8 @@ fun CreateNewGameToolsSection(
 
     val pages = listOf(
         Pair("Number of cards per player", createNewGameToolsState.numberOfCardsPerPlayer),
-        Pair("Number of participants including you", createNewGameToolsState.numberOfParticipants)
+        Pair("Number of participants including you", createNewGameToolsState.numberOfParticipants),
+        Pair("Elimination limit for losers", createNewGameToolsState.eliminationLimitForCrusade)
     )
 
     val pagerState = rememberPagerState {
@@ -69,17 +70,31 @@ fun CreateNewGameToolsSection(
                 count = page.second,
                 title = page.first,
                 onDecreaseNumber = {
-                    if (pagerState.currentPage == 0) {
-                        onEvent(CreateNewGameToolsEvents.DecreaseNumberOfCards)
-                    } else {
-                        onEvent(CreateNewGameToolsEvents.DecreaseNumberOfParticipants)
+                    when (pagerState.currentPage) {
+                        0 -> {
+                            onEvent(CreateNewGameToolsEvents.DecreaseNumberOfCards)
+                        }
+
+                        1 -> {
+                            onEvent(CreateNewGameToolsEvents.DecreaseNumberOfParticipants)
+                        }
+
+                        else -> {
+                            onEvent(CreateNewGameToolsEvents.DecreaseEliminationLimitForCrusade)
+                        }
                     }
                 },
                 onIncreaseNumber = {
-                    if (pagerState.currentPage == 0) {
-                        onEvent(CreateNewGameToolsEvents.IncreaseNumberOfCards)
-                    } else {
-                        onEvent(CreateNewGameToolsEvents.IncreaseNumberOfParticipants)
+                    when (pagerState.currentPage) {
+                        0 -> {
+                            onEvent(CreateNewGameToolsEvents.IncreaseNumberOfCards)
+                        }
+                        1 -> {
+                            onEvent(CreateNewGameToolsEvents.IncreaseNumberOfParticipants)
+                        }
+                        else -> {
+                            onEvent(CreateNewGameToolsEvents.IncreaseEliminationLimitForCrusade)
+                        }
                     }
                 }
             )
@@ -94,18 +109,14 @@ fun CreateNewGameToolsSection(
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
 
-            Spacer(
-                modifier = Modifier
-                    .size(12.dp)
-                    .clip(CircleShape)
-                    .background(if (pagerState.currentPage == 0) selectedColor else unselectedColor)
-            )
-            Spacer(
-                modifier = Modifier
-                    .size(12.dp)
-                    .clip(CircleShape)
-                    .background(if (pagerState.currentPage == 1) selectedColor else unselectedColor)
-            )
+            pages.forEachIndexed { index, _ ->
+                Spacer(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(if (pagerState.currentPage == index) selectedColor else unselectedColor)
+                )
+            }
         }
 
         Spacer(

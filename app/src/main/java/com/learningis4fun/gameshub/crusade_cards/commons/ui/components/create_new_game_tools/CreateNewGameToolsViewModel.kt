@@ -28,17 +28,20 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
         viewModelScope.launch {
             combine(
                 preferences.numberOfCardsPerPlayer,
-                preferences.numberOfParticipantsInCrusadeGame
-            ) { numberOfCards, numOfParticipants ->
-                Pair(
+                preferences.numberOfParticipantsInCrusadeGame,
+                preferences.eliminationCountLimitForCrusade
+            ) { numberOfCards, numOfParticipants, eliminationLimit ->
+                Triple(
                     numberOfCards,
-                    numOfParticipants
+                    numOfParticipants,
+                    eliminationLimit
                 )
-            }.collectLatest { (numberOfCards, numberOfParticipants) ->
+            }.collectLatest { (numberOfCards, numberOfParticipants, eliminationLimit) ->
                 createNewGameToolsStateFlow.update {
                     CreateNewGameToolsState(
                         numberOfParticipants = numberOfParticipants,
-                        numberOfCardsPerPlayer = numberOfCards
+                        numberOfCardsPerPlayer = numberOfCards,
+                        eliminationLimitForCrusade = eliminationLimit
                     )
                 }
             }
@@ -85,6 +88,22 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                     if (numberOfParticipants <= Constants.MAX_PARTICIPANTS_IN_CRUSADE_GAME) {
                         preferences.updateNumberOfParticipantsInCrusadeGame(numberOfParticipants)
                     }
+                }
+            }
+
+            CreateNewGameToolsEvents.DecreaseEliminationLimitForCrusade -> {
+                viewModelScope.launch {
+                    preferences.updateEliminationCountLimitForCrusade(
+                        createNewGameToolsStateFlow.value.eliminationLimitForCrusade - 1
+                    )
+                }
+            }
+
+            CreateNewGameToolsEvents.IncreaseEliminationLimitForCrusade -> {
+                viewModelScope.launch {
+                    preferences.updateEliminationCountLimitForCrusade(
+                        createNewGameToolsStateFlow.value.eliminationLimitForCrusade + 1
+                    )
                 }
             }
         }

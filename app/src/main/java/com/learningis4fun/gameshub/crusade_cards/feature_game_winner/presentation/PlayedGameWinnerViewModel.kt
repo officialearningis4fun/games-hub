@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toWinnerNames
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
@@ -19,8 +21,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,41 +30,33 @@ import javax.inject.Inject
 class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
 @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    gameRepository: GameRepository,
+    private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
     private val preferences: CrusadeCardsPreferencesManager
 ) : ViewModel() {
 
     private val gameId = savedStateHandle.toRoute<WinnerScreenRoute>().wonGameId
 
-    private val playedGameWinnerStateFlow = MutableStateFlow(PlayedGameWinnerState())
-    val playedGameWinnerState = playedGameWinnerStateFlow.asStateFlow()
+    private val playedGameStateFlow =
+        MutableStateFlow<PlayedGameWinnerOrNextStage>(PlayedGameWinnerOrNextStage.Loading)
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val completedGame = gameRepository
-        .getGameWithLatestStagePlayers(gameId = gameId)
-        .flatMapLatest {
-            flow {
-                val initialState = PlayedGameWinnerState()
-                emit(initialState)
-                val state = loadWinnerInfo(it)
-                emit(state)
-            }
-        }
+    val playedGameState = playedGameStateFlow.asStateFlow()
 
     init {
         viewModelScope.launch {
             combine(
-                completedGame,
+                gameRepository.getGame(gameId = gameId),
                 preferences.numberOfCardsPerPlayer
-            ) { completedGame, numberOfCardsPerPlayer ->
+            ) { game, numberOfCardsPerPlayer ->
                 Pair(
-                    completedGame,
+                    game,
                     numberOfCardsPerPlayer
                 )
-            }.collect { (completedGame, numberOfCardsPerPlayer) ->
-                playedGameWinnerStateFlow.update {
-                    completedGame.copy(
+            }.collect { (game, numberOfCardsPerPlayer) ->
+
+                game?.let {
+                    loadWinnerScreenInfo(
+                        game = game,
                         numberOfCardsPerPlayer = numberOfCardsPerPlayer
                     )
                 }
@@ -77,30 +69,93 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
         when (event) {
             PlayedGameWinnerEvents.DecreaseNumberOfCards -> {
                 viewModelScope.launch {
-                    val numberOfCardsPerPlayer =
-                        playedGameWinnerStateFlow.value.numberOfCardsPerPlayer - 1
-                    if (numberOfCardsPerPlayer >= Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER) {
-                        preferences.updateNumberOfCardsPerPlayer(numberOfCardsPerPlayer)
-                    }
+                    preferences.decreaseNumberOfCardsPerPlayer()
                 }
             }
 
             PlayedGameWinnerEvents.IncreaseNumberOfCards -> {
                 viewModelScope.launch {
-                    val numberOfCardsPerPlayer =
-                        playedGameWinnerStateFlow.value.numberOfCardsPerPlayer + 1
-                    if (numberOfCardsPerPlayer <= Constants.NumberOfCardsOptions.HIGHEST_CARDS_PER_PLAYER) {
-                        preferences.updateNumberOfCardsPerPlayer(numberOfCardsPerPlayer)
-                    }
+                    preferences.increaseNumberOfCardsPerPlayer()
                 }
             }
         }
     }
 
+    fun setupNextStage(onSuccess: () -> Unit = {}) {
+
+    }
+
+    private suspend fun loadWinnerScreenInfo(
+        game: Game,
+        numberOfCardsPerPlayer: Int
+    ) {
+        try {
+
+            if (game.gameState == GameState.Completed.name) {
+                // completed
+                val gameWithPlayers = gameRepository
+                    .getGameWithPlayers(gameId = gameId)
+                    .first()
+
+                val completedState = loadWinnerInfo(
+                    gameWithPlayers = gameWithPlayers
+                )
+                playedGameStateFlow.update {
+                    PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
+                        loading = completedState.loading,
+                        gameDuration = completedState.gameDuration,
+                        winnerImageUrl = completedState.winnerImageUrl,
+                        otherPlayers = completedState.otherPlayers,
+                        numberOfCardsPerPlayer = numberOfCardsPerPlayer,
+                        winnerNames = completedState.winnerNames,
+                        error = completedState.error
+                    )
+                }
+            } else {
+                // load next stage
+                val gameWithPlayers = gameRepository
+                    .getGameWithPlayers(gameId = gameId)
+                    .first()
+
+                val nextStagePlayers = gameRepository
+                    .getGameWithLatestStagePlayers(gameId = gameId)
+                    .first()
+                    .players
+
+                val eliminatedPlayers =
+                    gameWithPlayers
+                        .players
+                        .filterNot { player: Player -> player in nextStagePlayers }
+
+                val winner = gameWithPlayers.players.firstOrNull { it.uniqueId == game.winnerId }
+
+                val loggedInUser = userRepository.getUserId()
+
+                val winnerNames = loggedInUser.toWinnerNames(winner)
+
+                playedGameStateFlow.update {
+                    PlayedGameWinnerOrNextStage.PlayedGameNextStageState(
+                        loading = false,
+                        gameDuration = game.gameDuration.toUIDuration(),
+                        winnerImageUrl = winner?.imageUrl ?: "",
+                        eliminatedPlayers = eliminatedPlayers,
+                        nextStagePlayers = nextStagePlayers,
+                        winnerNames = winnerNames,
+                        error = null
+                    )
+                }
+
+            }
+
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+    }
 
     private suspend fun loadWinnerInfo(
         gameWithPlayers: GameWithPlayers
-    ): PlayedGameWinnerState {
+    ): PlayedGameWinnerOrNextStage.PlayedGameWinnerState {
         return try {
 
             val completedGame = gameWithPlayers
@@ -117,18 +172,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
             val winner = completedGame.winner
                 ?: throw Exception("Unexpected error occurred; please restart the app")
 
-            playedGameWinnerStateFlow.update {
-                it.copy(
-                    winnerImageUrl = completedGame.winner.imageUrl,
-                    gameDuration = completedGame.duration.toUIDuration(),
-                    otherPlayers = otherPlayers,
-                    loading = false,
-                    winnerNames = loggedInUser.uniqueId.toWinnerNames(winner),
-                    error = null
-                )
-            }
-
-            PlayedGameWinnerState(
+            PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
                 winnerImageUrl = completedGame.winner.imageUrl,
                 gameDuration = completedGame.duration.toUIDuration(),
                 otherPlayers = otherPlayers,
@@ -142,7 +186,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 throw e
             }
             e.printStackTrace()
-            PlayedGameWinnerState(
+            PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
                 error = e.message.toString()
             )
         }

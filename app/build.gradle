@@ -20,8 +20,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 34
         multiDexEnabled true
-        versionCode 6
-        versionName "1.0.0-beta5"
+        versionCode 7
+        versionName "1.0.0-beta6"
 
         testInstrumentationRunner "com.learningis4fun.gameshub.HiltTestRunner"
 

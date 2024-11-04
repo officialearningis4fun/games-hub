@@ -71,7 +71,8 @@ object Constants {
         val HIGHEST_CARDS_PER_PLAYER = 10
     }
 
-    const val DEFAULT_CRUSADE_ELIMINATION_LIMIT = 12
+    const val DEFAULT_CRUSADE_ELIMINATION_LIMIT = 24
+    const val MAX_CRUSADE_ELIMINATION_LIMIT = 40
 
     object TestData {
         val playerId = Players.GUEST_PLAYER.id

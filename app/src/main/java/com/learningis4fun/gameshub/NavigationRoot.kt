@@ -81,12 +81,17 @@ fun NavigationRoot() {
 
         playedGameWinnerComposable(
             onStartGame = {
-                navController.navigate(PlayCardsScreenRoute(currentGameId = "")) {
+                navController.navigate(PlayCardsScreenRoute()) {
                     popUpTo(StartScreenRoute)
                 }
             },
             onCloseClick = {
                 navController.navigateUp()
+            },
+            onStartNextStage = {
+                navController.navigate(PlayCardsScreenRoute()) {
+                    popUpTo(StartScreenRoute)
+                }
             }
         )
 

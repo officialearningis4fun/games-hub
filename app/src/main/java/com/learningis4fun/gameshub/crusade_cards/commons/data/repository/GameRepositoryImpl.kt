@@ -108,6 +108,11 @@ class GameRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers> {
+        return db.gameDao().getGameWithPlayers(gameId)
+    }
+
+
     override fun getCompletedGamesWithPlayers(): Flow<List<GameWithPlayers>> {
         return db.gameDao().getCompletedGamesWithPlayers()
     }
