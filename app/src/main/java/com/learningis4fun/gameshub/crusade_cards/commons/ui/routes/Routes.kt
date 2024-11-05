@@ -15,4 +15,4 @@ data object ProfileScreenRoute
 data object EditProfileRoute
 
 @Serializable
-data class WinnerScreenRoute(val wonGameId: String)
+data class WinnerScreenRoute(val wonGameId: String, val winnerImageUrl: String)

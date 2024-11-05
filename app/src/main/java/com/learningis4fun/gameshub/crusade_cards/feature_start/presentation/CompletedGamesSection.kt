@@ -1,6 +1,11 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.learningis4fun.gameshub.crusade_cards.feature_start.presentation
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -44,7 +49,7 @@ import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.Comp
 fun CompletedGamesSection(
     modifier: Modifier = Modifier,
     completedGamesState: CompletedGamesState,
-    onGameClick: (String) -> Unit = {}
+    onGameClick: (Pair<Game, Player>) -> Unit = {}
 ) {
 
     val completedGames = completedGamesState.completedGames
@@ -69,11 +74,12 @@ fun CompletedGamesSection(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun CompletedGamesDataSection(
     modifier: Modifier = Modifier,
     completedGamesState: CompletedGamesState,
-    onGameClick: (String) -> Unit = {}
+    onGameClick: (Pair<Game, Player>) -> Unit = {}
 ) {
 
     val completedGames = completedGamesState.completedGames
@@ -96,8 +102,17 @@ fun CompletedGamesDataSection(
             items(completedGames) {
                 CompletedGameItem(
                     modifier = Modifier
-                        .clickable { onGameClick(it.game.id) }
+                        .clickable {
+                            onGameClick(
+                                Pair(
+                                    it.game,
+                                    it.winner!!
+                                )
+                            )
+                        }
                         .animateItem(fadeInSpec = null, fadeOutSpec = null),
+                    animatedContentScope = ,
+                    sharedTransitionScope = ,
                     completedGame = it
                 )
             }
@@ -300,9 +315,12 @@ fun CompletedGamesLoadingScreen(
     }
 }
 
+@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun CompletedGameItem(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     completedGame: CompletedGame
 ) {
 
@@ -335,19 +353,25 @@ private fun CompletedGameItem(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                Image(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .border(
-                            width = 1.dp,
-                            color = MaterialTheme.colorScheme.surface,
-                            CircleShape
-                        ),
-                    contentScale = ContentScale.Crop,
-                    painter = painterResource(id = winnerImage),
-                    contentDescription = null
-                )
+                with(sharedTransitionScope) {
+                    Image(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.surface,
+                                CircleShape
+                            )
+                            .sharedElement(
+                                sharedTransitionScope.rememberSharedContentState(key = "image/$winnerImage"),
+                                animatedVisibilityScope = animatedContentScope
+                            ),
+                        contentScale = ContentScale.Crop,
+                        painter = painterResource(id = winnerImage),
+                        contentDescription = null
+                    )
+                }
 
                 Column(
                     modifier = Modifier.height(64.dp),
@@ -419,33 +443,20 @@ fun Heading(
 @Composable
 private fun CompletedGameItemPrev() {
     GamesHubAppTheme {
-        CompletedGameItem(
-            modifier = Modifier,
-            completedGame = CompletedGame(
-                game = Game(id = "", name = "Game 01", winnerId = "id"),
-                players = listOf(
-                    Player("id", profileName = "Hlompho"),
-                    Player("id2", profileName = "Android"),
+        SharedTransitionLayout {
+            CompletedGameItem(
+                modifier = Modifier,
+                sharedTransitionScope = this,
+                animatedContentScope = ,
+                completedGame = CompletedGame(
+                    game = Game(id = "", name = "Game 01", winnerId = "id"),
+                    players = listOf(
+                        Player("id", profileName = "Hlompho"),
+                        Player("id2", profileName = "Android"),
+                    )
                 )
             )
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CompletedGameItemDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        CompletedGameItem(
-            modifier = Modifier,
-            completedGame = CompletedGame(
-                game = Game(id = "", name = "Game 01", winnerId = "id"),
-                players = listOf(
-                    Player("id", profileName = "Hlompho"),
-                    Player("id2", profileName = "Android"),
-                )
-            )
-        )
+        }
     }
 }
 
@@ -480,54 +491,11 @@ private fun CompletedGamesScreenPrev() {
 
 @Preview
 @Composable
-private fun CompletedGamesScreenDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        CompletedGamesSection(
-            modifier = Modifier
-                .fillMaxWidth(),
-            completedGamesState = CompletedGamesState(
-                completedGames = listOf(
-                    CompletedGame(
-                        game = Game(id = "", name = "Game 01", winnerId = "id"),
-                        players = listOf(
-                            Player("id", profileName = "Hlompho"),
-                            Player("id2", profileName = "Android"),
-                        )
-                    ),
-                    CompletedGame(
-                        game = Game(id = "", name = "Game 01", winnerId = "id"),
-                        players = listOf(
-                            Player("id", profileName = "Hlompho"),
-                            Player("id2", profileName = "Android"),
-                        )
-                    )
-                )
-            )
-        )
-    }
-}
-
-@Preview
-@Composable
 private fun CompletedGamesEmptyScreenPrev() {
     GamesHubAppTheme(darkTheme = false) {
         CompletedGamesSection(
             modifier = Modifier
                 .background(Color.White)
-                .fillMaxWidth(),
-            completedGamesState = CompletedGamesState(
-                completedGames = emptyList()
-            )
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CompletedGamesEmptyScreenDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        CompletedGamesSection(
-            modifier = Modifier
                 .fillMaxWidth(),
             completedGamesState = CompletedGamesState(
                 completedGames = emptyList()

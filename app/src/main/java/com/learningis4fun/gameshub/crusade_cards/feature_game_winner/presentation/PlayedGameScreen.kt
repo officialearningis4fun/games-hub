@@ -1,10 +1,20 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.learningis4fun.gameshub.crusade_cards.feature_game_winner.presentation
 
+import android.content.res.Configuration
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -20,14 +30,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.UiMode
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
@@ -40,10 +56,12 @@ import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 
 fun NavGraphBuilder.playedGameWinnerComposable(
+    sharedTransitionScope: SharedTransitionScope,
     onStartGame: () -> Unit,
     onCloseClick: () -> Unit,
     onStartNextStage: () -> Unit
 ) {
+
     composable<WinnerScreenRoute>(
         enterTransition = {
             scaleIntoContainer()
@@ -51,7 +69,11 @@ fun NavGraphBuilder.playedGameWinnerComposable(
         popEnterTransition = {
             scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS)
         }
-    ) {
+    ) { backStateEntry ->
+
+        val winnerImageRes =
+            backStateEntry.toRoute<WinnerScreenRoute>().winnerImageUrl.toIntOrNull()
+                ?: R.drawable.game_test_profile
 
         val viewModel: PlayedGameWinnerViewModel = hiltViewModel()
 
@@ -62,10 +84,12 @@ fun NavGraphBuilder.playedGameWinnerComposable(
 
         PlayedGameScreen(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
+                .fillMaxSize(),
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = this,
             playedGameWinnerOrNextStage = playedGameState,
             createNewGameToolsState = createNewGameToolsState,
+            winnerImageRes = winnerImageRes,
             onStartGame = onStartGame,
             onStartNextStage = onStartNextStage,
             onCloseClick = onCloseClick,
@@ -75,12 +99,15 @@ fun NavGraphBuilder.playedGameWinnerComposable(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
 fun PlayedGameScreen(
     modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     playedGameWinnerOrNextStage: PlayedGameWinnerOrNextStage,
     createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
+    winnerImageRes: Int = R.drawable.avatar_boy1,
     onCloseClick: () -> Unit = {},
     onStartGame: () -> Unit = {},
     onStartNextStage: () -> Unit = {},
@@ -119,6 +146,13 @@ fun PlayedGameScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
+            PlayedGameWinnerSection(
+                imageRes = winnerImageRes,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope
+            )
+
             when (playedGameWinnerOrNextStage) {
                 PlayedGameWinnerOrNextStage.Loading -> {
                     CircularProgressIndicator()
@@ -144,130 +178,169 @@ fun PlayedGameScreen(
             }
         }
     }
-
 }
 
-@Preview
 @Composable
-private fun PlayedGameNextStageScreenPrev() {
-    GamesHubAppTheme(darkTheme = false) {
-        PlayedGameScreen(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            playedGameWinnerOrNextStage = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(
-                loading = false,
-                gameDuration = (80000L).toUIDuration(),
-                eliminatedPlayers = listOf(
-                    Player(
-                        "id",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
+private fun PlayedGameWinnerSection(
+    modifier: Modifier = Modifier,
+    imageRes: Int,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope
+) {
+
+    with(sharedTransitionScope) {
+        Image(
+            modifier = modifier
+                .size(128.dp)
+                .clip(CircleShape)
+                .sharedElement(
+                    sharedTransitionScope.rememberSharedContentState(key = "image/$imageRes"),
+                    animatedVisibilityScope = animatedContentScope
                 ),
-                nextStagePlayers = listOf(
-                    Player(
-                        "id2",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                ),
-                winnerNames = "Hlompho",
-                winnerImageUrl = R.drawable.avatar_boy1.toString()
-            ),
-            createNewGameToolsState = CreateNewGameToolsState(),
-            onCloseClick = {}
+            contentScale = ContentScale.Crop,
+            painter = painterResource(id = imageRes),
+            contentDescription = null
         )
     }
 }
 
 @Preview
 @Composable
+private fun PlayedGameNextStageScreenPrev() {
+    GamesHubAppTheme() {
+        SharedTransitionLayout {
+            NavHost(
+                navController = rememberNavController(),
+                startDestination = "start"
+            ) {
+                composable(route = "start") {
+                    PlayedGameScreen(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedContentScope = this,
+                        playedGameWinnerOrNextStage = playedGameNextStageState,
+                        createNewGameToolsState = CreateNewGameToolsState(),
+                        onCloseClick = {}
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
 private fun PlayedGameNextStageScreenDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        PlayedGameScreen(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            playedGameWinnerOrNextStage = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(
-                loading = false,
-                gameDuration = (80000L).toUIDuration(),
-                eliminatedPlayers = listOf(
-                    Player(
-                        "id",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                ),
-                nextStagePlayers = listOf(
-                    Player(
-                        "id2",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                ),
-                winnerNames = "Hlompho",
-                winnerImageUrl = R.drawable.avatar_boy1.toString()
-            ),
-            createNewGameToolsState = CreateNewGameToolsState(),
-            onCloseClick = {}
-        )
+    GamesHubAppTheme() {
+        SharedTransitionLayout {
+            NavHost(
+                navController = rememberNavController(),
+                startDestination = "start"
+            ) {
+                composable(route = "start") {
+                    PlayedGameScreen(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedContentScope = this,
+                        playedGameWinnerOrNextStage = playedGameNextStageState,
+                        createNewGameToolsState = CreateNewGameToolsState(),
+                        onCloseClick = {}
+                    )
+                }
+            }
+        }
     }
 }
 
 @Preview
 @Composable
 private fun PlayedGameWinnerPrev() {
-    GamesHubAppTheme(darkTheme = false) {
-        PlayedGameScreen(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            playedGameWinnerOrNextStage = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
-                loading = false,
-                gameDuration = (80000L).toUIDuration(),
-                otherPlayers = listOf(
-                    Player(
-                        "id",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                ),
-                winnerNames = "Hlompho",
-                winnerImageUrl = R.drawable.avatar_boy1.toString()
-            ),
-            createNewGameToolsState = CreateNewGameToolsState()
-        )
+    GamesHubAppTheme() {
+        SharedTransitionLayout {
+            NavHost(
+                navController = rememberNavController(),
+                startDestination = "start"
+            ) {
+                composable(route = "start") {
+                    PlayedGameScreen(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedContentScope = this,
+                        playedGameWinnerOrNextStage = playedGameWinnerState,
+                        createNewGameToolsState = CreateNewGameToolsState()
+                    )
+                }
+            }
+        }
     }
 }
 
-@Preview
+
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PlayedGameWinnerDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        PlayedGameScreen(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            playedGameWinnerOrNextStage = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
-                loading = false,
-                gameDuration = (8L).toUIDuration(),
-                otherPlayers = listOf(
-                    Player(
-                        "id",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                    Player(
-                        "id2",
-                        profileName = "Android",
-                        imageUrl = R.drawable.ai_platform.toString()
-                    ),
-                ),
-                winnerNames = "Hlompho",
-                winnerImageUrl = R.drawable.avatar_boy1.toString()
-            ),
-            createNewGameToolsState = CreateNewGameToolsState()
-        )
+    GamesHubAppTheme() {
+        SharedTransitionLayout {
+            NavHost(
+                navController = rememberNavController(),
+                startDestination = "start"
+            ) {
+                composable(route = "start") {
+                    PlayedGameScreen(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedContentScope = this,
+                        playedGameWinnerOrNextStage = playedGameWinnerState,
+                        createNewGameToolsState = CreateNewGameToolsState()
+                    )
+                }
+            }
+        }
     }
 }
+
+val playedGameWinnerState = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
+    loading = false,
+    gameDuration = (8L).toUIDuration(),
+    otherPlayers = listOf(
+        Player(
+            "id",
+            profileName = "Hlompho",
+            imageUrl = R.drawable.avatar_boy1.toString()
+        ),
+        Player(
+            "id2",
+            profileName = "Android",
+            imageUrl = R.drawable.ai_platform.toString()
+        ),
+    ),
+    winnerNames = "Hlompho",
+    winnerImageUrl = R.drawable.avatar_boy1.toString()
+)
+
+val playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(
+    loading = false,
+    gameDuration = (80000L).toUIDuration(),
+    eliminatedPlayers = listOf(
+        Player(
+            "id",
+            profileName = "Hlompho",
+            imageUrl = R.drawable.avatar_boy1.toString()
+        ),
+    ),
+    nextStagePlayers = listOf(
+        Player(
+            "id2",
+            profileName = "Hlompho",
+            imageUrl = R.drawable.avatar_boy1.toString()
+        ),
+    ),
+    winnerNames = "Hlompho",
+    winnerImageUrl = R.drawable.avatar_boy1.toString()
+)

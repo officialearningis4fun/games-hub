@@ -1,5 +1,12 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.learningis4fun.gameshub.crusade_cards.feature_start.presentation
 
+import android.content.res.Configuration
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
@@ -49,10 +58,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun NavGraphBuilder.cardsStartScreenComposable(
+    sharedTransitionScope: SharedTransitionScope,
     onStartClick: () -> Unit,
     onResumeClick: (String) -> Unit,
     onProfileClick: () -> Unit,
-    onGameClick: (String) -> Unit,
+    onGameClick: (Pair<Game, Player>) -> Unit = {},
 ) {
     composable<StartScreenRoute> {
 
@@ -65,6 +75,8 @@ fun NavGraphBuilder.cardsStartScreenComposable(
         CardsStartScreen(
             modifier = Modifier
                 .fillMaxSize(),
+            animatedContentScope = this,
+            sharedTransitionScope = sharedTransitionScope,
             cardsStartState = cardsStartState,
             createNewGameToolsState = createNewGameToolsState,
             onStartClick = onStartClick,
@@ -81,13 +93,15 @@ fun NavGraphBuilder.cardsStartScreenComposable(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardsStartScreen(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     cardsStartState: CardsStartState,
     createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
     onStartClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onGameClick: (String) -> Unit = {},
+    onGameClick: (Pair<Game, Player>) -> Unit = {},
     onEvent: (CardsStartEvents) -> Unit = {},
     onCreateGameEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
@@ -191,7 +205,7 @@ fun CardsStartDataScreen(
     showOngoingGame: Boolean,
     onStartClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
-    onGameClick: (String) -> Unit = {},
+    onGameClick: (Pair<Game, Player>) -> Unit = {},
     onDeleteGame: (String) -> Unit = {},
     onEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
@@ -239,99 +253,35 @@ fun CardsStartDataScreen(
 
 }
 
-@Preview
 @Composable
-private fun CardsStartScreenLoadingLightPrev() {
+private fun PrevRootLayout(
+    content: @Composable () -> Unit
+) {
     GamesHubAppTheme {
-        CardsStartScreen(
-            modifier = Modifier
-                .fillMaxSize(),
-            cardsStartState = CardsStartState()
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CardsStartScreenLoadingDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        CardsStartScreen(
-            modifier = Modifier
-                .fillMaxSize(),
-            cardsStartState = CardsStartState()
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CardsStartScreenWithEmptyCompletedGamesLightPrev() {
-    GamesHubAppTheme {
-        CardsStartScreen(
-            modifier = Modifier
-                .fillMaxSize(),
-            cardsStartState = cardsStartState
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CardsStartScreenWithEmptyCompletedGamesDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        CardsStartScreen(
-            modifier = Modifier
-                .fillMaxSize(),
-            cardsStartState = cardsStartState
-        )
+        content()
     }
 }
 
 @Preview
 @Composable
 private fun CardsStartScreenLightPrev() {
-    GamesHubAppTheme {
-        CardsStartScreen(
-            modifier = Modifier
-                .fillMaxSize(),
-            cardsStartState = cardsStartState.copy(isLoading = false)
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CardsStartScreenDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        CardsStartScreen(
-            modifier = Modifier
-                .fillMaxSize(),
-            cardsStartState = cardsStartState.copy(isLoading = false)
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CardsStartScreenWithOngoingGamesLightPrev() {
-    GamesHubAppTheme {
-        CardsStartScreen(
-            modifier = Modifier
-                .fillMaxSize(),
-            cardsStartState = cardsStartState.copy(isLoading = false, showOngoingGame = true)
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun CardsStartScreenWithOngoingGamesDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        CardsStartScreen(
-            modifier = Modifier
-                .fillMaxSize(),
-            cardsStartState = cardsStartState.copy(isLoading = false, showOngoingGame = true)
-        )
+    PrevRootLayout {
+        SharedTransitionLayout {
+            NavHost(
+                navController = rememberNavController(),
+                startDestination = "start"
+            ) {
+                composable(route = "start") {
+                    CardsStartScreen(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedContentScope = this,
+                        cardsStartState = cardsStartState.copy(isLoading = false)
+                    )
+                }
+            }
+        }
     }
 }
 

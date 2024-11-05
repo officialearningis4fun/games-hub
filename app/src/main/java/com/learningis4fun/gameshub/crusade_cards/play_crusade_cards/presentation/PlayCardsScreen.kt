@@ -67,6 +67,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.JokerActions
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.PlayCardsScreenRoute
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.green
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
@@ -81,7 +82,7 @@ import kotlinx.coroutines.launch
 fun NavGraphBuilder.playCardsScreenComposable(
     onProfileClick: () -> Unit,
     onBackClick: () -> Unit,
-    navigateToWinner: (String) -> Unit
+    navigateToWinner: (WinnerScreenRoute) -> Unit
 ) {
     composable<PlayCardsScreenRoute>(
         enterTransition = {
@@ -109,8 +110,13 @@ fun NavGraphBuilder.playCardsScreenComposable(
             playCardsState = playCardsState,
             gameDuration = gameDuration,
             onEvent = playCardsViewModel::onEvent,
-            winner = { (_, wonGameId) ->
-                navigateToWinner(wonGameId)
+            winner = { (player, wonGameId) ->
+                navigateToWinner(
+                    WinnerScreenRoute(
+                        wonGameId = wonGameId,
+                        winnerImageUrl = player.imageUrl
+                    )
+                )
             },
             onClose = {
                 playCardsViewModel.onCloseNavigationIconClicked {
@@ -191,7 +197,7 @@ fun PlayCardsScreen(
                         Text(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             style = MaterialTheme.typography.titleSmall,
-                            text = if(playCardsState.playersScreenInfo.size > 2) gameDuration else "PLAYERS",
+                            text = if (playCardsState.playersScreenInfo.size > 2) gameDuration else "PLAYERS",
                         )
                     }
                 },
