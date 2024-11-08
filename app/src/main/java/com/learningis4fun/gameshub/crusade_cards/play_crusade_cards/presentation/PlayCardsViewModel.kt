@@ -306,7 +306,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                             || topCard?.name == Constants.CardNames.JACK
 
                     val isCardNotSevenOrJackOnlyForLessThanTwoPlayers =
-                        if(playerIds.size > 2) true else !isCardSevenOrJack
+                        if (playerIds.size > 2) true else !isCardSevenOrJack
 
                     if (hasWinner != null && isCardNotSevenOrJackOnlyForLessThanTwoPlayers) {
                         requestedToEndGame(
@@ -538,9 +538,12 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             val participants = listOf(loggedUser)
                 .union(devicesPlayers)
                 .toList()
+                .mapIndexed { index, player ->
+                    Pair(player, index + 1)
+                }
 
             participants.forEach { player ->
-                userRepository.savePlayer(player).getDataOrThrowException()
+                userRepository.savePlayer(player.first).getDataOrThrowException()
             }
 
             val gameId = createGameUseCase.createGame(

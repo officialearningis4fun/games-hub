@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 data class GameStage(
     val gameId: String = "",
     val stageNumber: Int = 1,
-    val playerIds: List<String> = emptyList()
+    val playerIds: List<PlayerIdAndPosition> = emptyList()
 ) {
     fun toGameStageRef() = GameStageRef(
         gameId = gameId,
@@ -16,9 +16,15 @@ data class GameStage(
         playerIds = Json.encodeToString(playerIds)
     )
 
-    fun nextStage(playerIds: List<String>): GameStage = GameStage(
+    fun nextStage(playerIds: List<PlayerIdAndPosition>): GameStage = GameStage(
         gameId = gameId,
         stageNumber = stageNumber + 1,
         playerIds = playerIds
     )
 }
+
+@Serializable
+data class PlayerIdAndPosition(
+    val playerId: String = "",
+    val position: Int = 0
+)

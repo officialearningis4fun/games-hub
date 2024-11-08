@@ -3,6 +3,7 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.PlayerIdAndPosition
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
@@ -87,9 +88,15 @@ class EndGameUseCase @Inject constructor(
 
                 println(eliminatedPlayers)
 
+                // the winner should play first in the next game
                 val nextStagePlayerIds = eliminatedPlayers
                     .filterNot { it.second }
-                    .map { it.first.uniqueId }
+                    .mapIndexed { index, pair ->
+                        PlayerIdAndPosition(
+                            playerId = pair.first.uniqueId,
+                            position = index + 1
+                        )
+                    }
                     .ifEmpty { null }
 
                 if (nextStagePlayerIds == null || nextStagePlayerIds.size == 1) {
@@ -102,15 +109,22 @@ class EndGameUseCase @Inject constructor(
                     // if no player is eliminated - The winner is eliminated
 
                     if (eliminatedPlayers.count { it.second } == 0) {
-                        
+
                         val winnerAsEliminatedPlayer = listOf(
                             eliminatedPlayers.first { it.first.uniqueId == winnerId }
                         )
-                        
-                        val nextStagePlayerIdsWithoutWinner = nextStagePlayerIds
-                            .filterNot { it == winnerId }
 
-                        val nextStage = currentGameStage.nextStage(playerIds = nextStagePlayerIdsWithoutWinner)
+                        val nextStagePlayerIdsWithoutWinner = nextStagePlayerIds
+                            .filterNot { it.playerId == winnerId }
+                            .map { (playerId, position) ->
+                                PlayerIdAndPosition(
+                                    position = position,
+                                    playerId = playerId
+                                )
+                            }
+
+                        val nextStage =
+                            currentGameStage.nextStage(playerIds = nextStagePlayerIdsWithoutWinner)
                         setupNextStageGame(
                             game = game,
                             gameStage = nextStage,

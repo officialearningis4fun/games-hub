@@ -16,6 +16,15 @@ data class GameStageRef(
     fun toGameStage() = GameStage(
         gameId = gameId,
         stageNumber = stageNumber,
-        playerIds = Json.decodeFromString(playerIds)
+        playerIds = try {
+            Json.decodeFromString(playerIds)
+        } catch (e: Exception) {
+            Json.decodeFromString<List<String>>(playerIds).mapIndexed { index, s ->
+                PlayerIdAndPosition(
+                    position = index + 1,
+                    playerId = s
+                )
+            }
+        }
     )
 }

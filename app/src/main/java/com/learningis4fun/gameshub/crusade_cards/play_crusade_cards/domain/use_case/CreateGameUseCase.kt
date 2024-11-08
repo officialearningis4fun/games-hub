@@ -4,6 +4,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameStage
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.PlayerIdAndPosition
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
@@ -30,7 +31,7 @@ class CreateGameUseCase @Inject constructor(
      * the number of gameCards should be the same as that of cards
      * return type is a gameId
      */
-    suspend fun createGame(gameName: String, participants: List<Player>): String {
+    suspend fun createGame(gameName: String, participants: List<Pair<Player, Int>>): String {
 
         return try {
 
@@ -54,7 +55,7 @@ class CreateGameUseCase @Inject constructor(
                 throw Exception("No enough participants for this game")
             }
 
-            if (participants.any { it == Player() }) {
+            if (participants.any { it.first == Player() }) {
                 throw Exception("No enough participants for this game")
             }
 
@@ -67,7 +68,7 @@ class CreateGameUseCase @Inject constructor(
                 repository.insertGameUserCrossRef(
                     GameUserCrossRef(
                         gameId = gameId,
-                        userId = it.uniqueId
+                        userId = it.first.uniqueId
                     )
                 ).getDataOrThrowException()
             }
@@ -77,7 +78,12 @@ class CreateGameUseCase @Inject constructor(
             val gameStage = GameStage(
                 gameId = gameId,
                 stageNumber = 1,
-                playerIds = participants.map { it.uniqueId }
+                playerIds = participants.map {
+                    PlayerIdAndPosition(
+                        position = it.second,
+                        playerId = it.first.uniqueId
+                    )
+                }
             )
             gameRepository.insertGame(game).getDataOrThrowException()
             gameStageRepository.saveGameStage(gameStage = gameStage).getDataOrThrowException()
