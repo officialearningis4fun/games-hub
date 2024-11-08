@@ -1,16 +1,11 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.learningis4fun.gameshub.crusade_cards.feature_start.presentation
 
-import androidx.compose.animation.AnimatedContentScope
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -74,7 +69,6 @@ fun CompletedGamesSection(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun CompletedGamesDataSection(
     modifier: Modifier = Modifier,
@@ -100,21 +94,15 @@ fun CompletedGamesDataSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             items(completedGames) {
-                CompletedGameItem(
-                    modifier = Modifier
-                        .clickable {
-                            onGameClick(
-                                Pair(
-                                    it.game,
-                                    it.winner!!
-                                )
+                CompletedGameItem(modifier = Modifier
+                    .clickable {
+                        onGameClick(
+                            Pair(
+                                it.game, it.winner!!
                             )
-                        }
-                        .animateItem(fadeInSpec = null, fadeOutSpec = null),
-                    animatedContentScope = ,
-                    sharedTransitionScope = ,
-                    completedGame = it
-                )
+                        )
+                    }
+                    .animateItem(fadeInSpec = null, fadeOutSpec = null), completedGame = it)
             }
         }
     }
@@ -128,8 +116,7 @@ private fun EmptyListScreen(
     Column(modifier) {
         Heading(
             text = "Completed games",
-            modifier = Modifier
-                .padding(start = 16.dp, top = 8.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp),
             textColor = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier)
@@ -144,9 +131,7 @@ private fun EmptyListScreen(
                 Card(
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 2.dp
-                    ),
-                    shape = RoundedCornerShape(6.dp),
-                    colors = CardDefaults.cardColors(
+                    ), shape = RoundedCornerShape(6.dp), colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
                 ) {
@@ -157,8 +142,7 @@ private fun EmptyListScreen(
                     ) {
 
                         Row(
-                            Modifier,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            Modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
 
                             Image(
@@ -194,10 +178,10 @@ private fun EmptyListScreen(
                                 )
 
                                 Heading(
-                                    modifier = Modifier
-                                        .background(Color.Gray, shape = RoundedCornerShape(4.dp)),
-                                    text = "00:00",
-                                    textColor = Color.Transparent
+                                    modifier = Modifier.background(
+                                        Color.Gray,
+                                        shape = RoundedCornerShape(4.dp)
+                                    ), text = "00:00", textColor = Color.Transparent
                                 )
                             }
                         }
@@ -225,8 +209,7 @@ fun CompletedGamesLoadingScreen(
     Column(modifier) {
         Heading(
             text = "Completed games",
-            modifier = Modifier
-                .padding(start = 16.dp, top = 8.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp),
             textColor = MaterialTheme.colorScheme.onBackground
         )
         Spacer(modifier = Modifier)
@@ -241,9 +224,7 @@ fun CompletedGamesLoadingScreen(
                 Card(
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 5.dp
-                    ),
-                    shape = RoundedCornerShape(6.dp),
-                    colors = CardDefaults.cardColors(
+                    ), shape = RoundedCornerShape(6.dp), colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.secondaryContainer
                     )
                 ) {
@@ -254,8 +235,7 @@ fun CompletedGamesLoadingScreen(
                     ) {
 
                         Row(
-                            Modifier,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            Modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
 
                             Image(
@@ -291,10 +271,10 @@ fun CompletedGamesLoadingScreen(
                                 )
 
                                 Heading(
-                                    modifier = Modifier
-                                        .background(Color.Gray, shape = RoundedCornerShape(4.dp)),
-                                    text = "00:00",
-                                    textColor = Color.Transparent
+                                    modifier = Modifier.background(
+                                        Color.Gray,
+                                        shape = RoundedCornerShape(4.dp)
+                                    ), text = "00:00", textColor = Color.Transparent
                                 )
                             }
                         }
@@ -315,12 +295,9 @@ fun CompletedGamesLoadingScreen(
     }
 }
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 private fun CompletedGameItem(
     modifier: Modifier = Modifier,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     completedGame: CompletedGame
 ) {
 
@@ -328,16 +305,16 @@ private fun CompletedGameItem(
     val otherPlayers = completedGame.otherPlayers
 
     val winnerImage = winner?.imageUrl?.toIntOrNull() ?: R.drawable.game_test_profile
-    val otherPlayersImages = otherPlayers.map {
-        it.imageUrl.toIntOrNull() ?: R.drawable.avatar_person1
-    }
+
+    val otherPlayerImage =
+        otherPlayers.firstOrNull()?.imageUrl?.toIntOrNull() ?: R.drawable.avatar_person1
+
+    val morePlayers = if (otherPlayers.size > 1) "+${otherPlayers.size - 1}" else ""
 
     Card(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 2.dp
-        ),
-        shape = RoundedCornerShape(6.dp),
-        colors = CardDefaults.cardColors(
+        ), shape = RoundedCornerShape(6.dp), colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondaryContainer
         )
     ) {
@@ -349,29 +326,20 @@ private fun CompletedGameItem(
         ) {
 
             Row(
-                Modifier,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Modifier, horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
-                with(sharedTransitionScope) {
-                    Image(
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(CircleShape)
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.surface,
-                                CircleShape
-                            )
-                            .sharedElement(
-                                sharedTransitionScope.rememberSharedContentState(key = "image/$winnerImage"),
-                                animatedVisibilityScope = animatedContentScope
-                            ),
-                        contentScale = ContentScale.Crop,
-                        painter = painterResource(id = winnerImage),
-                        contentDescription = null
-                    )
-                }
+                Image(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(CircleShape)
+                        .border(
+                            width = 1.dp, color = MaterialTheme.colorScheme.surface, CircleShape
+                        ),
+                    contentScale = ContentScale.Crop,
+                    painter = painterResource(id = winnerImage),
+                    contentDescription = null
+                )
 
                 Column(
                     modifier = Modifier.height(64.dp),
@@ -387,9 +355,23 @@ private fun CompletedGameItem(
                     )
 
                     Row {
-                        otherPlayersImages.take(3).map { playerImage ->
-                            Image(
-                                modifier = Modifier
+                        Image(
+                            modifier = Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.surface,
+                                    CircleShape
+                                ),
+                            contentScale = ContentScale.Crop,
+                            painter = painterResource(id = otherPlayerImage),
+                            contentDescription = null
+                        )
+
+                        if (otherPlayers.size > 1) {
+                            Box(
+                                Modifier
                                     .size(28.dp)
                                     .clip(CircleShape)
                                     .border(
@@ -397,11 +379,15 @@ private fun CompletedGameItem(
                                         color = MaterialTheme.colorScheme.surface,
                                         CircleShape
                                     ),
-                                contentScale = ContentScale.Crop,
-                                painter = painterResource(id = playerImage),
-                                contentDescription = null
-                            )
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = morePlayers,
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
                         }
+
                     }
 
                     Heading(
@@ -443,20 +429,17 @@ fun Heading(
 @Composable
 private fun CompletedGameItemPrev() {
     GamesHubAppTheme {
-        SharedTransitionLayout {
-            CompletedGameItem(
-                modifier = Modifier,
-                sharedTransitionScope = this,
-                animatedContentScope = ,
-                completedGame = CompletedGame(
-                    game = Game(id = "", name = "Game 01", winnerId = "id"),
-                    players = listOf(
-                        Player("id", profileName = "Hlompho"),
-                        Player("id2", profileName = "Android"),
-                    )
+
+        CompletedGameItem(
+            modifier = Modifier, completedGame = CompletedGame(
+                game = Game(id = "", name = "Game 01", winnerId = "id"), players = listOf(
+                    Player("id", profileName = "Hlompho"),
+                    Player("id2", profileName = "Dev1"),
+                    Player("id3", profileName = "Dev2"),
                 )
             )
-        }
+        )
+
     }
 }
 
@@ -465,20 +448,15 @@ private fun CompletedGameItemPrev() {
 private fun CompletedGamesScreenPrev() {
     GamesHubAppTheme {
         CompletedGamesSection(
-            modifier = Modifier
-                .fillMaxWidth(),
-            completedGamesState = CompletedGamesState(
+            modifier = Modifier.fillMaxWidth(), completedGamesState = CompletedGamesState(
                 completedGames = listOf(
                     CompletedGame(
-                        game = Game(id = "", name = "Game 01", winnerId = "id"),
-                        players = listOf(
+                        game = Game(id = "", name = "Game 01", winnerId = "id"), players = listOf(
                             Player("id", profileName = "Hlompho"),
                             Player("id2", profileName = "Android"),
                         )
-                    ),
-                    CompletedGame(
-                        game = Game(id = "", name = "Game 01", winnerId = "id"),
-                        players = listOf(
+                    ), CompletedGame(
+                        game = Game(id = "", name = "Game 01", winnerId = "id"), players = listOf(
                             Player("id", profileName = "Hlompho"),
                             Player("id2", profileName = "Android"),
                         )
@@ -492,14 +470,12 @@ private fun CompletedGamesScreenPrev() {
 @Preview
 @Composable
 private fun CompletedGamesEmptyScreenPrev() {
-    GamesHubAppTheme(darkTheme = false) {
+    GamesHubAppTheme {
         CompletedGamesSection(
-            modifier = Modifier
-                .background(Color.White)
-                .fillMaxWidth(),
-            completedGamesState = CompletedGamesState(
+            modifier = Modifier.fillMaxWidth(), completedGamesState = CompletedGamesState(
                 completedGames = emptyList()
             )
         )
+
     }
 }

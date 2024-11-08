@@ -3,6 +3,7 @@ package com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_n
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -27,8 +30,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.NumberOfCardsOrPlayersInGameSection
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.PlayerItem
 
 @Composable
 fun CreateNewGameToolsSection(
@@ -89,9 +94,11 @@ fun CreateNewGameToolsSection(
                         0 -> {
                             onEvent(CreateNewGameToolsEvents.IncreaseNumberOfCards)
                         }
+
                         1 -> {
                             onEvent(CreateNewGameToolsEvents.IncreaseNumberOfParticipants)
                         }
+
                         else -> {
                             onEvent(CreateNewGameToolsEvents.IncreaseEliminationLimitForCrusade)
                         }
@@ -143,6 +150,61 @@ fun CreateNewGameToolsSection(
         }
     }
 
+}
+
+@Composable
+fun CreateGameSetupToolsSection(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        NumberOfCardsOrPlayersInGameSection(
+            count = 5,
+            onDecreaseNumber = {},
+            onIncreaseNumber = {}
+        )
+
+        val players = listOf(
+            Constants.Players.USER,
+            Constants.Players.DEVICE1,
+            Constants.Players.DEVICE2,
+            Constants.Players.DEVICE3,
+        )
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp)
+        ) {
+            items(players) { player ->
+                Column(
+                    modifier = Modifier,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    PlayerItem(
+                        modifier = Modifier.size(42.dp),
+                        player = player
+                    )
+                    Text(
+                        text = player.profileName,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun CreateGameSetupTools() {
+    GamesHubAppTheme {
+        CreateGameSetupToolsSection()
+    }
 }
 
 @Preview

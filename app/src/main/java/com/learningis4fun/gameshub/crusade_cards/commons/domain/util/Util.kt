@@ -50,20 +50,20 @@ fun String?.toWinnerNames(player: Player?): String {
 
 fun Card.numberRepresentation(): Int {
     return when (this.name) {
-        Constants.CardNames.ACE -> 1
+        Constants.CardNames.ACE -> 11
         Constants.CardNames.TWO -> 2
         Constants.CardNames.THREE -> 3
         Constants.CardNames.FOUR -> 4
         Constants.CardNames.FIVE -> 5
         Constants.CardNames.SIX -> 6
         Constants.CardNames.SEVEN -> 7
-        Constants.CardNames.EIGHT -> 8
+        Constants.CardNames.EIGHT -> 20
         Constants.CardNames.NINE -> 9
         Constants.CardNames.TEN -> 10
-        Constants.CardNames.JACK -> 11
-        Constants.CardNames.QUEEN -> 12
-        Constants.CardNames.KING -> 13
-        Constants.CardNames.JOKER -> 14
+        Constants.CardNames.JACK -> 12
+        Constants.CardNames.QUEEN -> 13
+        Constants.CardNames.KING -> 14
+        Constants.CardNames.JOKER -> 40
         else -> 0
     }
 }

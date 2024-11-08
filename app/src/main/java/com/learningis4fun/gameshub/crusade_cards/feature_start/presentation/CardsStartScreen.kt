@@ -1,12 +1,6 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.learningis4fun.gameshub.crusade_cards.feature_start.presentation
 
-import android.content.res.Configuration
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,9 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
@@ -58,7 +50,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun NavGraphBuilder.cardsStartScreenComposable(
-    sharedTransitionScope: SharedTransitionScope,
     onStartClick: () -> Unit,
     onResumeClick: (String) -> Unit,
     onProfileClick: () -> Unit,
@@ -75,8 +66,6 @@ fun NavGraphBuilder.cardsStartScreenComposable(
         CardsStartScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            animatedContentScope = this,
-            sharedTransitionScope = sharedTransitionScope,
             cardsStartState = cardsStartState,
             createNewGameToolsState = createNewGameToolsState,
             onStartClick = onStartClick,
@@ -94,8 +83,6 @@ fun NavGraphBuilder.cardsStartScreenComposable(
 @Composable
 fun CardsStartScreen(
     modifier: Modifier = Modifier,
-    sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
     cardsStartState: CardsStartState,
     createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
     onStartClick: () -> Unit = {},
@@ -266,22 +253,11 @@ private fun PrevRootLayout(
 @Composable
 private fun CardsStartScreenLightPrev() {
     PrevRootLayout {
-        SharedTransitionLayout {
-            NavHost(
-                navController = rememberNavController(),
-                startDestination = "start"
-            ) {
-                composable(route = "start") {
-                    CardsStartScreen(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        sharedTransitionScope = this@SharedTransitionLayout,
-                        animatedContentScope = this,
-                        cardsStartState = cardsStartState.copy(isLoading = false)
-                    )
-                }
-            }
-        }
+        CardsStartScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            cardsStartState = cardsStartState.copy(isLoading = false)
+        )
     }
 }
 

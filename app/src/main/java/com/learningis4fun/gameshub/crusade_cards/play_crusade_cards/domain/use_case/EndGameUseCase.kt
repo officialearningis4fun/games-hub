@@ -99,12 +99,33 @@ class EndGameUseCase @Inject constructor(
                         winnerId = winnerId
                     )
                 } else {
-                    val nextStage = currentGameStage.nextStage(playerIds = nextStagePlayerIds)
-                    setupNextStageGame(
-                        game = game,
-                        gameStage = nextStage,
-                        players = eliminatedPlayers
-                    )
+                    // if no player is eliminated - The winner is eliminated
+
+                    if (eliminatedPlayers.count { it.second } == 0) {
+                        
+                        val winnerAsEliminatedPlayer = listOf(
+                            eliminatedPlayers.first { it.first.uniqueId == winnerId }
+                        )
+                        
+                        val nextStagePlayerIdsWithoutWinner = nextStagePlayerIds
+                            .filterNot { it == winnerId }
+
+                        val nextStage = currentGameStage.nextStage(playerIds = nextStagePlayerIdsWithoutWinner)
+                        setupNextStageGame(
+                            game = game,
+                            gameStage = nextStage,
+                            players = winnerAsEliminatedPlayer
+                        )
+                    } else {
+                        val nextStage = currentGameStage.nextStage(playerIds = nextStagePlayerIds)
+                        setupNextStageGame(
+                            game = game,
+                            gameStage = nextStage,
+                            players = eliminatedPlayers
+                        )
+
+                    }
+
                 }
 
 

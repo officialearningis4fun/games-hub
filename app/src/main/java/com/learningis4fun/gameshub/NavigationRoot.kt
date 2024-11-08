@@ -1,7 +1,5 @@
 package com.learningis4fun.gameshub
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,94 +18,88 @@ import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.card
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.playCardsScreenComposable
 
 
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun NavigationRoot() {
     val navController = rememberNavController()
 
-    SharedTransitionLayout {
-        NavHost(
-            modifier = Modifier.background(Color.White),
-            navController = navController,
-            startDestination = StartScreenRoute
-        ) {
+    NavHost(
+        modifier = Modifier.background(Color.White),
+        navController = navController,
+        startDestination = StartScreenRoute
+    ) {
 
-            cardsStartScreenComposable(
-                sharedTransitionScope = this@SharedTransitionLayout,
-                onStartClick = {
-                    navController.navigate(PlayCardsScreenRoute(currentGameId = ""))
-                },
-                onResumeClick = { gameId ->
-                    navController.navigate(PlayCardsScreenRoute(currentGameId = gameId))
-                },
-                onProfileClick = {
-                    navController.navigate(ProfileScreenRoute)
-                },
-                onGameClick = { (game, player) ->
-                    navController.navigate(
-                        WinnerScreenRoute(
-                            wonGameId = game.id,
-                            winnerImageUrl = player.imageUrl
-                        )
+        cardsStartScreenComposable(
+            onStartClick = {
+                navController.navigate(PlayCardsScreenRoute(currentGameId = ""))
+            },
+            onResumeClick = { gameId ->
+                navController.navigate(PlayCardsScreenRoute(currentGameId = gameId))
+            },
+            onProfileClick = {
+                navController.navigate(ProfileScreenRoute)
+            },
+            onGameClick = { (game, player) ->
+                navController.navigate(
+                    WinnerScreenRoute(
+                        wonGameId = game.id,
+                        winnerImageUrl = player.imageUrl
                     )
-                },
-            )
+                )
+            },
+        )
 
-            playedGameWinnerComposable(
-                sharedTransitionScope = this@SharedTransitionLayout,
-                onStartGame = {
-                    navController.navigate(PlayCardsScreenRoute()) {
-                        popUpTo(StartScreenRoute)
+        playedGameWinnerComposable(
+            onStartGame = {
+                navController.navigate(PlayCardsScreenRoute()) {
+                    popUpTo(StartScreenRoute)
+                }
+            },
+            onCloseClick = {
+                navController.navigateUp()
+            },
+            onStartNextStage = {
+                navController.navigate(PlayCardsScreenRoute()) {
+                    popUpTo(StartScreenRoute)
+                }
+            }
+        )
+
+        playCardsScreenComposable(
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onProfileClick = {
+                navController.navigate(ProfileScreenRoute)
+            },
+            navigateToWinner = { route ->
+                navController.navigate(
+                    WinnerScreenRoute(
+                        wonGameId = route.wonGameId,
+                        winnerImageUrl = route.winnerImageUrl
+                    )
+                ) {
+                    popUpTo<StartScreenRoute> {
+                        inclusive = false
                     }
-                },
-                onCloseClick = {
-                    navController.navigateUp()
-                },
-                onStartNextStage = {
-                    navController.navigate(PlayCardsScreenRoute()) {
-                        popUpTo(StartScreenRoute)
-                    }
                 }
-            )
+            }
+        )
 
-            playCardsScreenComposable(
-                onBackClick = {
-                    navController.navigateUp()
-                },
-                onProfileClick = {
-                    navController.navigate(ProfileScreenRoute)
-                },
-                navigateToWinner = { route ->
-                    navController.navigate(
-                        WinnerScreenRoute(
-                            wonGameId = route.wonGameId,
-                            winnerImageUrl = route.winnerImageUrl
-                        )
-                    ) {
-                        popUpTo<StartScreenRoute> {
-                            inclusive = false
-                        }
-                    }
-                }
-            )
+        profileScreenComposable(
+            onBackClick = {
+                navController.navigateUp()
+            },
+            onEditProfile = {
+                navController.navigate(EditProfileRoute)
+            }
+        )
 
-            profileScreenComposable(
-                onBackClick = {
-                    navController.navigateUp()
-                },
-                onEditProfile = {
-                    navController.navigate(EditProfileRoute)
-                }
-            )
+        editProfileScreenComposable(
+            onBackClick = {
+                navController.navigateUp()
+            }
+        )
 
-            editProfileScreenComposable(
-                onBackClick = {
-                    navController.navigateUp()
-                }
-            )
-
-        }
     }
-
 
 }

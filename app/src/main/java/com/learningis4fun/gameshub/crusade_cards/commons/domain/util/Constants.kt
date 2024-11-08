@@ -3,6 +3,7 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.User
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 
@@ -58,6 +59,37 @@ object Constants {
     object Players {
         val ANDROID_PLAYER = User("1", "Android")
         val GUEST_PLAYER = User("2", "Guest")
+
+        val USER = Player(
+            uniqueId = "uniqueId",
+            imageUrl = R.drawable.avatar_man1.toString(),
+            profileName = "user"
+        )
+
+        val DEVICE1 = Player(
+            uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3dev1",
+            email = "",
+            phone = "",
+            imageUrl = R.drawable.ai_platform.toString(),
+            profileName = "Dev1"
+        )
+
+        val DEVICE2 = Player(
+            uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3dev2",
+            email = "",
+            phone = "",
+            imageUrl = R.drawable.ai_platform.toString(),
+            profileName = "Dev2"
+        )
+
+        val DEVICE3 = Player(
+            uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3dev3",
+            email = "",
+            phone = "",
+            imageUrl = R.drawable.ai_platform.toString(),
+            profileName = "Dev3"
+        )
+
     }
 
     const val DEFAULT_CARDS_PER_USER = 5

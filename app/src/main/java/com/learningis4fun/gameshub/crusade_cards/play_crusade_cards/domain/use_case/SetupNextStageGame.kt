@@ -29,7 +29,6 @@ constructor(
     private val preferenceManager: CrusadeCardsPreferencesManager,
     private val assignCardsUseCase: AssignCardsUseCase,
     private val cardRepository: CardRepository
-
 ) {
 
     /**

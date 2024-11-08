@@ -232,7 +232,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             if (gameId.isEmpty()) {
                 return@withContext null
             }
-            val playersOfGame = gameRepository.getGameWithLatestStagePlayers(gameId = gameId).first().players
+            val playersOfGame =
+                gameRepository.getGameWithLatestStagePlayers(gameId = gameId).first().players
             if (playersOfGame.isEmpty()) {
                 return@withContext null
             }
@@ -304,7 +305,10 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     val isCardSevenOrJack = topCard?.name == Constants.CardNames.SEVEN
                             || topCard?.name == Constants.CardNames.JACK
 
-                    if (hasWinner != null && !isCardSevenOrJack) {
+                    val isCardNotSevenOrJackOnlyForLessThanTwoPlayers =
+                        if(playerIds.size > 2) true else !isCardSevenOrJack
+
+                    if (hasWinner != null && isCardNotSevenOrJackOnlyForLessThanTwoPlayers) {
                         requestedToEndGame(
                             winner = hasWinner,
                             gameId = gameId
@@ -334,7 +338,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         gameId: String
     ) {
         try {
-            endGameUseCase.invoke(
+            endGameUseCase(
                 currGameId = gameId,
                 duration = _gameDuration.value.second,
                 winnerId = winner.uniqueId
@@ -578,7 +582,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 throw Exception("Game not available")
             }
             val playerIds =
-                gameRepository.getGameWithLatestStagePlayers(currGameId).first().players.map { it.uniqueId }
+                gameRepository.getGameWithLatestStagePlayers(currGameId)
+                    .first().players.map { it.uniqueId }
             val topPlayedCardName =
                 gameCardRepository.getTopPlayedCard(
                     gameId = currGameId,
