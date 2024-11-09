@@ -662,9 +662,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                         it
                     }
                 }
-                .sortedBy {
-                    it.profileName.length
-                }
 
             playersIds.map { player ->
 

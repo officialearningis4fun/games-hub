@@ -49,6 +49,11 @@ object Constants {
         CardNames.JOKER,
     )
 
+    object CrusadePlayingDirection{
+        const val CLOCKWISE = "clockwise"
+        const val ANTICLOCKWISE = "anticlockwise"
+    }
+
     const val NUM_OF_CARDS_TO_PICK_FOR_JOKER = 4
     const val GAME_DURATION_INTERVAL = 1000L
 

@@ -809,7 +809,7 @@ class MultiplayerCrusadeCardsControllerTest {
                 createGameUseCase.createGame(gameName = "game - name", participants = participants)
             fakeGameRepositoryImpl.updateRecentGameId(gameId)
 
-            val actual = cardsController.findPreviousPlayerToPlayAboveJack(
+            val actual = cardsController.findPreviousPlayerToPlayAboveJackAndChangePlayingDirection(
                 currPlayerId = userId,
                 gameId = gameId
             )
@@ -831,7 +831,7 @@ class MultiplayerCrusadeCardsControllerTest {
 
             val gameId = createGameUseCase.createGame("game", participants)
 
-            val actual = cardsController.findPreviousPlayerToPlayAboveJack(
+            val actual = cardsController.findPreviousPlayerToPlayAboveJackAndChangePlayingDirection(
                 currPlayerId = userId,
                 gameId = gameId
             )

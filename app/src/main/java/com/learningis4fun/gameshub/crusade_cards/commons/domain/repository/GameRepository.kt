@@ -26,6 +26,8 @@ interface GameRepository {
 
     fun getGameWithLatestStagePlayers(gameId: String): Flow<GameWithPlayers>
 
+    fun getGameWithLatestStagePlayersSorted(gameId: String): Flow<GameWithPlayers>
+
     fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers>
 
     fun getCompletedGamesWithPlayers(): Flow<List<GameWithPlayers>>

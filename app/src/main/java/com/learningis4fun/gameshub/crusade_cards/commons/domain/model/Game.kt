@@ -3,6 +3,7 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 
 // completedTime
@@ -19,6 +20,8 @@ data class Game(
     val winnerId: String = "",
     @ColumnInfo(name = "gameDuration")
     val gameDuration: Long = 0L,
+    @ColumnInfo(name = "playingDirection", defaultValue = Constants.CrusadePlayingDirection.CLOCKWISE)
+    val playingDirection: String = Constants.CrusadePlayingDirection.CLOCKWISE,
     @ColumnInfo(name = "gameCompletedTime")
     val completedTime: Long = 0L,
     @ColumnInfo(name = "gameCompletedMessage")

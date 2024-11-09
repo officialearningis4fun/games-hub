@@ -1,7 +1,10 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.migration.AutoMigrationSpec
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
@@ -25,8 +28,11 @@ import javax.inject.Provider
 
 @Database(
     entities = [Player::class, Card::class, Game::class, GameCard::class, GameUserCrossRef::class, GameStageRef::class],
-    version = 1,
-    exportSchema = true
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(1, 2)
+    ]
 )
 abstract class GamesDatabase : RoomDatabase() {
     abstract fun gameUserCrossRef(): GameUserCrossRefDao

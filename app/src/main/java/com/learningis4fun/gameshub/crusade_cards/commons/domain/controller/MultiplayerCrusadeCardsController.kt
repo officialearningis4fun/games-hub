@@ -11,6 +11,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.mappers.toGameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -248,16 +249,13 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     }
 
     suspend fun playerIds(gameId: String): List<String> {
-        return gameRepository.getGameWithLatestStagePlayers(gameId = gameId)
+        return gameRepository.getGameWithLatestStagePlayersSorted(gameId = gameId)
             .first().players.map { it.uniqueId }
     }
 
     @ExperimentalStdlibApi
     suspend fun findNextPlayerToPlayAboveSeven(currPlayerId: String, gameId: String): String {
         val players = playerIds(gameId = gameId)
-
-        println("gameId: $gameId")
-        println("players: $players")
 
         return if (players.size == 2) {
             currPlayerId
@@ -277,20 +275,38 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         }
     }
 
-    suspend fun findPreviousPlayerToPlayAboveJack(currPlayerId: String, gameId: String): String? {
+    suspend fun findPreviousPlayerToPlayAboveJackAndChangePlayingDirection(
+        currPlayerId: String,
+        gameId: String
+    ): String? {
         return try {
+
+            // switch the direction of play
+            val game = gameRepository.getGame(gameId).first() ?: throw Exception("Game not found")
+
+            gameRepository.updateGame(
+                game.copy(
+                    playingDirection = when (game.playingDirection) {
+                        Constants.CrusadePlayingDirection.CLOCKWISE -> Constants.CrusadePlayingDirection.ANTICLOCKWISE
+                        Constants.CrusadePlayingDirection.ANTICLOCKWISE -> Constants.CrusadePlayingDirection.CLOCKWISE
+                        else -> game.playingDirection
+                    }
+                )
+            ).getDataOrThrowException()
+
             val players = playerIds(gameId = gameId)
+
+            val indexOfCurrPlayer = players.indexOf(currPlayerId)
 
             if (players.size == 2) {
                 currPlayerId
             } else {
                 // 1, 2, 3, 4, 5, 6, 7: get the prev player is and rotate the play direction
-                val indexOfCurrPlayer = players.indexOf(currPlayerId)
 
-                if (indexOfCurrPlayer <= players.lastIndex && indexOfCurrPlayer > 0) {
-                    players[indexOfCurrPlayer - 1]
+                if (indexOfCurrPlayer == players.lastIndex) {
+                    players[0]
                 } else {
-                    players[players.lastIndex]
+                    players[indexOfCurrPlayer + 1]
                 }
             }
 
@@ -453,12 +469,13 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                             }
 
                             is Response.Success -> {
-                                val prevPlayer = findPreviousPlayerToPlayAboveJack(
-                                    currPlayerId = userCard.playerId,
-                                    gameId = userCard.gameId
-                                ) ?: return CardStates.Error(
-                                    message = "Couldn't find the other player that should play after playing Jack"
-                                )
+                                val prevPlayer =
+                                    findPreviousPlayerToPlayAboveJackAndChangePlayingDirection(
+                                        currPlayerId = userCard.playerId,
+                                        gameId = userCard.gameId
+                                    ) ?: return CardStates.Error(
+                                        message = "Couldn't find the other player that should play after playing Jack"
+                                    )
 
                                 if (userCard.playerId != prevPlayer) {
                                     CardStates.Play(

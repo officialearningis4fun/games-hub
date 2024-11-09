@@ -5,8 +5,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.Crusad
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
@@ -92,19 +92,89 @@ class GameRepositoryImpl @Inject constructor(
 
     override fun getGameWithLatestStagePlayers(gameId: String): Flow<GameWithPlayers> {
 
-        return db.gameDao().getGameWithPlayers(gameId).mapLatest {
-            val latestGameStage =
-                db.gameStageDao().getGameStages(gameId).map { gameStage -> gameStage.toGameStage() }
-                    .firstOrNull()
+        return db.gameDao().getGameWithPlayers(gameId).mapLatest { gameWithPlayers ->
 
-            if (latestGameStage != null) {
-                it.copy(
-                    players = it.players.filter { player: Player -> player.uniqueId in latestGameStage.playerIds }
-                )
-            } else {
-                it
+            getGameWithDefaultSortedPlayers(gameWithPlayers = gameWithPlayers)
+
+        }
+    }
+
+    override fun getGameWithLatestStagePlayersSorted(gameId: String): Flow<GameWithPlayers> {
+        return db.gameDao().getGameWithPlayers(gameId).mapLatest { gameWithPlayers ->
+            getGameWithSortedPlayers(gameWithPlayers = gameWithPlayers)
+        }
+    }
+
+    private suspend fun getGameWithSortedPlayers(
+        gameWithPlayers: GameWithPlayers
+    ): GameWithPlayers {
+        return try {
+
+            val gameId = gameWithPlayers.game.id
+
+            val latestGameStage = db.gameStageDao()
+                .getGameStages(gameId).map { gameStage -> gameStage.toGameStage() }
+                .firstOrNull()
+                ?.playerIds
+
+            val players = gameWithPlayers.players
+                .mapNotNull { player ->
+                    val playerIdAndPositionToSort =
+                        latestGameStage?.find { playerIdAndPosition -> playerIdAndPosition.playerId == player.uniqueId }
+                    playerIdAndPositionToSort?.let {
+                        Pair(player, playerIdAndPositionToSort.position)
+                    }
+                }
+
+            val sortedPlayers = when (gameWithPlayers.game.playingDirection) {
+                Constants.CrusadePlayingDirection.ANTICLOCKWISE -> {
+                    players.sortedByDescending { it.second }
+                        .map { it.first }
+                }
+
+                else -> {
+                    players.sortedBy { it.second }
+                        .map { it.first }
+                }
             }
 
+            gameWithPlayers.copy(
+                players = sortedPlayers
+            )
+        } catch (e: Exception) {
+            gameWithPlayers
+        }
+    }
+
+    private suspend fun getGameWithDefaultSortedPlayers(
+        gameWithPlayers: GameWithPlayers
+    ): GameWithPlayers {
+        return try {
+
+            val gameId = gameWithPlayers.game.id
+
+            val latestGameStage = db.gameStageDao()
+                .getGameStages(gameId).map { gameStage -> gameStage.toGameStage() }
+                .firstOrNull()
+                ?.playerIds
+
+            val players = gameWithPlayers.players
+                .mapNotNull { player ->
+                    val playerIdAndPositionToSort =
+                        latestGameStage?.find { playerIdAndPosition -> playerIdAndPosition.playerId == player.uniqueId }
+                    playerIdAndPositionToSort?.let {
+                        Pair(player, playerIdAndPositionToSort.position)
+                    }
+                }
+
+            val sortedPlayers = players.sortedBy { it.second }
+                .map { it.first }
+
+            gameWithPlayers.copy(
+                players = sortedPlayers
+            )
+        } catch (e: Exception) {
+            gameWithPlayers
         }
     }
 
