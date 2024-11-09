@@ -49,7 +49,7 @@ object Constants {
         CardNames.JOKER,
     )
 
-    object CrusadePlayingDirection{
+    object CrusadePlayingDirection {
         const val CLOCKWISE = "clockwise"
         const val ANTICLOCKWISE = "anticlockwise"
     }
@@ -456,6 +456,106 @@ object Constants {
                 image = R.drawable.joker_red.toString()
             )
 
+        )
+    }
+
+    object EliminationLimitNumRepCard {
+        val cards: List<Card> = listOf(
+            //Ace
+
+            Card(
+                name = CardNames.ACE,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_1.toString()
+            ),
+
+            //Two
+
+            Card(
+                name = CardNames.TWO,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_2.toString()
+            ),
+            //Three
+
+            Card(
+                name = CardNames.THREE,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_3.toString()
+            ),
+            //Four
+            Card(
+                name = CardNames.FOUR,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_4.toString()
+            ),
+
+            //Five
+            Card(
+                name = CardNames.FIVE,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_5.toString()
+            ),
+
+            //Six
+            Card(
+                name = CardNames.SIX,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_6.toString()
+            ),
+            //Seven
+            Card(
+                name = CardNames.SEVEN,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_7.toString()
+            ),
+            //Eight
+            Card(
+                name = CardNames.EIGHT,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_8.toString()
+            ),
+
+            //Nine
+            Card(
+                name = CardNames.NINE,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_9.toString()
+            ),
+            //Ten
+            Card(
+                name = CardNames.TEN,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_10.toString()
+            ),
+            //Jack
+            Card(
+                name = CardNames.JACK,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_jack.toString()
+            ),
+
+            //Queen
+            Card(
+                name = CardNames.QUEEN,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_queen.toString()
+            ),
+
+            //King
+            Card(
+                name = CardNames.KING,
+                type = CardTypes.CLUBS,
+                image = R.drawable.club_king.toString()
+            ),
+
+
+            //Joker
+            Card(
+                name = CardNames.JOKER,
+                type = CardTypes.BLACK_JOKER,
+                image = R.drawable.joker_black.toString()
+            )
         )
     }
 
