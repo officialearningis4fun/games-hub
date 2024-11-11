@@ -165,8 +165,8 @@ class EndGameUseCase @Inject constructor(
                 winnerId = winnerId,
                 completedTime = gameCompletedTime
             )
-            gameRepository.updateRecentGameId("").getDataOrThrowException()
             gameRepository.updateGame(gameToEnd).getDataOrThrowException()
+            gameRepository.updateRecentGameId("").getDataOrThrowException()
             repository.changeCurrentCardType("").getDataOrThrowException()
             gameCardRepository.deleteAllGameCards().getDataOrThrowException()
             preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))

@@ -654,7 +654,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
                 val playerName = player.playerName(userId)
 
-
                 PlayerScreenInfo(
                     playerId = player.uniqueId,
                     defaultAvatar = R.drawable.game_test_profile,

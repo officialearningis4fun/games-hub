@@ -10,6 +10,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameR
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.model.CompletedGame
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CardsStartState
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.CompletedGamesState
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -93,12 +95,26 @@ class CardsStartViewModel @Inject constructor(
                         )
                     }
 
+                    val loggedInUserId = preferences.user.first().uniqueId
+
                     ongoingGamesStateFlow.update {
+                        val players = gameWithPlayers
+                            .players
+                            .map { player ->
+                                player.copy(
+                                    profileName = player.playerName(
+                                        loggedInUserId = loggedInUserId
+                                    )
+                                )
+                            }
+
                         OngoingGamesState(
                             games = listOf(
                                 OnGoingGame(
                                     threeCards = cards,
-                                    gameWithPlayers = gameWithPlayers,
+                                    gameWithPlayers = gameWithPlayers.copy(
+                                        players = players
+                                    ),
                                 )
                             ),
                             isLoading = false

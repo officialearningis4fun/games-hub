@@ -31,13 +31,6 @@ constructor(
     private val cardRepository: CardRepository
 ) {
 
-    /**
-     * create a new game
-     * assign players to game
-     * and create gameCards out of available cards
-     * the number of gameCards should be the same as that of cards
-     * return type is a gameId
-     */
     suspend operator fun invoke(
         game: Game,
         gameStage: GameStage,
@@ -46,8 +39,8 @@ constructor(
 
         return try {
             println("requested to go to next stage")
-            gameStageRepository.saveGameStage(gameStage = gameStage).getDataOrThrowException()
             gameRepository.updateGame(game).getDataOrThrowException()
+            gameStageRepository.saveGameStage(gameStage = gameStage).getDataOrThrowException()
             repository.changeCurrentCardType("").getDataOrThrowException()
             preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
             gameCardRepository.deleteAllGameCards().getDataOrThrowException()
