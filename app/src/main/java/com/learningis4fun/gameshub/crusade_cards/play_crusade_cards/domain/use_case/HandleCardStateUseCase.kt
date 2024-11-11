@@ -201,8 +201,10 @@ class HandleCardStateUseCase @Inject constructor(
             is CardStates.Play -> {
                 if (state.playerId in computerPlayersIds) {
                     println("${state.playerId} is playing")
+
                     val card = computerCardsController.playCardForComputer(
-                        playerId = state.playerId
+                        playerId = state.playerId,
+                        gameId = gameId
                     )
                     println("the available card is ${card?.card}")
                     cardState = card?.let {
@@ -242,6 +244,7 @@ class HandleCardStateUseCase @Inject constructor(
             }
 
             is CardStates.Played -> {
+
                 cardState = CardStates.Play(
                     playerId = cardsController.getIdOfTheNextPlayer(
                         currentPlayer = state.playerId,

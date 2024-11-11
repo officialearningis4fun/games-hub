@@ -49,6 +49,7 @@ class EndGameUseCase @Inject constructor(
 
         return try {
 
+            println("requested to end game")
             val gameWithPlayers =
                 gameRepository.getGameWithLatestStagePlayers(gameId = currGameId).first()
 
@@ -156,6 +157,7 @@ class EndGameUseCase @Inject constructor(
         winnerId: String
     ): Response<List<Pair<Player, Boolean>>> {
         return try {
+
             val gameCompletedTime = System.currentTimeMillis()
 
             val gameToEnd = game.copy(
@@ -168,6 +170,7 @@ class EndGameUseCase @Inject constructor(
             repository.changeCurrentCardType("").getDataOrThrowException()
             gameCardRepository.deleteAllGameCards().getDataOrThrowException()
             preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
+            println("ended game")
             Response.Success(emptyList())
         } catch (e: Exception) {
             Response.Error(e.message.toString())

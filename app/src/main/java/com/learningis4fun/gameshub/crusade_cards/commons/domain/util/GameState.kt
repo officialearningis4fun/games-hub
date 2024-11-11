@@ -1,11 +1,10 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 
 sealed class GameState(val name: String) {
-    object NotStarted : GameState("not-started")
-    object Started : GameState("started")
-    object Paused : GameState("paused")
-    object Completed : GameState("completed")
-
+    data object NotStarted : GameState("not-started")
+    data object Started : GameState("started")
+    data object Paused : GameState("paused")
+    data object Completed : GameState("completed")
 }
 
 fun toState(name: String) =

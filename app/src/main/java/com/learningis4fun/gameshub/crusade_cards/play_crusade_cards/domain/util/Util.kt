@@ -10,3 +10,7 @@ fun <T> Response<T>.getDataOrThrowException(): T {
         } else data
     }
 }
+
+object GamesHubLogTags{
+    const val MULTIPLAYER_CRUSADE_CARDS_CONTROLLER = "MultiplayerController"
+}

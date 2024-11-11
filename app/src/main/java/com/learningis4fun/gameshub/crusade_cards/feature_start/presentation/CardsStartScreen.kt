@@ -1,6 +1,5 @@
 package com.learningis4fun.gameshub.crusade_cards.feature_start.presentation
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,7 +49,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun NavGraphBuilder.cardsStartScreenComposable(
-    onStartClick: () -> Unit,
+    onStartClick: (String) -> Unit,
     onResumeClick: (String) -> Unit,
     onProfileClick: () -> Unit,
     onGameClick: (Pair<Game, Player>) -> Unit = {},
@@ -68,7 +67,11 @@ fun NavGraphBuilder.cardsStartScreenComposable(
                 .fillMaxSize(),
             cardsStartState = cardsStartState,
             createNewGameToolsState = createNewGameToolsState,
-            onStartClick = onStartClick,
+            onStartClick = {
+                createNewGameToolsViewModel.setupNewGameOnStartClick { gameId ->
+                    onStartClick(gameId)
+                }
+            },
             onResumeClick = onResumeClick,
             onProfileClick = onProfileClick,
             onGameClick = onGameClick,
@@ -164,21 +167,6 @@ fun CardsStartLoadingScreen(
         CircularProgressIndicator(
             modifier = Modifier.size(24.dp)
         )
-    }
-
-}
-
-@Composable
-fun CardsStartErrorScreen(
-    modifier: Modifier = Modifier,
-    error: String
-) {
-
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = error)
     }
 
 }

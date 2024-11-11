@@ -34,6 +34,7 @@ class GameRepositoryImpl @Inject constructor(
 
     override suspend fun updateGame(game: Game): Response<Unit> {
         return try {
+            println("game updated: $game")
             db.gameDao().updateGame(game)
             Response.Success(Unit)
         } catch (e: Exception) {
@@ -114,13 +115,14 @@ class GameRepositoryImpl @Inject constructor(
 
             val latestGameStage = db.gameStageDao()
                 .getGameStages(gameId).map { gameStage -> gameStage.toGameStage() }
-                .firstOrNull()
-                ?.playerIds
+                .first()
+                .playerIds
 
             val players = gameWithPlayers.players
                 .mapNotNull { player ->
-                    val playerIdAndPositionToSort =
-                        latestGameStage?.find { playerIdAndPosition -> playerIdAndPosition.playerId == player.uniqueId }
+                    val playerIdAndPositionToSort = latestGameStage.find { playerIdAndPosition ->
+                            playerIdAndPosition.playerId == player.uniqueId
+                        }
                     playerIdAndPositionToSort?.let {
                         Pair(player, playerIdAndPositionToSort.position)
                     }
@@ -155,13 +157,13 @@ class GameRepositoryImpl @Inject constructor(
 
             val latestGameStage = db.gameStageDao()
                 .getGameStages(gameId).map { gameStage -> gameStage.toGameStage() }
-                .firstOrNull()
-                ?.playerIds
+                .first()
+                .playerIds
 
             val players = gameWithPlayers.players
                 .mapNotNull { player ->
                     val playerIdAndPositionToSort =
-                        latestGameStage?.find { playerIdAndPosition -> playerIdAndPosition.playerId == player.uniqueId }
+                        latestGameStage.find { playerIdAndPosition -> playerIdAndPosition.playerId == player.uniqueId }
                     playerIdAndPositionToSort?.let {
                         Pair(player, playerIdAndPositionToSort.position)
                     }

@@ -35,6 +35,8 @@ class CreateGameUseCase @Inject constructor(
 
         return try {
 
+            println("requested to create game")
+
             val gameId = System.currentTimeMillis().toString()
             // make gamaCardId unique to each game created
             val gameCardId = System.currentTimeMillis().toString()

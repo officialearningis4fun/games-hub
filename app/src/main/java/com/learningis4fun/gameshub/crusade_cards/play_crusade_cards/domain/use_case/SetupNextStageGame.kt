@@ -45,7 +45,7 @@ constructor(
     ): Response<List<Pair<Player, Boolean>>> {
 
         return try {
-
+            println("requested to go to next stage")
             gameStageRepository.saveGameStage(gameStage = gameStage).getDataOrThrowException()
             gameRepository.updateGame(game).getDataOrThrowException()
             repository.changeCurrentCardType("").getDataOrThrowException()

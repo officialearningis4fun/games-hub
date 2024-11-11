@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data object StartScreenRoute
 
 @Serializable
-data class PlayCardsScreenRoute(val currentGameId: String = "")
+data class PlayCardsScreenRoute(val currentGameId: String)
 
 @Serializable
 data object ProfileScreenRoute

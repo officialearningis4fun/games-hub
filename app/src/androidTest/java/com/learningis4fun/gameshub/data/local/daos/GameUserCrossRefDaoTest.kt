@@ -1,5 +1,5 @@
-/*
-package com.learningis4fun.gameshub.data.local.daos
+package com.learningis4fun.gameshub.data.local.daos/*
+
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.filters.SmallTest

@@ -20,15 +20,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.sharp.ArrowBack
 import androidx.compose.material.icons.automirrored.sharp.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -38,125 +39,152 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.numberRepresentation
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toDoubleDigits
-import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.NumberOfCardsOrPlayersInGameSection
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 
 @Composable
-fun CreateNewGameToolsSection(
+fun CreateGameSetupToolsSection(
     modifier: Modifier = Modifier,
-    createGameButtonText: String = "Start",
-    createNewGameToolsState: CreateNewGameToolsState,
+    maxPlayers: Int = Constants.MAX_PARTICIPANTS_IN_CRUSADE_GAME,
+    cards: List<Card> = Constants.EliminationLimitNumRepCard.cards,
+    createGameButtonText: String = "start",
+    createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
     onStartGame: () -> Unit = {},
     onEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
 
-    val pages = listOf(
-        Pair("Number of cards per player", createNewGameToolsState.numberOfCardsPerPlayer),
-        Pair("Number of participants including you", createNewGameToolsState.numberOfParticipants),
-        Pair("Elimination limit for losers", createNewGameToolsState.eliminationLimitForCrusade)
-    )
-
-    val pagerState = rememberPagerState {
-        pages.size
+    var expandTools by remember {
+        mutableStateOf(false)
     }
 
     Column(
         modifier = modifier
+            .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
-            .padding(vertical = 16.dp),
+            .padding(bottom = 32.dp)
     ) {
 
-        HorizontalDivider()
-
-        HorizontalPager(
-            modifier = Modifier,
-            state = pagerState
-        ) {
-            val page = pages[pagerState.currentPage]
-
-            NumberOfCardsOrPlayersInGameSection(
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .fillMaxWidth(),
-                count = page.second,
-                title = page.first,
-                onDecreaseNumber = {
-                    when (pagerState.currentPage) {
-                        0 -> {
-                            onEvent(CreateNewGameToolsEvents.DecreaseNumberOfCards)
-                        }
-
-                        1 -> {
-                            onEvent(CreateNewGameToolsEvents.DecreaseNumberOfParticipants)
-                        }
-
-                        else -> {
-                            onEvent(CreateNewGameToolsEvents.DecreaseEliminationLimitForCrusade)
-                        }
-                    }
-                },
-                onIncreaseNumber = {
-                    when (pagerState.currentPage) {
-                        0 -> {
-                            onEvent(CreateNewGameToolsEvents.IncreaseNumberOfCards)
-                        }
-
-                        1 -> {
-                            onEvent(CreateNewGameToolsEvents.IncreaseNumberOfParticipants)
-                        }
-
-                        else -> {
-                            onEvent(CreateNewGameToolsEvents.IncreaseEliminationLimitForCrusade)
-                        }
-                    }
-                }
-            )
-
-        }
-
-        val selectedColor = MaterialTheme.colorScheme.onBackground
-        val unselectedColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-
         Row(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier
+                .clickable {
+                    expandTools = !expandTools
+                }
+                .padding(top = 8.dp, bottom = 8.dp, start = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
         ) {
 
-            pages.forEachIndexed { index, _ ->
-                Spacer(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .clip(CircleShape)
-                        .background(if (pagerState.currentPage == index) selectedColor else unselectedColor)
+            Row(
+                modifier = Modifier
+                    .weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Image(
+                        modifier = Modifier
+                            .height(24.dp)
+                            .padding(2.dp)
+                            .aspectRatio(0.7f),
+                        painter = painterResource(id = R.drawable.back),
+                        contentDescription = "",
+                    )
+                    Text(
+                        modifier = Modifier,
+                        text = "${createNewGameToolsState.numberOfCardsPerPlayer} Cards".uppercase(),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+
+                VerticalDivider(Modifier.height(16.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Face,
+                        contentDescription = ""
+                    )
+                    Text(
+                        modifier = Modifier,
+                        text = "${createNewGameToolsState.numberOfParticipants} Players".uppercase(),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+
+                VerticalDivider(Modifier.height(16.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        modifier = Modifier,
+                        text = "${createNewGameToolsState.eliminationLimitForCrusade} Limit".uppercase(),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+            }
+
+            IconButton(
+                modifier = Modifier,
+                onClick = { expandTools = !expandTools }
+            ) {
+                Icon(
+                    imageVector = if (expandTools) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = ""
                 )
             }
         }
 
-        Spacer(
-            modifier = Modifier
-                .height(16.dp)
-        )
+        if (expandTools) {
+            ToolsSection(
+                modifier = Modifier,
+                maxPlayers = maxPlayers,
+                cards = cards,
+                createNewGameToolsState = createNewGameToolsState,
+                onEvent = onEvent
+            )
+        }
+
+        HorizontalDivider()
 
         Button(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp),
             onClick = onStartGame,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -171,35 +199,53 @@ fun CreateNewGameToolsSection(
             Text(text = createGameButtonText.uppercase())
         }
     }
-
 }
 
 @Composable
-fun CreateGameSetupToolsSection(
+private fun ToolsSection(
     modifier: Modifier = Modifier,
     maxPlayers: Int = Constants.MAX_PARTICIPANTS_IN_CRUSADE_GAME,
-    cards: List<Card> = Constants.EliminationLimitNumRepCard.cards
+    cards: List<Card> = Constants.EliminationLimitNumRepCard.cards,
+    createNewGameToolsState: CreateNewGameToolsState,
+    onEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(vertical = 16.dp),
+        modifier = modifier.padding(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Column {
+            HorizontalDivider()
 
-        NumberOfCardsOrPlayersInGameSection(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            count = 5,
-            onDecreaseNumber = {},
-            onIncreaseNumber = {}
-        )
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                text = "Number of cards per player"
+            )
 
-        val players = listOf(
-            Constants.Players.USER,
-            Constants.Players.DEVICE1,
-            Constants.Players.DEVICE2,
-        )
+            LazyRow(
+                modifier = Modifier.height(144.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                item {
+                    IncreaseDecreaseItem(
+                        modifier = Modifier.padding(end = 8.dp),
+                        count = createNewGameToolsState.numberOfCardsPerPlayer,
+                        onDecrease = {
+                            onEvent(CreateNewGameToolsEvents.DecreaseNumberOfCards)
+                        },
+                        onIncrease = {
+                            onEvent(CreateNewGameToolsEvents.IncreaseNumberOfCards)
+                        }
+                    )
+                }
+                items((0..5).toList()) {
+                    BackCardItem(
+                        modifier = Modifier.fillMaxHeight()
+                    )
+                }
+            }
+
+        }
 
         Column {
             HorizontalDivider()
@@ -212,12 +258,22 @@ fun CreateGameSetupToolsSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(players) { player ->
-                    PlayerItem(player = player)
+                items(createNewGameToolsState.availablePlayers) { playerInfo ->
+                    PlayerItem(
+                        modifier = Modifier.animateItem(),
+                        playerInfo = playerInfo,
+                        onRemove = {
+                            onEvent(CreateNewGameToolsEvents.RemoveParticipant(playerInfo.player))
+                        }
+                    )
                 }
-                if (players.size < maxPlayers) {
+                if (createNewGameToolsState.availablePlayers.size < maxPlayers) {
                     item {
-                        AddPlayerButton()
+                        AddPlayerButton(
+                            onClick = {
+                                onEvent(CreateNewGameToolsEvents.AddParticipant)
+                            }
+                        )
                     }
                 }
             }
@@ -236,7 +292,16 @@ fun CreateGameSetupToolsSection(
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
                 item {
-                    IncreaseDecreaseLimitCardItem(count = 6)
+                    IncreaseDecreaseItem(
+                        modifier = Modifier.padding(end = 8.dp),
+                        count = createNewGameToolsState.eliminationLimitForCrusade,
+                        onDecrease = {
+                            onEvent(CreateNewGameToolsEvents.DecreaseEliminationLimitForCrusade)
+                        },
+                        onIncrease = {
+                            onEvent(CreateNewGameToolsEvents.IncreaseEliminationLimitForCrusade)
+                        }
+                    )
                 }
                 items(cards) { card ->
                     CardItem(
@@ -255,10 +320,10 @@ fun CreateGameSetupToolsSection(
 @Composable
 private fun PlayerItem(
     modifier: Modifier = Modifier,
-    player: Player,
+    playerInfo: PlayerInfo,
     onRemove: () -> Unit = {}
 ) {
-    val imageRes = player.imageUrl.toIntOrNull() ?: R.drawable.avatar_person1
+    val imageRes = playerInfo.player.imageUrl.toIntOrNull() ?: R.drawable.avatar_person1
 
     Column(
         modifier = modifier,
@@ -289,34 +354,38 @@ private fun PlayerItem(
                     contentDescription = null
                 )
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .clickable { onRemove() }
-                        .padding(2.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Remove player"
-                    )
+                if (playerInfo.canRemove) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .clickable { onRemove() }
+                            .padding(2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Remove player"
+                        )
+                    }
                 }
 
             }
         }
         Text(
-            text = player.profileName,
+            text = playerInfo.player.profileName,
             style = MaterialTheme.typography.bodyMedium
         )
     }
 }
 
 @Composable
-private fun IncreaseDecreaseLimitCardItem(
+private fun IncreaseDecreaseItem(
     modifier: Modifier = Modifier,
-    count: Int
+    count: Int,
+    onDecrease: () -> Unit = {},
+    onIncrease: () -> Unit = {},
 ) {
     Column(
         modifier = modifier
@@ -329,13 +398,13 @@ private fun IncreaseDecreaseLimitCardItem(
     ) {
         IconButton(
             modifier = Modifier,
-            onClick = {}
+            onClick = { onIncrease() }
         ) {
             Icon(
                 modifier = Modifier
-                    .rotate(90f),
+                    .rotate(-90f),
                 imageVector = Icons.AutoMirrored.Sharp.ArrowForward,
-                contentDescription = "decrease"
+                contentDescription = "increase"
             )
         }
 
@@ -355,15 +424,54 @@ private fun IncreaseDecreaseLimitCardItem(
 
         IconButton(
             modifier = Modifier,
-            onClick = {}
+            onClick = { onDecrease() }
         ) {
             Icon(
                 modifier = Modifier
                     .rotate(90f),
-                imageVector = Icons.AutoMirrored.Sharp.ArrowBack,
+                imageVector = Icons.AutoMirrored.Sharp.ArrowForward,
                 contentDescription = "Increase"
             )
         }
+    }
+
+}
+
+@Composable
+private fun BackCardItem(
+    modifier: Modifier = Modifier,
+) {
+    val imageRes = R.drawable.back
+
+    Column(
+        modifier = modifier
+            .fillMaxHeight()
+            .aspectRatio(0.7f),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+
+        Card(
+            modifier = Modifier,
+            shape = RoundedCornerShape(4.dp),
+            elevation = CardDefaults.cardElevation(
+                defaultElevation = 2.dp
+            ),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent
+            )
+        ) {
+            Image(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .aspectRatio(0.7f),
+                contentScale = ContentScale.Crop,
+                painter = painterResource(id = imageRes),
+                contentDescription = null
+            )
+
+        }
+
     }
 
 }
@@ -377,7 +485,9 @@ private fun CardItem(
     val imageRes = card.image.toIntOrNull() ?: R.drawable.card_base
 
     Column(
-        modifier = modifier.fillMaxHeight(),
+        modifier = modifier
+            .fillMaxHeight()
+            .aspectRatio(0.7f),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
@@ -406,15 +516,18 @@ private fun CardItem(
             }
             Text(
                 modifier = Modifier
+                    .fillMaxWidth()
                     .align(Alignment.Center)
+                    .padding(horizontal = 1.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.background,
-                        shape = CircleShape
+                        color = MaterialTheme.colorScheme.error,
+                        shape = RectangleShape
                     )
-                    .clip(CircleShape)
-                    .padding(16.dp),
+                    .padding(8.dp),
                 text = count.toString(),
-                style = MaterialTheme.typography.bodyMedium
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onError,
+                style = MaterialTheme.typography.titleMedium
             )
         }
 
@@ -457,27 +570,23 @@ private fun AddPlayerButton(
 @Composable
 private fun CreateGameSetupTools() {
     GamesHubAppTheme {
-        CreateGameSetupToolsSection()
-    }
-}
-
-@Preview
-@Composable
-private fun CreateNewGameToolsSectionLightPrev() {
-    GamesHubAppTheme {
-        CreateNewGameToolsSection(
-            createNewGameToolsState = CreateNewGameToolsState()
-        )
-    }
-}
-
-
-@Preview
-@Composable
-private fun CreateNewGameToolsSectionDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
-        CreateNewGameToolsSection(
-            createNewGameToolsState = CreateNewGameToolsState()
+        CreateGameSetupToolsSection(
+            createNewGameToolsState = CreateNewGameToolsState(
+                playersInfo = listOf(
+                    Constants.Players.USER,
+                    Constants.Players.DEVICE1,
+                    Constants.Players.DEVICE2,
+                    Constants.Players.DEVICE3
+                ).map {
+                    PlayerInfo(
+                        player = it.copy(
+                            profileName = it.playerName(Constants.Players.USER.uniqueId)
+                        ),
+                        canRemove = it.uniqueId != Constants.Players.USER.uniqueId,
+                        includeInList = true
+                    )
+                }
+            )
         )
     }
 }

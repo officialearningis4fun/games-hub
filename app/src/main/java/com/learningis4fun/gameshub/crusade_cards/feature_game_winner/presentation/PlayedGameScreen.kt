@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.learningis4fun.gameshub.crusade_cards.feature_game_winner.presentation
 
 import android.content.res.Configuration
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -50,9 +47,9 @@ import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 
 fun NavGraphBuilder.playedGameWinnerComposable(
-    onStartGame: () -> Unit,
+    onStartGame: (String) -> Unit,
     onCloseClick: () -> Unit,
-    onStartNextStage: () -> Unit
+    onStartNextStage: (String) -> Unit
 ) {
 
     composable<WinnerScreenRoute>(
@@ -63,6 +60,8 @@ fun NavGraphBuilder.playedGameWinnerComposable(
             scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS)
         }
     ) { backStateEntry ->
+
+        val wonGameId = backStateEntry.toRoute<WinnerScreenRoute>().wonGameId
 
         val winnerImageRes =
             backStateEntry.toRoute<WinnerScreenRoute>().winnerImageUrl.toIntOrNull()
@@ -81,8 +80,14 @@ fun NavGraphBuilder.playedGameWinnerComposable(
             playedGameWinnerOrNextStage = playedGameState,
             createNewGameToolsState = createNewGameToolsState,
             winnerImageRes = winnerImageRes,
-            onStartGame = onStartGame,
-            onStartNextStage = onStartNextStage,
+            onStartGame = {
+                createNewGameToolsViewModel.setupNewGameOnStartClick(
+                    onGameCreated = { gameId ->
+                        onStartGame(gameId)
+                    }
+                )
+            },
+            onStartNextStage = { onStartNextStage(wonGameId) },
             onCloseClick = onCloseClick,
             onEvent = viewModel::onEvent,
             onCreateEvent = createNewGameToolsViewModel::onEvent
@@ -90,7 +95,7 @@ fun NavGraphBuilder.playedGameWinnerComposable(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayedGameScreen(
     modifier: Modifier = Modifier,
@@ -186,7 +191,7 @@ private fun PlayedGameWinnerSection(
 @Preview
 @Composable
 private fun PlayedGameNextStageScreenPrev() {
-    GamesHubAppTheme() {
+    GamesHubAppTheme {
         PlayedGameScreen(
             modifier = Modifier
                 .fillMaxSize(),
@@ -201,7 +206,7 @@ private fun PlayedGameNextStageScreenPrev() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PlayedGameNextStageScreenDarkPrev() {
-    GamesHubAppTheme() {
+    GamesHubAppTheme {
 
         PlayedGameScreen(
             modifier = Modifier
@@ -216,7 +221,7 @@ private fun PlayedGameNextStageScreenDarkPrev() {
 @Preview
 @Composable
 private fun PlayedGameWinnerPrev() {
-    GamesHubAppTheme() {
+    GamesHubAppTheme {
         PlayedGameScreen(
             modifier = Modifier
                 .fillMaxSize(),
@@ -231,7 +236,7 @@ private fun PlayedGameWinnerPrev() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PlayedGameWinnerDarkPrev() {
-    GamesHubAppTheme() {
+    GamesHubAppTheme {
         PlayedGameScreen(
             modifier = Modifier
                 .fillMaxSize(),

@@ -110,10 +110,10 @@ class CrusadeComputerCardsController @Inject constructor(
     }
 
     suspend fun playCardForComputer(
-        playerId: String
+        playerId: String,
+        gameId: String
     ): UserCard? {
 
-        val gameId = getCurrentGameId()
         val currentCardType = getCurrentCardType()
         val currentCardName = getCurrentCardName()
 

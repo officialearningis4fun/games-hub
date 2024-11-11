@@ -44,6 +44,10 @@ fun Long.toTimeFormatted(): String {
     return timeFormat.format(this)
 }
 
+fun Player.playerName(loggedInUserId: String = ""): String {
+    return if (this.uniqueId == loggedInUserId) "You" else this.profileName.take(4)
+}
+
 fun String?.toWinnerNames(player: Player?): String {
     return if (player?.uniqueId == this) "You" else player?.profileName ?: ""
 }

@@ -29,6 +29,7 @@ import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.PlayerItem
 
 @Composable
 fun PlayedGameNextStage(
@@ -149,20 +150,12 @@ private fun PlayersSection(
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             otherPlayers.forEach {
-                Column(
-                    modifier = Modifier,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.PlayerItem(
-                        modifier = Modifier.size(42.dp),
-                        player = it
-                    )
-                    Text(
-                        text = it.profileName,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                PlayerItem(
+                    modifier = Modifier.size(42.dp),
+                    player = it
+                )
+
+
             }
         }
     }

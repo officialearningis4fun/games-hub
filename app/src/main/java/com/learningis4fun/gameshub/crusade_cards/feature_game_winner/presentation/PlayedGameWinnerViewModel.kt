@@ -90,6 +90,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
         numberOfCardsPerPlayer: Int
     ) {
         try {
+            println("winner: $game")
 
             if (game.gameState == GameState.Completed.name) {
                 // completed

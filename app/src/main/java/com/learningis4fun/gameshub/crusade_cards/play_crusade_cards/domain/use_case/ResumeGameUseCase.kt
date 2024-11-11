@@ -22,6 +22,8 @@ class ResumeGameUseCase @Inject constructor(
 
         try {
 
+            println("requested to resume game")
+
             if (currGameId.isEmpty()) {
                 throw Exception("Game to be resumed was not found")
             }

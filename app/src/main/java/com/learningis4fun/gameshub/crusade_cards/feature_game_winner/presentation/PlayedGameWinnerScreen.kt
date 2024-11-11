@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,10 +23,11 @@ import androidx.compose.ui.unit.dp
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
+import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateGameSetupToolsSection
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
-import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsSection
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.PlayerItem
 
 
 @Composable
@@ -101,35 +103,35 @@ private fun WinnerSection(
         }
 
         FlowRow(
+            modifier = Modifier,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             otherPlayers.forEach {
-                Column(
-                    modifier = Modifier,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.PlayerItem(
-                        modifier = Modifier.size(42.dp),
-                        player = it
-                    )
-                    Text(
-                        text = it.profileName,
-                        style = MaterialTheme.typography.bodyMedium
+                PlayerItem(
+                    modifier = Modifier.size(42.dp),
+                    player = it
+                )
+            }
+        }
+
+
+        Column {
+            HorizontalDivider()
+
+            LazyColumn {
+                item {
+                    CreateGameSetupToolsSection(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        createGameButtonText = "Play another game",
+                        createNewGameToolsState = createNewGameToolsState,
+                        onEvent = onCreateEvent,
+                        onStartGame = onStartGame
                     )
                 }
             }
         }
 
-        CreateNewGameToolsSection(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            createGameButtonText = "Play another game",
-            createNewGameToolsState = createNewGameToolsState,
-            onEvent = onCreateEvent,
-            onStartGame = onStartGame
-        )
     }
 }
 

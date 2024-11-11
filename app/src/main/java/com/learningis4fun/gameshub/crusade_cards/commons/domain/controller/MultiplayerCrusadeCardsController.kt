@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.controller
 
+import android.util.Log
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
@@ -11,11 +12,13 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.mappers.toGameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.GamesHubLogTags
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import kotlin.math.abs
+
 
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
@@ -40,14 +43,13 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         card: UserCard,
         canPick: Boolean
     ): CardStates {
-        val gameId = getCurrentGameId()
 
         val currentCardName = getCurrentCardName()
         val currentCardType = getCurrentCardType()
 
         return requestPlay(
             playerId = card.playerId,
-            gameId = gameId,
+            gameId = card.gameId,
             currentCardType = currentCardType,
             currentCardName = currentCardName,
             userCard = card,
@@ -131,6 +133,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
              * if current card name & card type are empty -> play card
              */
             currentCardType.isEmpty() || (currentCardName.isEmpty() && currentCardType.isEmpty()) -> {
+                Log.d(
+                    GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER,
+                    "Can play; cardType:${currentCardType}-cardName:${currentCardName}"
+                )
                 playCard(
                     userCard = userCard
                 )
@@ -294,14 +300,19 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                 )
             ).getDataOrThrowException()
 
+            // have other players not sho up in another stage
             val players = playerIds(gameId = gameId)
+
+            Log.d(GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER, "players $players")
+
 
             val indexOfCurrPlayer = players.indexOf(currPlayerId)
 
-            if (players.size == 2) {
+            val nextPlayerId = if (players.size == 2) {
                 currPlayerId
             } else {
                 // 1, 2, 3, 4, 5, 6, 7: get the prev player is and rotate the play direction
+                // 7, 6, 5, 4, 3, 2, 1: get the prev player is and rotate the play direction
 
                 if (indexOfCurrPlayer == players.lastIndex) {
                     players[0]
@@ -309,7 +320,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                     players[indexOfCurrPlayer + 1]
                 }
             }
-
+            nextPlayerId
         } catch (exception: Exception) {
             null
         }
@@ -457,6 +468,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
             }
 
             Constants.CardNames.JACK -> {
+                Log.d(GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER, "Playing: $userCard")
                 val updateResult = gameCardRepository.playGameCard(
                     gameCard = userCard.toGameCard().copy(isPlayed = true)
                 )
@@ -469,6 +481,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                             }
 
                             is Response.Success -> {
+                                Log.d(
+                                    GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER,
+                                    "Successfully Played card$"
+                                )
                                 val prevPlayer =
                                     findPreviousPlayerToPlayAboveJackAndChangePlayingDirection(
                                         currPlayerId = userCard.playerId,
@@ -476,6 +492,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                                     ) ?: return CardStates.Error(
                                         message = "Couldn't find the other player that should play after playing Jack"
                                     )
+                                Log.d(
+                                    GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER,
+                                    "next playerId: $prevPlayer"
+                                )
 
                                 if (userCard.playerId != prevPlayer) {
                                     CardStates.Play(
@@ -688,6 +708,5 @@ class MultiplayerCrusadeCardsController @Inject constructor(
             }
         }
     }
-
 
 }

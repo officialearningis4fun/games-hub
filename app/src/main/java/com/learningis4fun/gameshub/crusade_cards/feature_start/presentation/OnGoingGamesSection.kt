@@ -42,6 +42,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
@@ -203,23 +204,35 @@ fun PlayerItem(
 
     val image = player.imageUrl.toIntOrNull() ?: R.drawable.game_test_profile
 
-    Card(
-        modifier = modifier,
-        shape = CircleShape
+    Column(
+        modifier = Modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .clip(CircleShape)
+        Card(
+            modifier = modifier,
+            shape = CircleShape
         ) {
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+            ) {
 
-            Image(
-                modifier = Modifier.size(64.dp),
-                contentScale = ContentScale.Crop,
-                painter = painterResource(id = image),
-                contentDescription = null
-            )
+                Image(
+                    modifier = Modifier.size(64.dp),
+                    contentScale = ContentScale.Crop,
+                    painter = painterResource(id = image),
+                    contentDescription = null
+                )
+            }
         }
+
+        Text(
+            text = player.playerName(),
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
+
 
 }
 
