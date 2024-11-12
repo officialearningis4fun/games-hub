@@ -50,7 +50,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_so
 @Composable
 fun OngoingGamesSection(
     modifier: Modifier = Modifier,
-    ongoingGamesState: OngoingGamesState,
+    ongoingGamesState: OngoingGamesOrNewGameState.OngoingGamesState,
     onResumeClick: (String) -> Unit = {},
     onDeleteGame: (String) -> Unit = {}
 ) {
@@ -274,7 +274,7 @@ private fun OnGoingGamesSectionDarkPrev() {
     }
 }
 
-val ongoingGamesState = OngoingGamesState(
+val ongoingGamesState = OngoingGamesOrNewGameState.OngoingGamesState(
     listOf(
         OnGoingGame(
             threeCards = Constants

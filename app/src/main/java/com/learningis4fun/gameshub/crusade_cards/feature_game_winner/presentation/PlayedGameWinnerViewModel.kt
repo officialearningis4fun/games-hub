@@ -13,7 +13,10 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toWinnerNames
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
+import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetOngoingGamesUseCase
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OngoingGamesOrNewGameState
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,7 +35,8 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
     savedStateHandle: SavedStateHandle,
     private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
-    private val preferences: CrusadeCardsPreferencesManager
+    private val preferences: CrusadeCardsPreferencesManager,
+    private val getOngoingGamesUseCase: GetOngoingGamesUseCase
 ) : ViewModel() {
 
     private val gameId = savedStateHandle.toRoute<WinnerScreenRoute>().wonGameId
@@ -45,17 +49,20 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
     init {
         viewModelScope.launch {
             combine(
+                getOngoingGamesUseCase(),
                 gameRepository.getGame(gameId = gameId),
                 preferences.numberOfCardsPerPlayer
-            ) { game, numberOfCardsPerPlayer ->
-                Pair(
+            ) { ongoingGame, game, numberOfCardsPerPlayer ->
+                Triple(
+                    ongoingGame,
                     game,
                     numberOfCardsPerPlayer
                 )
-            }.collect { (game, numberOfCardsPerPlayer) ->
+            }.collect { (ongoingGame, game, numberOfCardsPerPlayer) ->
 
                 game?.let {
                     loadWinnerScreenInfo(
+                        ongoingGamesState = ongoingGame,
                         game = game,
                         numberOfCardsPerPlayer = numberOfCardsPerPlayer
                     )
@@ -78,14 +85,21 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                     preferences.increaseNumberOfCardsPerPlayer()
                 }
             }
+
+            is PlayedGameWinnerEvents.DeleteGame -> {
+                viewModelScope.launch {
+                    try {
+                        gameRepository.deleteGame(gameId).getDataOrThrowException()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
         }
     }
 
-    fun setupNextStage(onSuccess: () -> Unit = {}) {
-
-    }
-
     private suspend fun loadWinnerScreenInfo(
+        ongoingGamesState: OngoingGamesOrNewGameState.OngoingGamesState,
         game: Game,
         numberOfCardsPerPlayer: Int
     ) {
@@ -93,6 +107,14 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
             println("winner: $game")
 
             if (game.gameState == GameState.Completed.name) {
+
+                val ongoingGamesOrNewGameState: OngoingGamesOrNewGameState =
+                    if (ongoingGamesState.games.isNotEmpty()) {
+                        ongoingGamesState
+                    } else {
+                        OngoingGamesOrNewGameState.NewGameState
+                    }
+
                 // completed
                 val gameWithPlayers = gameRepository
                     .getGameWithPlayers(gameId = gameId)
@@ -109,7 +131,8 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                         otherPlayers = completedState.otherPlayers,
                         numberOfCardsPerPlayer = numberOfCardsPerPlayer,
                         winnerNames = completedState.winnerNames,
-                        error = completedState.error
+                        error = completedState.error,
+                        ongoingGamesOrNewGameState = ongoingGamesOrNewGameState
                     )
                 }
             } else {

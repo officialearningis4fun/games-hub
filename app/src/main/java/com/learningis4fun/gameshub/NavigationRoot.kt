@@ -54,6 +54,9 @@ fun NavigationRoot() {
                     popUpTo(StartScreenRoute)
                 }
             },
+            onResumeClick = { gameId ->
+                navController.navigate(PlayCardsScreenRoute(currentGameId = gameId))
+            },
             onCloseClick = {
                 navController.navigateUp()
             },

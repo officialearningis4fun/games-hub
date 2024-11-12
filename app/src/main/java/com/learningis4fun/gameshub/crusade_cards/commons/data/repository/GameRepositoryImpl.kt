@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.data.repository
 
+import android.util.Log
 import androidx.room.withTransaction
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
@@ -10,6 +11,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.GamesHubLogTags
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -91,91 +93,82 @@ class GameRepositoryImpl @Inject constructor(
         crusadeCardsPreferencesManager.updateRecentCardState(stateEntity)
     }
 
-    override fun getGameWithLatestStagePlayers(gameId: String): Flow<GameWithPlayers> {
-
+    override fun getGameWithLatestStagePlayers(
+        gameId: String
+    ): Flow<GameWithPlayers> {
         return db.gameDao().getGameWithPlayers(gameId).mapLatest { gameWithPlayers ->
-
-            getGameWithDefaultSortedPlayers(gameWithPlayers = gameWithPlayers)
+            getGameWithSortedPlayers(gameWithPlayers = gameWithPlayers)
 
         }
     }
 
-    override fun getGameWithLatestStagePlayersSorted(gameId: String): Flow<GameWithPlayers> {
+    override fun getGameWithLatestStagePlayersSorted(
+        gameId: String
+    ): Flow<GameWithPlayers> {
         return db.gameDao().getGameWithPlayers(gameId).mapLatest { gameWithPlayers ->
-            getGameWithSortedPlayers(gameWithPlayers = gameWithPlayers)
+            getGameWithSortedPlayers(gameWithPlayers = gameWithPlayers, sorted = true)
         }
     }
 
     private suspend fun getGameWithSortedPlayers(
-        gameWithPlayers: GameWithPlayers
+        gameWithPlayers: GameWithPlayers,
+        sorted: Boolean = false
     ): GameWithPlayers {
         return try {
 
             val gameId = gameWithPlayers.game.id
 
-            val latestGameStage = db.gameStageDao()
-                .getGameStages(gameId).map { gameStage -> gameStage.toGameStage() }
+            val gameStages = db.gameStageDao()
+                .getGameStages(gameId = gameId)
+
+            Log.d(GamesHubLogTags.GAME_REPOSITORY, "$gameStages")
+
+            val playerIdAndPositions = gameStages
                 .first()
+                .toGameStage()
                 .playerIds
 
-            val players = gameWithPlayers.players
-                .mapNotNull { player ->
-                    val playerIdAndPositionToSort = latestGameStage.find { playerIdAndPosition ->
-                            playerIdAndPosition.playerId == player.uniqueId
-                        }
-                    playerIdAndPositionToSort?.let {
-                        Pair(player, playerIdAndPositionToSort.position)
-                    }
-                }
+            val playerIdsToInclude = playerIdAndPositions.map { it.playerId }
 
-            val sortedPlayers = when (gameWithPlayers.game.playingDirection) {
-                Constants.CrusadePlayingDirection.ANTICLOCKWISE -> {
-                    players.sortedByDescending { it.second }
-                        .map { it.first }
-                }
-
-                else -> {
-                    players.sortedBy { it.second }
-                        .map { it.first }
-                }
-            }
-
-            gameWithPlayers.copy(
-                players = sortedPlayers
-            )
-        } catch (e: Exception) {
-            gameWithPlayers
-        }
-    }
-
-    private suspend fun getGameWithDefaultSortedPlayers(
-        gameWithPlayers: GameWithPlayers
-    ): GameWithPlayers {
-        return try {
-
-            val gameId = gameWithPlayers.game.id
-
-            val latestGameStage = db.gameStageDao()
-                .getGameStages(gameId).map { gameStage -> gameStage.toGameStage() }
-                .first()
-                .playerIds
+            Log.d(GamesHubLogTags.GAME_REPOSITORY, "$playerIdAndPositions")
 
             val players = gameWithPlayers.players
+                .filter { it.uniqueId in playerIdsToInclude }
                 .mapNotNull { player ->
                     val playerIdAndPositionToSort =
-                        latestGameStage.find { playerIdAndPosition -> playerIdAndPosition.playerId == player.uniqueId }
-                    playerIdAndPositionToSort?.let {
-                        Pair(player, playerIdAndPositionToSort.position)
-                    }
+                        playerIdAndPositions.find { playerIdAndPosition ->
+                            playerIdAndPosition.playerId == player.uniqueId
+                        } ?: return@mapNotNull null
+
+                    Pair(player, playerIdAndPositionToSort.position)
                 }
 
-            val sortedPlayers = players.sortedBy { it.second }
-                .map { it.first }
+            Log.d(GamesHubLogTags.GAME_REPOSITORY, "unsorted: $players")
 
+            val sortedPlayers = if (sorted) {
+                when (gameWithPlayers.game.playingDirection) {
+                    Constants.CrusadePlayingDirection.ANTICLOCKWISE -> {
+                        players.sortedByDescending { it.second }
+                            .map { it.first }
+                    }
+
+                    else -> {
+                        players.sortedBy { it.second }
+                            .map { it.first }
+                    }
+                }
+            } else {
+                players.sortedBy { it.second }
+                    .map { it.first }
+            }
+
+            Log.d(GamesHubLogTags.GAME_REPOSITORY, "sorted: $sortedPlayers")
             gameWithPlayers.copy(
                 players = sortedPlayers
             )
         } catch (e: Exception) {
+            e.printStackTrace()
+            Log.d(GamesHubLogTags.GAME_REPOSITORY, "unfiltered: should show players error:$e")
             gameWithPlayers
         }
     }

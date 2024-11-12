@@ -16,10 +16,10 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserR
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.FiveFold
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.JokerActions
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Quadruple
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toState
@@ -115,7 +115,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         viewModelScope.launch {
 
-            gameRepository.getGameWithPlayers(currentGameId)
+            gameRepository.getGameWithLatestStagePlayers(currentGameId)
                 .flatMapLatest { gameWithPlayers ->
                     try {
                         when (toState(gameWithPlayers.game.gameState)) {
@@ -134,17 +134,14 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
                     if (value == null) return@map
 
-                    val (lastThreePlayedCards, gamePlayerActions, userCards, cardState) = value
+                    val (gameWithPlayers, lastThreePlayedCards, gamePlayerActions, userCards, cardState) = value
 
-                    println("update UI state")
                     if (playCardsStateFlow.value.wonGame.gameId.isNotEmpty()) {
-                        return@map
-                    } else if (currentGameId.isEmpty()) {
                         return@map
                     }
 
                     updateUIState(
-                        gameId = currentGameId,
+                        gameWithPlayers = gameWithPlayers,
                         lastThreePlayedCards = lastThreePlayedCards,
                         userCards = userCards,
                         cardState = cardState,
@@ -200,17 +197,19 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
     private fun loadPlayingGameInfo(
         gameId: String?
-    ): Flow<Quadruple<List<UserCard>, GamePlayerActions, List<UserCard>, CardStates>?> {
+    ): Flow<FiveFold<GameWithPlayers, List<UserCard>, GamePlayerActions, List<UserCard>, CardStates>?> {
         return if (gameId.isNullOrBlank()) {
             flowOf(null)
         } else {
             combine(
+                gameRepository.getGameWithLatestStagePlayers(gameId),
                 lastThreePlayedCards(),
                 gamePlayerActionsFlow,
                 getUserCards(),
                 preference.recentCardState
-            ) { lastThreePlayedCards, gamePlayerActions, userCards, cardState ->
-                Quadruple(
+            ) { gameWithPlayers, lastThreePlayedCards, gamePlayerActions, userCards, cardState ->
+                FiveFold(
+                    gameWithPlayers,
                     lastThreePlayedCards,
                     gamePlayerActions,
                     userCards,
@@ -485,16 +484,19 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     }
 
     private suspend fun updateUIState(
-        gameId: String,
+        gameWithPlayers: GameWithPlayers,
         lastThreePlayedCards: List<UserCard>,
         userCards: List<UserCard>,
         cardState: CardStates,
         gamePlayerAction: GamePlayerActions
     ) {
-        val playerScreenInfo = playersScreenInfo(currGameId = gameId, cardState = cardState)
+        val playerScreenInfo = playersScreenInfo(
+            gameWithPlayers = gameWithPlayers,
+            cardState = cardState
+        )
 
         val showCurrentCardTypeIfNecessary = showCurrentCardTypeIfNecessary(
-            currGameId = gameId,
+            currGameId = gameWithPlayers.game.id,
             recentCardType = cardRepository.getCurrentCardType(),
             recentCardState = cardState
         )
@@ -631,23 +633,20 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
     // when jack is played, the names switch on the screen; fix the issue
     private suspend fun playersScreenInfo(
-        currGameId: String,
-        cardState: CardStates
+        cardState: CardStates,
+        gameWithPlayers: GameWithPlayers
     ): List<PlayerScreenInfo> {
         return try {
-            if (currGameId.isEmpty()) {
-                throw Exception("Game not available")
-            }
+
             val userId = user.first().uniqueId
 
-            val players = gameRepository.getGameWithLatestStagePlayers(currGameId)
-                .first()
+            val players = gameWithPlayers
                 .players
 
             players.map { player ->
 
                 val numOfCardsLeft = gameCardRepository.numOfUnPlayedCardsForPlayer(
-                    gameId = currGameId,
+                    gameId = gameWithPlayers.game.id,
                     playerId = player.uniqueId
                 ).first()
                     .toString()

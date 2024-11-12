@@ -30,8 +30,6 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     private val repository: DefaultCardRepository
 ) {
 
-    suspend fun getCurrentGameId(): String = gameRepository.getCurrentGameId().first()
-
     private suspend fun getCurrentCardName(): String = cardRepository.getCurrCardName()
 
     private suspend fun getCurrentCardType(): String = cardRepository.getCurrentCardType()
@@ -71,11 +69,11 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     }
 
     suspend fun requestPlayerPick(
+        gameId: String,
         playerId: String,
         cardsToPick: Int,
         canPlay: Boolean
     ): CardStates {
-        val gameId = getCurrentGameId()
         return pickCardsFromLibrary(
             playerId = playerId,
             gameId = gameId,
@@ -101,6 +99,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         userCard: UserCard
     ): CardStates {
         return requestHitOfAlreadyPlayedCard(
+            gameId = userCard.gameId,
             playerId = playerId,
             userCardName = userCard.name
         )
@@ -181,10 +180,16 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     }
 
     private suspend fun requestHitOfAlreadyPlayedCard(
+        gameId: String,
         userCardName: String,
         playerId: String
     ): CardStates {
-        return allowHit(playerId = playerId, prevCardsToPick = 0, cardName = userCardName)
+        return allowHit(
+            gameId = gameId,
+            playerId = playerId,
+            prevCardsToPick = 0,
+            cardName = userCardName
+        )
     }
 
     /**
@@ -201,6 +206,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         val id = playerId ?: userCard.playerId
 
         val allowHit = allowHit(
+            gameId = userCard.gameId,
             playerId = userCard.playerId,
             prevCardsToPick = cardsToPick,
             cardName = userCard.name
@@ -262,6 +268,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     @ExperimentalStdlibApi
     suspend fun findNextPlayerToPlayAboveSeven(currPlayerId: String, gameId: String): String {
         val players = playerIds(gameId = gameId)
+        Log.d(
+            GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER,
+            "seven played: players: $players"
+        )
 
         return if (players.size == 2) {
             currPlayerId
@@ -290,6 +300,9 @@ class MultiplayerCrusadeCardsController @Inject constructor(
             // switch the direction of play
             val game = gameRepository.getGame(gameId).first() ?: throw Exception("Game not found")
 
+            val playersBeforeGameUpdate = playerIds(gameId)
+                .mapIndexed { index, s -> Pair(s, index + 1) }
+
             gameRepository.updateGame(
                 game.copy(
                     playingDirection = when (game.playingDirection) {
@@ -301,10 +314,22 @@ class MultiplayerCrusadeCardsController @Inject constructor(
             ).getDataOrThrowException()
 
             // have other players not sho up in another stage
-            val players = playerIds(gameId = gameId)
+            // some time all the players show up while other time they don't
+            val players = playersBeforeGameUpdate
+                .sortedByDescending { it.second }
+                .map { it.first }
+
+            val wrongPlayers = playerIds(gameId)
 
             Log.d(GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER, "players $players")
-
+            Log.d(
+                GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER,
+                "wrong players $wrongPlayers"
+            )
+            Log.d(
+                GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER,
+                "players before gameUpdate $playersBeforeGameUpdate"
+            )
 
             val indexOfCurrPlayer = players.indexOf(currPlayerId)
 
@@ -341,6 +366,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
             Constants.CardNames.TWO -> {
 
                 val allowHit = allowHit(
+                    gameId = userCard.gameId,
                     playerId = userCard.playerId,
                     prevCardsToPick = prevCardsToPick,
                     cardName = userCard.name
@@ -444,8 +470,6 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                                 val nextPlayer = findNextPlayerToPlayAboveSeven(
                                     currPlayerId = userCard.playerId,
                                     gameId = userCard.gameId
-                                ) ?: return CardStates.Error(
-                                    message = "Couldn't find the other player that should play after playing Seven"
                                 )
 
                                 if (userCard.playerId != nextPlayer) {
@@ -637,6 +661,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
      * and provide the player id of the other user
      */
     suspend fun allowHit(
+        gameId: String,
         playerId: String,
         prevCardsToPick: Int = 0,
         cardName: String,
@@ -658,7 +683,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
         val idOfOtherPlayer = getIdOfTheNextPlayer(
             currentPlayer = playerId,
-            gameId = getCurrentGameId()
+            gameId = gameId
         )
 
         if (idOfOtherPlayer.isEmpty()) {
@@ -687,6 +712,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
     suspend fun getIdOfTheNextPlayer(currentPlayer: String, gameId: String): String {
         val players = playerIds(gameId = gameId)
+        Log.d(
+            GamesHubLogTags.MULTIPLAYER_CRUSADE_CARDS_CONTROLLER,
+            "getIdOfNextPlayer: players: $players"
+        )
 
         if (players.size == 2) {
             return players.first { it != currentPlayer }

@@ -137,16 +137,15 @@ fun CardsStartScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues),
                 completedGamesState = cardsStartState.completedGamesState,
-                ongoingGamesState = cardsStartState.ongoingGamesState,
-                showOngoingGame = cardsStartState.showOngoingGame,
+                ongoingGamesOrNewGameState = cardsStartState.ongoingGamesOrNewGameState,
+                createNewGameToolsState = createNewGameToolsState,
                 onStartClick = onStartClick,
                 onResumeClick = onResumeClick,
                 onGameClick = onGameClick,
+                onEvent = onCreateGameEvent,
                 onDeleteGame = {
                     onEvent(CardsStartEvents.DeleteGame(it))
-                },
-                createNewGameToolsState = createNewGameToolsState,
-                onEvent = onCreateGameEvent
+                }
             )
         }
     }
@@ -174,10 +173,9 @@ fun CardsStartLoadingScreen(
 @Composable
 fun CardsStartDataScreen(
     modifier: Modifier,
+    ongoingGamesOrNewGameState: OngoingGamesOrNewGameState,
     completedGamesState: CompletedGamesState,
-    ongoingGamesState: OngoingGamesState,
     createNewGameToolsState: CreateNewGameToolsState,
-    showOngoingGame: Boolean,
     onStartClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onGameClick: (Pair<Game, Player>) -> Unit = {},
@@ -199,28 +197,38 @@ fun CardsStartDataScreen(
 
             HorizontalDivider()
 
-            if (showOngoingGame) {
-                Heading(
-                    text = "Ongoing games",
-                    modifier = Modifier.padding(16.dp),
-                    textColor = MaterialTheme.colorScheme.onBackground
-                )
+            when (ongoingGamesOrNewGameState) {
+                OngoingGamesOrNewGameState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
 
-                OngoingGamesSection(
-                    modifier = Modifier.fillMaxWidth(),
-                    ongoingGamesState = ongoingGamesState,
-                    onResumeClick = onResumeClick,
-                    onDeleteGame = onDeleteGame
+                OngoingGamesOrNewGameState.NewGameState -> {
+                    CreateGameSection(
+                        modifier = Modifier.fillMaxWidth(),
+                        onStartClick = onStartClick,
+                        createNewGameToolsState = createNewGameToolsState,
+                        onEvent = onEvent
 
-                )
-            } else {
-                CreateGameSection(
-                    modifier = Modifier.fillMaxWidth(),
-                    onStartClick = onStartClick,
-                    createNewGameToolsState = createNewGameToolsState,
-                    onEvent = onEvent
+                    )
+                }
 
-                )
+                is OngoingGamesOrNewGameState.OngoingGamesState -> {
+                    Heading(
+                        text = "Ongoing games",
+                        modifier = Modifier.padding(16.dp),
+                        textColor = MaterialTheme.colorScheme.onBackground
+                    )
+
+                    OngoingGamesSection(
+                        modifier = Modifier.fillMaxWidth(),
+                        ongoingGamesState = ongoingGamesOrNewGameState,
+                        onResumeClick = onResumeClick,
+                        onDeleteGame = onDeleteGame
+
+                    )
+                }
             }
         }
 
@@ -252,10 +260,9 @@ private fun CardsStartScreenLightPrev() {
 val cardsStartState = CardsStartState(
     isLoading = false,
     completedGamesState = CompletedGamesState(),
-    ongoingGamesState = OngoingGamesState(
+    ongoingGamesOrNewGameState = OngoingGamesOrNewGameState.OngoingGamesState(
         games = listOf(
             OnGoingGame(
-
                 threeCards = Constants
                     .Cards
                     .cards
@@ -278,6 +285,7 @@ val cardsStartState = CardsStartState(
                     )
                 )
             )
+
         )
     )
 )

@@ -168,6 +168,7 @@ class HandleCardStateUseCase @Inject constructor(
 
             is CardStates.Pick -> {
                 cardState = cardsController.requestPlayerPick(
+                    gameId = gameId,
                     playerId = state.playerId,
                     cardsToPick = state.numOfCardsToPick,
                     canPlay = state.canPlay

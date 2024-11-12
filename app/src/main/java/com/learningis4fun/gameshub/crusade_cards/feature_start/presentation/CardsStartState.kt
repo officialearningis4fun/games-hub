@@ -1,12 +1,19 @@
 package com.learningis4fun.gameshub.crusade_cards.feature_start.presentation
 
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-
 data class CardsStartState(
     val completedGamesState: CompletedGamesState = CompletedGamesState(),
-    val showOngoingGame: Boolean = false,
-    val ongoingGamesState: OngoingGamesState = OngoingGamesState(),
     val isLoading: Boolean = true,
-    val numberOfCardsPerPlayer: Int = Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER,
-    val numberOfParticipants: Int = Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME
+    val ongoingGamesOrNewGameState: OngoingGamesOrNewGameState = OngoingGamesOrNewGameState.Loading
 )
+
+sealed interface OngoingGamesOrNewGameState {
+
+    data object Loading : OngoingGamesOrNewGameState
+
+    data class OngoingGamesState(
+        val games: List<OnGoingGame> = emptyList(),
+        val isLoading: Boolean = true
+    ) : OngoingGamesOrNewGameState
+
+    data object NewGameState : OngoingGamesOrNewGameState
+}

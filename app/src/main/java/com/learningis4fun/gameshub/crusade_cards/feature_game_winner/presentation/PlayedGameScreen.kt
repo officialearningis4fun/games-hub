@@ -49,6 +49,7 @@ import com.learningis4fun.gameshub.util.scaleIntoContainer
 fun NavGraphBuilder.playedGameWinnerComposable(
     onStartGame: (String) -> Unit,
     onCloseClick: () -> Unit,
+    onResumeClick: (String) -> Unit,
     onStartNextStage: (String) -> Unit
 ) {
 
@@ -87,6 +88,7 @@ fun NavGraphBuilder.playedGameWinnerComposable(
                     }
                 )
             },
+            onResumeClick = onResumeClick,
             onStartNextStage = { onStartNextStage(wonGameId) },
             onCloseClick = onCloseClick,
             onEvent = viewModel::onEvent,
@@ -104,6 +106,7 @@ fun PlayedGameScreen(
     winnerImageRes: Int = R.drawable.avatar_boy1,
     onCloseClick: () -> Unit = {},
     onStartGame: () -> Unit = {},
+    onResumeClick: (String) -> Unit = {},
     onStartNextStage: () -> Unit = {},
     onEvent: (PlayedGameWinnerEvents) -> Unit = {},
     onCreateEvent: (CreateNewGameToolsEvents) -> Unit = {},
@@ -164,6 +167,7 @@ fun PlayedGameScreen(
                         createNewGameToolsState = createNewGameToolsState,
                         onEvent = onEvent,
                         onStartGame = onStartGame,
+                        onResumeClick = onResumeClick,
                         onCreateEvent = onCreateEvent
                     )
                 }

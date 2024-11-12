@@ -2,6 +2,7 @@ package com.learningis4fun.gameshub.crusade_cards.feature_game_winner.presentati
 
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OngoingGamesOrNewGameState
 
 sealed interface PlayedGameWinnerOrNextStage {
     data object Loading : PlayedGameWinnerOrNextStage
@@ -23,6 +24,7 @@ sealed interface PlayedGameWinnerOrNextStage {
         val otherPlayers: List<Player> = emptyList(),
         val numberOfCardsPerPlayer: Int = Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER,
         val winnerNames: String = "",
-        val error: String? = null
+        val error: String? = null,
+        val ongoingGamesOrNewGameState: OngoingGamesOrNewGameState = OngoingGamesOrNewGameState.Loading
     ) : PlayedGameWinnerOrNextStage
 }
