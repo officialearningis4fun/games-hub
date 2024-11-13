@@ -3,6 +3,8 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -21,7 +23,11 @@ data class Player(
     val profileName: String = ""
 ) {
 
-    fun isPlayerEmpty(): Boolean {
-        return uniqueId.isEmpty() || imageUrl.isEmpty()
-    }
+    fun toPlayerScreenInfo(): PlayerScreenInfo = PlayerScreenInfo(
+        playerId = uniqueId,
+        playerName = profileName,
+        imageUrl = imageUrl,
+        defaultAvatar = R.drawable.avatar_man1,
+        numOfCardsLeft = ""
+    )
 }

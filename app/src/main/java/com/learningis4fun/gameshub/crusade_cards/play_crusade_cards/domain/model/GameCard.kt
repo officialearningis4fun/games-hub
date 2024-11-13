@@ -15,6 +15,8 @@ data class GameCard(
     val cardId: String = "",
     @ColumnInfo(name = "playerId")
     val playerId: String = "",
+    @ColumnInfo(name = "stageNumber", defaultValue = "1")
+    val stageNumber: Int = 1,
     @ColumnInfo(name = "isPlayed")
     val isPlayed: Boolean = false,
     @ColumnInfo(name = "playTime")

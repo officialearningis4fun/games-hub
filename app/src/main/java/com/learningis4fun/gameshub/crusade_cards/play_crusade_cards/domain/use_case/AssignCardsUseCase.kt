@@ -1,10 +1,10 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case
 
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -13,7 +13,8 @@ import javax.inject.Inject
 class AssignCardsUseCase @Inject constructor(
     val repository: DefaultCardRepository,
     private val gameRepository: GameRepository,
-    private val gameCardRepository: GameCardRepository
+    private val gameCardRepository: GameCardRepository,
+    private val getLatestStageNumber: GetLatestStageNumber
 ) {
 
     suspend fun assignCards(
@@ -23,8 +24,12 @@ class AssignCardsUseCase @Inject constructor(
         return try {
 
             val playersIds: List<String> =
-                gameRepository.getGameWithLatestStagePlayers(gameId = gameId).first().players.map { it.uniqueId }
-            val cardsToAssign = gameCardRepository.getGameCards(gameId)
+                gameRepository.getGameWithLatestStagePlayers(gameId = gameId)
+                    .first().players.map { it.uniqueId }
+
+            val stageNumber = getLatestStageNumber(gameId)
+
+            val cardsToAssign = gameCardRepository.getGameCards(gameId, stageNumber)
                 .shuffled()
                 .take(howManyCardsPerPlayer * playersIds.size)
 

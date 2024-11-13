@@ -28,10 +28,11 @@ import javax.inject.Provider
 
 @Database(
     entities = [Player::class, Card::class, Game::class, GameCard::class, GameUserCrossRef::class, GameStageRef::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(1, 2)
+        AutoMigration(1, 2),
+    AutoMigration(2, 3)
     ]
 )
 abstract class GamesDatabase : RoomDatabase() {

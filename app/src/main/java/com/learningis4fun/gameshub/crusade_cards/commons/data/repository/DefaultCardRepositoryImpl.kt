@@ -8,7 +8,6 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.Defau
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUserCard
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GamesOfPlayer
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
@@ -38,6 +37,9 @@ class DefaultCardRepositoryImpl @Inject constructor(
     private val db: GamesDatabase,
     val crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager
 ) : DefaultCardRepository {
+
+    private suspend fun getStageNumber(gameId: String): Int =
+        db.gameStageDao().getGameStages(gameId).first().stageNumber
 
     override suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit> {
         return try {
@@ -77,7 +79,8 @@ class DefaultCardRepositoryImpl @Inject constructor(
 
     override suspend fun cardToBePlayedByComputer(gameId: String, playerId: String): UserCard? {
         val playerCards = db.gameCardDao().getUnPlayedCardsForPlayer(
-            gameId, playerId
+            gameId, playerId,
+            stageNumber = getStageNumber(gameId)
         ).first()
 
         return if (playerCards.isEmpty()) {
@@ -108,7 +111,7 @@ class DefaultCardRepositoryImpl @Inject constructor(
 
     override suspend fun cardForComputerToHitBack(gameId: String, playerId: String): UserCard? {
         val cards = db.gameCardDao().getUnPlayedCardsForPlayer(
-            gameId, playerId
+            gameId, playerId, stageNumber = getStageNumber(gameId)
         ).first()
         val cardsToHitBack = cards.filter { Constants.HITTING_CARD_NAMES.contains(it.card.name) }
 
@@ -137,7 +140,8 @@ class DefaultCardRepositoryImpl @Inject constructor(
 
             val cardsInDustbin = db.gameCardDao().getPlayedCardsForPlayers(
                 gameId = gameId,
-                playerIds = playersIds
+                playerIds = playersIds,
+                stageNumber = getStageNumber(gameId)
             )
                 .first()
                 .sortedByDescending { it.playTime }
@@ -182,8 +186,10 @@ class DefaultCardRepositoryImpl @Inject constructor(
         numOfCardsToPick: Int
     ): Response<Int> {
         return try {
-            val cardsInDustbin = db.gameCardDao().getCardsInDustbin(gameId)
-                .first()
+            val stageNumber = getStageNumber(gameId)
+            val cardsInDustbin =
+                db.gameCardDao().getCardsInDustbin(gameId, stageNumber = stageNumber)
+                    .first()
 
             val numOfCardsInDustbin = cardsInDustbin.size
 
@@ -213,7 +219,7 @@ class DefaultCardRepositoryImpl @Inject constructor(
                     is Response.Success -> {
 
                         val cardsInDustbinAfterRequesting =
-                            db.gameCardDao().getCardsInDustbin(gameId)
+                            db.gameCardDao().getCardsInDustbin(gameId, stageNumber = stageNumber)
                                 .first()
                                 .shuffled()
                                 .take(numOfCardsToPick)
@@ -261,12 +267,13 @@ class DefaultCardRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getCardsInDustbin(gameId: String): Flow<List<GameCardWithCard>> {
-        return db.gameCardDao().getCardsInDustbin(gameId = gameId)
-    }
+    /* override fun getCardsInDustbin(gameId: String): Flow<List<GameCardWithCard>> {
+         return db.gameCardDao().getCardsInDustbin(gameId = gameId, stageNumber = getStageNumber(gameId))
+     }*/
 
     override suspend fun pickRandomCardFromDB(gameId: String): GameCard {
-        val cardsInDustbin = db.gameCardDao().getCardsInDustbin(gameId).first()
+        val cardsInDustbin =
+            db.gameCardDao().getCardsInDustbin(gameId, stageNumber = getStageNumber(gameId)).first()
         return cardsInDustbin.random().gameCard
     }
 
@@ -275,14 +282,17 @@ class DefaultCardRepositoryImpl @Inject constructor(
     }
 
     override suspend fun numOfCardsAvailableToPick(gameId: String): Int {
-        return db.gameCardDao().getCardsInDustbin(gameId = gameId).count()
+        return db.gameCardDao()
+            .getCardsInDustbin(gameId = gameId, stageNumber = getStageNumber(gameId)).count()
     }
 
     override suspend fun availableCardsForComputer(
         gameId: String,
         playerId: String
     ): List<UserCard> {
-        return db.gameCardDao().getUnPlayedCardsForPlayer(gameId, playerId).first()
+        return db.gameCardDao()
+            .getUnPlayedCardsForPlayer(gameId, playerId, stageNumber = getStageNumber(gameId))
+            .first()
             .map { it.toUserCard() }
     }
 

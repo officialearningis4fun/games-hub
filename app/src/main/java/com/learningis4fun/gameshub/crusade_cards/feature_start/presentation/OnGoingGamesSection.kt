@@ -3,7 +3,6 @@ package com.learningis4fun.gameshub.crusade_cards.feature_start.presentation
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,12 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -28,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -42,10 +38,10 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toTimeFormatted
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.PlayerItem
 
 @Composable
 fun OngoingGamesSection(
@@ -150,10 +146,11 @@ private fun OnGoingGameItem(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            items(gameWithPlayers.players) {
+            items(gameWithPlayers.players) { player ->
                 PlayerItem(
-                    modifier = Modifier.size(42.dp),
-                    player = it
+                    modifier = Modifier,
+                    sizeOfPhoto = 42.dp,
+                    playerScreenInfo = player.toPlayerScreenInfo()
                 )
             }
         }
@@ -194,46 +191,6 @@ private fun OnGoingGameItem(
             }
         }
     }
-}
-
-@Composable
-fun PlayerItem(
-    modifier: Modifier,
-    player: Player
-) {
-
-    val image = player.imageUrl.toIntOrNull() ?: R.drawable.game_test_profile
-
-    Column(
-        modifier = Modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Card(
-            modifier = modifier,
-            shape = CircleShape
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-            ) {
-
-                Image(
-                    modifier = Modifier.size(64.dp),
-                    contentScale = ContentScale.Crop,
-                    painter = painterResource(id = image),
-                    contentDescription = null
-                )
-            }
-        }
-
-        Text(
-            text = player.playerName(),
-            style = MaterialTheme.typography.bodyMedium
-        )
-    }
-
-
 }
 
 private fun imageOfCard(cards: List<Card>, index: Int): Int {

@@ -22,7 +22,7 @@ interface DefaultCardRepository {
 
     fun getGamesOfPlayer(playerId: String): Flow<GamesOfPlayer>
 
-    fun getCardsInDustbin(gameId: String): Flow<List<GameCardWithCard>>
+   /* fun getCardsInDustbin(gameId: String): Flow<List<GameCardWithCard>>*/
 
     suspend fun pickRandomCardFromDB(gameId: String): GameCard
 

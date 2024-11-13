@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -27,13 +30,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
 
@@ -125,9 +131,10 @@ fun PlayersSectionScreen(
 }
 
 @Composable
-private fun PlayerItem(
+fun PlayerItem(
     modifier: Modifier,
-    playerScreenInfo: PlayerScreenInfo
+    sizeOfPhoto: Dp = 64.dp,
+    playerScreenInfo: PlayerScreenInfo,
 ) {
 
     val image = playerScreenInfo.imageUrl?.toIntOrNull() ?: playerScreenInfo.defaultAvatar
@@ -151,7 +158,7 @@ private fun PlayerItem(
 
                 Image(
                     modifier = Modifier
-                        .size(64.dp)
+                        .size(sizeOfPhoto)
                         .clip(CircleShape)
                         .border(
                             width = 3.dp,
@@ -163,23 +170,25 @@ private fun PlayerItem(
                     contentDescription = null
                 )
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.errorContainer)
-                ) {
-                    Text(
+                if (playerScreenInfo.numOfCardsLeft.isNotEmpty()) {
+                    Box(
                         modifier = Modifier
-                            .align(Alignment.Center),
-                        text = playerScreenInfo.numOfCardsLeft,
-                        color = MaterialTheme.colorScheme.onError,
-                        style = MaterialTheme.typography.labelSmall.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        textAlign = TextAlign.Center
-                    )
+                            .align(Alignment.TopEnd)
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.errorContainer)
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .align(Alignment.Center),
+                            text = playerScreenInfo.numOfCardsLeft,
+                            color = MaterialTheme.colorScheme.onError,
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            textAlign = TextAlign.Center
+                        )
+                    }
                 }
 
             }
@@ -197,7 +206,78 @@ private fun PlayerItem(
         )
     }
 
+}
 
+@Composable
+fun CardItem(
+    modifier: Modifier = Modifier,
+    card: Card,
+    count: Int = 0
+) {
+    val imageRes = card.image.toIntOrNull() ?: R.drawable.card_base
+
+    Column(
+        modifier = modifier
+            .fillMaxHeight()
+            .aspectRatio(0.7f),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Box(
+            modifier = Modifier
+        ) {
+            Card(
+                modifier = Modifier,
+                shape = RoundedCornerShape(4.dp),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 2.dp
+                ),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Transparent
+                )
+            ) {
+                Image(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .aspectRatio(0.7f),
+                    contentScale = ContentScale.Crop,
+                    painter = painterResource(id = imageRes),
+                    contentDescription = null
+                )
+
+            }
+            if (count != 0) {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.Center)
+                        .padding(horizontal = 1.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.error,
+                            shape = RectangleShape
+                        )
+                        .padding(8.dp),
+                    text = count.toString(),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onError,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        }
+
+    }
+
+}
+
+@Preview
+@Composable
+private fun PlayerItemLightPrev() {
+    GamesHubAppTheme {
+        PlayerItem(
+            modifier = Modifier,
+            playerScreenInfo = playersScreenInfo.first()
+        )
+    }
 }
 
 @Preview

@@ -13,7 +13,7 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 class CardRepositoryImpl @Inject constructor(
     private val db: GamesDatabase,
-    private val crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager
+    private val crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager,
 ) : CardRepository {
 
     override suspend fun insertCard(card: Card): Response<Unit> {
@@ -53,11 +53,17 @@ class CardRepositoryImpl @Inject constructor(
             return ""
         }
 
+        val currentStageNumber = db.gameStageDao()
+            .getGameStages(gameId)
+            .first()
+            .stageNumber
+
         val playersOfGameIds =
             db.gameDao().getGameWithPlayers(gameId = gameId).first().players.map { it.uniqueId }
         val topPlayedCard = db.gameCardDao().getTopPlayedCard(
             gameId = gameId,
-            playerIds = playersOfGameIds
+            playerIds = playersOfGameIds,
+            stageNumber = currentStageNumber
         ).first()
         return topPlayedCard?.card?.name ?: ""
     }

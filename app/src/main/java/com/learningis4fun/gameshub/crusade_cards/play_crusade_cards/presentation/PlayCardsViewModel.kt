@@ -31,6 +31,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.EndGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.GetLatestStageNumber
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.HandleCardStateUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.PauseGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.ResumeGameUseCase
@@ -71,6 +72,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     private val endGameUseCase: EndGameUseCase,
     private val loggedUserCardsController: CrusadeLoggedUserCardsController,
     private val gameCardRepository: GameCardRepository,
+    private val getLatestStageNumber: GetLatestStageNumber,
     savedStateHandle: SavedStateHandle,
     @CrusadeCardsDataModule.DefaultDispatcher private val defaultCoroutineDispatcher: CoroutineDispatcher
 ) : ViewModel() {
@@ -136,9 +138,18 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
                     val (gameWithPlayers, lastThreePlayedCards, gamePlayerActions, userCards, cardState) = value
 
+                    println("last played: $lastThreePlayedCards")
                     if (playCardsStateFlow.value.wonGame.gameId.isNotEmpty()) {
                         return@map
                     }
+
+                    val isGameComplete = try {
+                        gameWithPlayers.game.gameState == GameState.Completed.name
+                    } catch (e: Exception) {
+                        false
+                    }
+
+                    if (isGameComplete) return@map
 
                     updateUIState(
                         gameWithPlayers = gameWithPlayers,
@@ -262,9 +273,11 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     emptyFlow()
                 } else {
                     val playersIds = gameWithUsers.players.map { it.uniqueId }
+
                     gameCardRepository.getThreeTopPlayedCards(
                         gameId = currentGameId,
-                        playerIds = playersIds
+                        playerIds = playersIds,
+                        stageNumber = getLatestStageNumber(gameId = gameWithUsers.game.id)
                     )
                 }
             }
@@ -283,7 +296,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             val playersOrNulls = playersOfGame.map { player ->
                 val numOfLeftCards = gameCardRepository.numOfUnPlayedCardsForPlayer(
                     gameId = gameId,
-                    playerId = player.uniqueId
+                    playerId = player.uniqueId,
+                    stageNumber = getLatestStageNumber(gameId)
                 ).first()
 
                 if (numOfLeftCards > 0) {
@@ -341,7 +355,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
                     val topCard = gameCardRepository.getTopPlayedCard(
                         gameId = gameId,
-                        playerIds = playerIds
+                        playerIds = playerIds,
+                        stageNumber = getLatestStageNumber(gameId)
                     )
                         .first()?.card
 
@@ -401,6 +416,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             .flatMapLatest { sortBy ->
                 gameCardRepository.getUnPlayedCardsForPlayer(
                     gameId = currentGameId,
+                    stageNumber = getLatestStageNumber(currentGameId),
                     playerId = user.map { it.uniqueId }
                         .first()
                 ).map { cardsOfUser ->
@@ -579,6 +595,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             val topPlayedCardName =
                 gameCardRepository.getTopPlayedCard(
                     gameId = currGameId,
+                    stageNumber = getLatestStageNumber(currentGameId),
                     playerIds = playerIds
                 ).first()?.card?.name ?: throw Exception("Top card not found")
 
@@ -645,8 +662,11 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             players.map { player ->
 
+                val gameId = gameWithPlayers.game.id
+
                 val numOfCardsLeft = gameCardRepository.numOfUnPlayedCardsForPlayer(
-                    gameId = gameWithPlayers.game.id,
+                    gameId = gameId,
+                    stageNumber = getLatestStageNumber(gameId = gameId),
                     playerId = player.uniqueId
                 ).first()
                     .toString()

@@ -7,7 +7,9 @@ import androidx.navigation.toRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
@@ -36,7 +38,9 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
     private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
     private val preferences: CrusadeCardsPreferencesManager,
-    private val getOngoingGamesUseCase: GetOngoingGamesUseCase
+    private val getOngoingGamesUseCase: GetOngoingGamesUseCase,
+    private val gameCardRepository: GameCardRepository,
+    private val gameStageRepository: GameStageRepository
 ) : ViewModel() {
 
     private val gameId = savedStateHandle.toRoute<WinnerScreenRoute>().wonGameId
@@ -95,6 +99,10 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                     }
                 }
             }
+
+            is PlayedGameWinnerEvents.PlayerProfileClick -> {
+
+            }
         }
     }
 
@@ -129,6 +137,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                         gameDuration = completedState.gameDuration,
                         winnerImageUrl = completedState.winnerImageUrl,
                         otherPlayers = completedState.otherPlayers,
+                        unPlayedCards = completedState.unPlayedCards,
                         numberOfCardsPerPlayer = numberOfCardsPerPlayer,
                         winnerNames = completedState.winnerNames,
                         error = completedState.error,
@@ -136,10 +145,21 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                     )
                 }
             } else {
+
+                val gameStages = gameStageRepository.getGameStages(gameId).getDataOrThrowException()
+
+                // next stage
+                val nextStageNumber = gameStages.first().stageNumber
+
+                // pre stage
+                val currentStageNumber = if (gameStages.size > 1) gameStages.take(2)
+                    .last().stageNumber else gameStages.first().stageNumber
+
                 // load next stage
                 val gameWithPlayers = gameRepository
                     .getGameWithPlayers(gameId = gameId)
                     .first()
+
 
                 val nextStagePlayers = gameRepository
                     .getGameWithLatestStagePlayers(gameId = gameId)
@@ -157,6 +177,34 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
 
                 val winnerNames = loggedInUser.toWinnerNames(winner)
 
+                val unPlayedCardsForNextStagePlayers = nextStagePlayers
+                    .map { it.uniqueId }
+                    .flatMap { playerId ->
+                        gameCardRepository
+                            .getUnPlayedCardsForPlayer(
+                                gameId = gameId,
+                                playerId = playerId,
+                                stageNumber = nextStageNumber
+                            )
+                            .first()
+                    }
+
+                val unPlayedCardsForEliminatedPlayers = eliminatedPlayers
+                    .map { it.uniqueId }
+                    .flatMap { playerId ->
+                        gameCardRepository
+                            .getUnPlayedCardsForPlayer(
+                                gameId = gameId,
+                                playerId = playerId,
+                                stageNumber = currentStageNumber
+                            )
+                            .first()
+                    }
+
+                val unPlayedCards =
+                    unPlayedCardsForEliminatedPlayers.union(unPlayedCardsForNextStagePlayers)
+                        .toList()
+
                 playedGameStateFlow.update {
                     PlayedGameWinnerOrNextStage.PlayedGameNextStageState(
                         loading = false,
@@ -164,6 +212,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                         winnerImageUrl = winner?.imageUrl ?: "",
                         eliminatedPlayers = eliminatedPlayers,
                         nextStagePlayers = nextStagePlayers,
+                        unPlayedCards = unPlayedCards,
                         winnerNames = winnerNames,
                         error = null
                     )
@@ -193,6 +242,14 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 )
             }
 
+            val unPlayedCards = otherPlayers.flatMap { player ->
+                gameCardRepository.getUnPlayedCardsForPlayer(
+                    playerId = player.uniqueId,
+                    gameId = completedGame.game.id,
+                    stageNumber = 0
+                ).first()
+            }
+
             val winner = completedGame.winner
                 ?: throw Exception("Unexpected error occurred; please restart the app")
 
@@ -200,6 +257,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 winnerImageUrl = completedGame.winner.imageUrl,
                 gameDuration = completedGame.duration.toUIDuration(),
                 otherPlayers = otherPlayers,
+                unPlayedCards = unPlayedCards,
                 loading = false,
                 winnerNames = loggedInUser.uniqueId.toWinnerNames(winner),
                 error = null

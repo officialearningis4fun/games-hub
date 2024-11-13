@@ -3,7 +3,6 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameStage
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
@@ -33,17 +32,20 @@ constructor(
 
     suspend operator fun invoke(
         game: Game,
-        gameStage: GameStage,
-        players: List<Pair<Player, Boolean>>
-    ): Response<List<Pair<Player, Boolean>>> {
+        nextStage: GameStage,
+        currentStageNumber: Int
+    ): Response<Unit> {
 
         return try {
             println("requested to go to next stage")
             gameRepository.updateGame(game).getDataOrThrowException()
-            gameStageRepository.saveGameStage(gameStage = gameStage).getDataOrThrowException()
+            gameStageRepository.saveGameStage(gameStage = nextStage).getDataOrThrowException()
             repository.changeCurrentCardType("").getDataOrThrowException()
             preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
-            gameCardRepository.deleteAllGameCards().getDataOrThrowException()
+            gameCardRepository.deleteAllGameCardsWithoutPlayer(
+                gameId = game.id,
+                stageNumber = currentStageNumber
+            ).getDataOrThrowException()
 
             val gameCardId = System.currentTimeMillis().toString()
             val gameCards = cardRepository.getCards().mapIndexed { index, card ->
@@ -51,12 +53,15 @@ constructor(
                     id = gameCardId + index,
                     gameId = game.id,
                     cardId = card.id,
+                    stageNumber = nextStage.stageNumber
                 )
             }
 
             gameCards.forEach { gameCard ->
                 gameCardRepository.insertGameCard(gameCard).getDataOrThrowException()
             }
+
+            // assign cards
 
             val numOfCardsPerPlayer = preferenceManager.numberOfCardsPerPlayer.first()
 
@@ -69,7 +74,7 @@ constructor(
                 throw Exception("Cards not assigned yet")
             }
 
-            Response.Success(players)
+            Response.Success(Unit)
         } catch (e: Exception) {
             e.printStackTrace()
             Response.Error(e.message.toString())

@@ -37,12 +37,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 
@@ -156,8 +158,7 @@ fun PlayedGameScreen(
                 is PlayedGameWinnerOrNextStage.PlayedGameNextStageState -> {
                     PlayedGameNextStage(
                         playedGameNextStageState = playedGameWinnerOrNextStage,
-                        onStartGame = onStartNextStage,
-                        onEvent = onEvent
+                        onStartGame = onStartNextStage
                     )
                 }
 
@@ -266,6 +267,21 @@ val playedGameWinnerState = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
             imageUrl = R.drawable.ai_platform.toString()
         ),
     ),
+    unPlayedCards = Constants.Cards.cards.take(4).mapIndexed { index, card ->
+
+        UserCard(
+            gameCardId = "$index",
+            playerId = Constants.Players.USER.uniqueId,
+            cardId = card.id,
+            name = card.name,
+            type = card.type,
+            gameId = "gameId",
+            isPlayed = false,
+            image = card.image,
+            playTime = 0L,
+            pickedTime = 0L,
+        )
+    },
     winnerNames = "Hlompho",
     winnerImageUrl = R.drawable.avatar_boy1.toString()
 )
@@ -283,7 +299,7 @@ val playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageSt
     nextStagePlayers = listOf(
         Player(
             "id2",
-            profileName = "Hlompho",
+            profileName = "Dev1",
             imageUrl = R.drawable.avatar_boy1.toString()
         ),
     ),

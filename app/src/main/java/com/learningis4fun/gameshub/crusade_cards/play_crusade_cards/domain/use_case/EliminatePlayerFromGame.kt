@@ -19,6 +19,7 @@ class EliminatePlayerFromGame @OptIn(ExperimentalCoroutinesApi::class)
     suspend operator fun invoke(
         player: Player,
         game: Game,
+        stageNumber: Int,
         eliminationLimitForCrusade: Int = Constants.DEFAULT_CRUSADE_ELIMINATION_LIMIT
     ): Response<Boolean> {
         return try {
@@ -26,7 +27,8 @@ class EliminatePlayerFromGame @OptIn(ExperimentalCoroutinesApi::class)
             val totalNumberRepresentationOfUnPlayedCards = gameCardRepository
                 .getUnPlayedCardsForPlayer(
                     gameId = game.id,
-                    playerId = player.uniqueId
+                    playerId = player.uniqueId,
+                    stageNumber = stageNumber
                 ).first()
                 .sumOf { it.toCard().numberRepresentation() }
 

@@ -3,9 +3,11 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.controller
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -15,13 +17,17 @@ import javax.inject.Inject
 class CrusadeComputerCardsController @Inject constructor(
     private val gameRepository: GameRepository,
     private val cardRepository: CardRepository,
-    private val gameCardRepository: GameCardRepository
+    private val gameCardRepository: GameCardRepository,
+    private val gameStageRepository: GameStageRepository
 ) {
     suspend fun getCurrentGameId() = gameRepository.getCurrentGameId().first()
 
     suspend fun getCurrentCardType() = cardRepository.getCurrentCardType()
 
     suspend fun getCurrentCardName() = cardRepository.getCurrCardName()
+
+    suspend fun getCurrentStageNumber(gameId: String): Int =
+        gameStageRepository.getGameStages(gameId).getDataOrThrowException().first().stageNumber
 
     suspend fun playCardWithNoRestrictions(gameId: String, playerId: String): Response<UserCard?> {
 
@@ -34,8 +40,13 @@ class CrusadeComputerCardsController @Inject constructor(
                 throw Exception("Player is not ready, make sure the player is created")
             }
 
+
             val cards =
-                gameCardRepository.getUnPlayedCardsForPlayer(gameId = gameId, playerId = playerId)
+                gameCardRepository.getUnPlayedCardsForPlayer(
+                    gameId = gameId,
+                    playerId = playerId,
+                    getCurrentStageNumber(gameId)
+                )
                     .first()
                     .filterNot {
                         it.name == Constants.CardNames.EIGHT
@@ -66,7 +77,8 @@ class CrusadeComputerCardsController @Inject constructor(
     suspend fun cardForComputerToHit(playerId: String): UserCard? {
         val gameCards = gameCardRepository.getUnPlayedCardsForPlayer(
             gameId = getCurrentGameId(),
-            playerId = playerId
+            playerId = playerId,
+            stageNumber = getCurrentStageNumber(gameId = getCurrentGameId())
         ).firstOrNull()
         return gameCards?.find { it.name == Constants.CardNames.TWO || it.name == Constants.CardNames.JOKER }
     }
@@ -76,7 +88,8 @@ class CrusadeComputerCardsController @Inject constructor(
     ): String {
         val cards = gameCardRepository.getUnPlayedCardsForPlayer(
             gameId = getCurrentGameId(),
-            playerId = playerId
+            playerId = playerId,
+            stageNumber = getCurrentStageNumber(gameId = getCurrentGameId())
         ).first()
 
         val typeWithMultiplicity = cards.groupBy { it.type }
@@ -143,7 +156,11 @@ class CrusadeComputerCardsController @Inject constructor(
         currentCardName: String
     ): UserCard? {
         val cards =
-            gameCardRepository.getUnPlayedCardsForPlayer(gameId = gameId, playerId = playerId)
+            gameCardRepository.getUnPlayedCardsForPlayer(
+                gameId = gameId,
+                playerId = playerId,
+                getCurrentStageNumber(gameId)
+            )
                 .first()
 
         val cardTypesWithMultiplicity = cards
@@ -181,7 +198,11 @@ class CrusadeComputerCardsController @Inject constructor(
         currentCardType: String
     ): UserCard? {
         val cards =
-            gameCardRepository.getUnPlayedCardsForPlayer(gameId = gameId, playerId = playerId)
+            gameCardRepository.getUnPlayedCardsForPlayer(
+                gameId = gameId,
+                playerId = playerId,
+                getCurrentStageNumber(gameId)
+            )
                 .first()
 
         val cardTypeWithMultiplicity = cards

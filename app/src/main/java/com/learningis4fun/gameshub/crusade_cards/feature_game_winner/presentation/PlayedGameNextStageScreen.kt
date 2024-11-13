@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -18,6 +17,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,27 +29,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
-import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.PlayerItem
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
 
 @Composable
 fun PlayedGameNextStage(
     modifier: Modifier = Modifier,
     playedGameNextStageState: PlayedGameWinnerOrNextStage.PlayedGameNextStageState,
-    onStartGame: () -> Unit = {},
-    onEvent: (PlayedGameWinnerEvents) -> Unit = {},
+    onStartGame: () -> Unit = {}
 ) {
 
     NextStageSection(
         modifier = modifier,
-        winnerNames = playedGameNextStageState.winnerNames,
-        duration = playedGameNextStageState.gameDuration,
-        nextStagePlayers = playedGameNextStageState.nextStagePlayers,
-        eliminatedPlayers = playedGameNextStageState.eliminatedPlayers,
+        playedGameNextStageState = playedGameNextStageState,
         onStartGame = onStartGame,
-        onEvent = onEvent,
     )
 
 }
@@ -54,13 +53,18 @@ fun PlayedGameNextStage(
 @Composable
 private fun NextStageSection(
     modifier: Modifier,
-    winnerNames: String,
-    duration: String,
-    nextStagePlayers: List<Player>,
-    eliminatedPlayers: List<Player>,
-    onStartGame: () -> Unit,
-    onEvent: (PlayedGameWinnerEvents) -> Unit = {},
+    playedGameNextStageState: PlayedGameWinnerOrNextStage.PlayedGameNextStageState,
+    onStartGame: () -> Unit
 ) {
+
+    var showEliminatedPlayersCardsView by remember {
+        mutableStateOf(Pair("", false))
+    }
+
+    var showNextPlayersCardsView by remember {
+        mutableStateOf(Pair("", false))
+    }
+
 
     Column(
         modifier = modifier,
@@ -74,7 +78,7 @@ private fun NextStageSection(
         ) {
 
             Text(
-                text = winnerNames,
+                text = playedGameNextStageState.winnerNames,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Black
                 )
@@ -86,7 +90,7 @@ private fun NextStageSection(
             )
 
             Text(
-                text = duration,
+                text = playedGameNextStageState.gameDuration,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.Black
                 )
@@ -94,15 +98,33 @@ private fun NextStageSection(
         }
 
         PlayersSection(
-            otherPlayers = nextStagePlayers,
+            otherPlayers = playedGameNextStageState.nextStagePlayersScreenInfo(),
+            cardsOfPlayer = playedGameNextStageState.unPlayedCardsOfPlayer(showNextPlayersCardsView.first),
+            onPopupDismissRequested = {
+                showNextPlayersCardsView = Pair("", false)
+            },
+            showCardsView = showNextPlayersCardsView,
             title = "Next stage players",
-            titleColor = MaterialTheme.colorScheme.onBackground
+            titleColor = MaterialTheme.colorScheme.onBackground,
+            onPlayerClick = { playerId ->
+                showNextPlayersCardsView = Pair(playerId, true)
+            }
         )
 
         PlayersSection(
-            otherPlayers = eliminatedPlayers,
+            otherPlayers = playedGameNextStageState.eliminatedPlayersScreenInfo(),
+            cardsOfPlayer = playedGameNextStageState.unPlayedCardsOfPlayer(
+                showEliminatedPlayersCardsView.first
+            ),
+            onPopupDismissRequested = {
+                showEliminatedPlayersCardsView = Pair("", false)
+            },
+            showCardsView = showEliminatedPlayersCardsView,
             title = "Eliminated players",
-            titleColor = MaterialTheme.colorScheme.error
+            titleColor = MaterialTheme.colorScheme.error,
+            onPlayerClick = { playerId ->
+                showEliminatedPlayersCardsView = Pair(playerId, true)
+            }
         )
 
         Button(
@@ -128,7 +150,11 @@ private fun NextStageSection(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PlayersSection(
-    otherPlayers: List<Player>,
+    otherPlayers: List<PlayerScreenInfo>,
+    cardsOfPlayer: List<Card>,
+    showCardsView: Pair<String, Boolean>,
+    onPopupDismissRequested: () -> Unit,
+    onPlayerClick: (String) -> Unit,
     title: String,
     titleColor: Color
 ) {
@@ -146,13 +172,20 @@ private fun PlayersSection(
             color = titleColor
         )
 
+        PlayerCardsViewPopupContainer(
+            cardsOfPlayer = cardsOfPlayer,
+            onPopupDismissRequested = onPopupDismissRequested,
+            isVisible = showCardsView.second
+        )
+
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            otherPlayers.forEach {
-                PlayerItem(
-                    modifier = Modifier.size(42.dp),
-                    player = it
+            otherPlayers.forEach { player ->
+                PlayerItemWithPopup(
+                    modifier = Modifier,
+                    playerScreenInfo = player,
+                    onClick = { onPlayerClick(player.playerId) }
                 )
 
 
@@ -164,12 +197,11 @@ private fun PlayersSection(
 @Preview
 @Composable
 private fun PlayedGameWinnerLoadingLightPrev() {
-    MaterialTheme {
+    GamesHubAppTheme {
         PlayedGameNextStage(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(),
+                .fillMaxSize(),
+            playedGameNextStageState = playedGameNextStageState,
         )
     }
 }
@@ -177,14 +209,13 @@ private fun PlayedGameWinnerLoadingLightPrev() {
 @Preview
 @Composable
 private fun PlayedGameWinnerLoadingDarkPrev() {
-    MaterialTheme {
+    GamesHubAppTheme {
         PlayedGameNextStage(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
             playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(),
-
-            )
+        )
     }
 }
 
@@ -196,26 +227,7 @@ private fun PlayedGameWinnerPrev() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White),
-            playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(
-                loading = false,
-                gameDuration = (80000L).toUIDuration(),
-                eliminatedPlayers = listOf(
-                    Player(
-                        "id",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                ),
-                nextStagePlayers = listOf(
-                    Player(
-                        "id2",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                ),
-                winnerNames = "Hlompho",
-                winnerImageUrl = R.drawable.avatar_boy1.toString()
-            ),
+            playedGameNextStageState = playedGameNextStageState,
         )
     }
 }
@@ -226,33 +238,8 @@ private fun PlayedGameWinnerDarkPrev() {
     GamesHubAppTheme(darkTheme = true) {
         PlayedGameNextStage(
             modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(
-                loading = false,
-                gameDuration = (8L).toUIDuration(),
-                eliminatedPlayers = listOf(
-                    Player(
-                        "id",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                    Player(
-                        "id2",
-                        profileName = "Android",
-                        imageUrl = R.drawable.ai_platform.toString()
-                    ),
-                ),
-                nextStagePlayers = listOf(
-                    Player(
-                        "id3",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.avatar_boy1.toString()
-                    ),
-                ),
-                winnerNames = "Hlompho",
-                winnerImageUrl = R.drawable.avatar_boy1.toString()
-            ),
+                .fillMaxSize(),
+            playedGameNextStageState = playedGameNextStageState,
         )
     }
 }

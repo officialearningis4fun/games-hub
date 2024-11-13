@@ -21,35 +21,39 @@ interface GameCardRepository {
 
     suspend fun deleteAllGameCards(): Response<Unit>
 
-    fun getNumOfCurrentGameCards(gameId: String): Flow<Int>
+    suspend fun deleteAllGameCardsWithoutPlayer(gameId: String, stageNumber: Int): Response<Unit>
 
-    suspend fun getGameCards(gameId: String): List<GameCard>
+    fun getNumOfCurrentGameCards(gameId: String, stageNumber: Int): Flow<Int>
 
-    fun numOfUnPlayedCardsForPlayer(gameId: String, playerId: String): Flow<Int>
+    suspend fun getGameCards(gameId: String, stageNumber: Int): List<GameCard>
 
-    fun numOfUnPlayedCardsForPlayers(gameId: String, playerIds: List<String>): Flow<Int>
+    fun numOfUnPlayedCardsForPlayer(gameId: String, playerId: String, stageNumber: Int): Flow<Int>
 
-    fun getThreeTopPlayedCards(gameId: String, playerIds: List<String>): Flow<List<UserCard>>
+    fun numOfUnPlayedCardsForPlayers(gameId: String, playerIds: List<String>, stageNumber: Int): Flow<Int>
 
-    fun getTopPlayedCard(gameId: String, playerIds: List<String>): Flow<GameCardWithCard?>
+    fun getThreeTopPlayedCards(gameId: String, playerIds: List<String>, stageNumber: Int): Flow<List<UserCard>>
 
-    fun getUnPlayedCardsForPlayer(gameId: String, playerId: String): Flow<List<UserCard>>
+    fun getTopPlayedCard(gameId: String, playerIds: List<String>, stageNumber: Int): Flow<GameCardWithCard?>
 
-    suspend fun pickCardsFromLibrary(playerId: String, gameId: String, numOfCardsToPick: Int): Response<Int>
+    fun getUnPlayedCardsForPlayer(gameId: String, playerId: String, stageNumber: Int): Flow<List<UserCard>>
+
+    suspend fun pickCardsFromLibrary(playerId: String, gameId: String, numOfCardsToPick: Int, stageNumber: Int): Response<Int>
 
     suspend fun getGameCardWithCard(gameCardId: String): Response<UserCard>
 
     suspend fun requestCardsFromSceneToBePicked(
         gameId: String,
+        stageNumber: Int,
         numOfCardsToPick: Int,
         numOfCardsAlreadyAvailableToPick: Int
     ): Response<Int>
 
-    suspend fun numOfCardsAvailableToPick(gameId: String): Int
+    suspend fun numOfCardsAvailableToPick(gameId: String, stageNumber: Int): Int
 
     fun getUnPlayedCardsForPlayerSorted(
         gameId: String,
         playerId: String,
+        stageNumber: Int,
         sortBy: MainViewModel.UserCardsSortBy
     ): Flow<List<UserCard>>
 

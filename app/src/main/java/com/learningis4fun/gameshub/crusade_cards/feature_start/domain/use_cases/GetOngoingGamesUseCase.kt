@@ -4,10 +4,12 @@ import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.Crusad
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OnGoingGame
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OngoingGamesOrNewGameState
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -20,7 +22,8 @@ class GetOngoingGamesUseCase @OptIn(ExperimentalCoroutinesApi::class)
 @Inject constructor(
     val gameRepository: GameRepository,
     val gameCardRepository: GameCardRepository,
-    private val preferences: CrusadeCardsPreferencesManager
+    private val preferences: CrusadeCardsPreferencesManager,
+    private val gameStageRepository: GameStageRepository
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -40,8 +43,12 @@ class GetOngoingGamesUseCase @OptIn(ExperimentalCoroutinesApi::class)
                 return@flatMapLatest flowOf(OngoingGamesOrNewGameState.OngoingGamesState(isLoading = false))
             }
 
+            val stageNumber = gameStageRepository.getGameStages(gameId = gameWithPlayers.game.id)
+                .getDataOrThrowException().first().stageNumber
+
             gameCardRepository.getThreeTopPlayedCards(
                 gameId = gameWithPlayers.game.id,
+                stageNumber = stageNumber,
                 playerIds = gameWithPlayers.players.map { it.uniqueId }
             ).mapLatest {
                 val cards = it.map { userCard ->

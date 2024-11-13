@@ -14,4 +14,5 @@ fun <T> Response<T>.getDataOrThrowException(): T {
 object GamesHubLogTags{
     const val MULTIPLAYER_CRUSADE_CARDS_CONTROLLER = "MultiplayerController"
     const val GAME_REPOSITORY = "gameRepository"
+    const val GAME_CARD_REPOSITORY = "gameCardRepository"
 }

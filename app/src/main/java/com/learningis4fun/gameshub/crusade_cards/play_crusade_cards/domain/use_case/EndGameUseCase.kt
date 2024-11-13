@@ -45,7 +45,7 @@ class EndGameUseCase @Inject constructor(
         currGameId: String,
         duration: Long,
         winnerId: String
-    ): Response<List<Pair<Player, Boolean>>> {
+    ): Response<Unit> {
 
         return try {
 
@@ -81,13 +81,12 @@ class EndGameUseCase @Inject constructor(
                         val eliminate = eliminatePlayerFromGame(
                             player = player,
                             game = game,
+                            stageNumber = currentGameStage.stageNumber,
                             eliminationLimitForCrusade = eliminationLimit
                         ).getDataOrThrowException()
 
                         Pair(player, eliminate)
                     }
-
-                println(eliminatedPlayers)
 
                 // the winner should play first in the next game
                 val nextStagePlayerIds = eliminatedPlayers
@@ -111,10 +110,6 @@ class EndGameUseCase @Inject constructor(
 
                     if (eliminatedPlayers.count { it.second } == 0) {
 
-                        val winnerAsEliminatedPlayer = listOf(
-                            eliminatedPlayers.first { it.first.uniqueId == winnerId }
-                        )
-
                         val nextStagePlayerIdsWithoutWinner = nextStagePlayerIds
                             .filterNot { it.playerId == winnerId }
                             .map { (playerId, position) ->
@@ -128,15 +123,15 @@ class EndGameUseCase @Inject constructor(
                             currentGameStage.nextStage(playerIds = nextStagePlayerIdsWithoutWinner)
                         setupNextStageGame(
                             game = game,
-                            gameStage = nextStage,
-                            players = winnerAsEliminatedPlayer
+                            nextStage = nextStage,
+                            currentStageNumber = currentGameStage.stageNumber
                         )
                     } else {
                         val nextStage = currentGameStage.nextStage(playerIds = nextStagePlayerIds)
                         setupNextStageGame(
                             game = game,
-                            gameStage = nextStage,
-                            players = eliminatedPlayers
+                            nextStage = nextStage,
+                            currentStageNumber = currentGameStage.stageNumber
                         )
 
                     }
@@ -155,7 +150,7 @@ class EndGameUseCase @Inject constructor(
     private suspend fun endGame(
         game: Game,
         winnerId: String
-    ): Response<List<Pair<Player, Boolean>>> {
+    ): Response<Unit> {
         return try {
 
             val gameCompletedTime = System.currentTimeMillis()
@@ -165,13 +160,22 @@ class EndGameUseCase @Inject constructor(
                 winnerId = winnerId,
                 completedTime = gameCompletedTime
             )
+            val currentGameStage = gameStageRepository.getGameStages(gameId = game.id)
+                .getDataOrThrowException()
+                .first()
+
             gameRepository.updateGame(gameToEnd).getDataOrThrowException()
             gameRepository.updateRecentGameId("").getDataOrThrowException()
             repository.changeCurrentCardType("").getDataOrThrowException()
-            gameCardRepository.deleteAllGameCards().getDataOrThrowException()
+
+            gameCardRepository.deleteAllGameCardsWithoutPlayer(
+                gameId = game.id,
+                stageNumber = currentGameStage.stageNumber
+            ).getDataOrThrowException()
+
             preferenceManager.updateRecentCardState(CardStateEntity(cardStateName = CardStates.Start.name))
             println("ended game")
-            Response.Success(emptyList())
+            Response.Success(Unit)
         } catch (e: Exception) {
             Response.Error(e.message.toString())
         }

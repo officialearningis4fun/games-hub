@@ -5,6 +5,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardR
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
@@ -27,7 +28,8 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     private val cardRepository: CardRepository,
     private val userRepository: UserRepository,
     private val gameCardRepository: GameCardRepository,
-    private val repository: DefaultCardRepository
+    private val repository: DefaultCardRepository,
+    private val gameStageRepository: GameStageRepository
 ) {
 
     private suspend fun getCurrentCardName(): String = cardRepository.getCurrCardName()
@@ -619,7 +621,9 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         val pickedCardsResponse = gameCardRepository.pickCardsFromLibrary(
             playerId = playerId,
             gameId = gameId,
-            numOfCardsToPick = numOfCardsToPick
+            numOfCardsToPick = numOfCardsToPick,
+            stageNumber = gameStageRepository.getGameStages(gameId).getDataOrThrowException()
+                .first().stageNumber
         )
 
         return when (pickedCardsResponse) {

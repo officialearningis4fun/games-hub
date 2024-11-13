@@ -74,9 +74,7 @@ class CreateGameUseCase @Inject constructor(
                     )
                 ).getDataOrThrowException()
             }
-            gameCards.forEach { gameCard ->
-                gameCardRepository.insertGameCard(gameCard).getDataOrThrowException()
-            }
+
             val gameStage = GameStage(
                 gameId = gameId,
                 stageNumber = 1,
@@ -87,6 +85,11 @@ class CreateGameUseCase @Inject constructor(
                     )
                 }
             )
+
+            gameCards.forEach { gameCard ->
+                gameCardRepository.insertGameCard(gameCard.copy(stageNumber = gameStage.stageNumber)).getDataOrThrowException()
+            }
+
             gameRepository.insertGame(game).getDataOrThrowException()
             gameStageRepository.saveGameStage(gameStage = gameStage).getDataOrThrowException()
             gameId

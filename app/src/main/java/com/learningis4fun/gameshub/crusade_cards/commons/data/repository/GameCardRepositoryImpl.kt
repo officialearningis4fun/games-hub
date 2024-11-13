@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.data.repository
 
+import android.util.Log
 import androidx.room.withTransaction
 import com.learningis4fun.gameshub.MainViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
@@ -10,6 +11,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUserCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.GamesHubLogTags
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.count
@@ -22,7 +24,6 @@ import javax.inject.Inject
 class GameCardRepositoryImpl @Inject constructor(
     private val db: GamesDatabase
 ) : GameCardRepository {
-
 
     override suspend fun insertGameCard(gameCard: GameCard): Response<Unit> {
         return try {
@@ -70,32 +71,56 @@ class GameCardRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getNumOfCurrentGameCards(gameId: String): Flow<Int> {
-        return db.gameCardDao().getNumOfCurrGameCards(gameId = gameId)
+    override suspend fun deleteAllGameCardsWithoutPlayer(
+        gameId: String,
+        stageNumber: Int
+    ): Response<Unit> {
+        return try {
+            db.gameCardDao().deleteAllGameCardsWithoutPlayer(gameId, stageNumber)
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            Response.Error(e.message.toString())
+        }
     }
 
-    override suspend fun getGameCards(gameId: String): List<GameCard> {
-        return db.gameCardDao().getGameCards(gameId = gameId)
+    override fun getNumOfCurrentGameCards(gameId: String, stageNumber: Int): Flow<Int> {
+        return db.gameCardDao().getNumOfCurrGameCards(gameId = gameId, stageNumber)
     }
 
-    override fun numOfUnPlayedCardsForPlayer(gameId: String, playerId: String): Flow<Int> {
-        return db.gameCardDao().numOfUnPlayedCardsForPlayer(gameId, playerId).map {
+    override suspend fun getGameCards(gameId: String, stageNumber: Int): List<GameCard> {
+        return db.gameCardDao().getGameCards(gameId = gameId, stageNumber = stageNumber)
+    }
+
+    override fun numOfUnPlayedCardsForPlayer(
+        gameId: String,
+        playerId: String,
+        stageNumber: Int
+    ): Flow<Int> {
+        return db.gameCardDao().numOfUnPlayedCardsForPlayer(gameId, playerId, stageNumber).map {
             it
         }
     }
 
-    override fun numOfUnPlayedCardsForPlayers(gameId: String, playerIds: List<String>): Flow<Int> {
-        return db.gameCardDao().numOfUnPlayedCardsForPlayers(gameId, playerIds)
+    override fun numOfUnPlayedCardsForPlayers(
+        gameId: String,
+        playerIds: List<String>,
+        stageNumber: Int
+    ): Flow<Int> {
+        return db.gameCardDao().numOfUnPlayedCardsForPlayers(gameId, playerIds, stageNumber)
     }
 
     override fun getThreeTopPlayedCards(
         gameId: String,
-        playerIds: List<String>
+        playerIds: List<String>,
+        stageNumber: Int
     ): Flow<List<UserCard>> {
         return db.gameCardDao().getTopThreePlayedCards(
             gameId = gameId,
-            playerIds = playerIds
+            playerIds = playerIds,
+            stageNumber = stageNumber
         ).map {
+            Log.d(GamesHubLogTags.GAME_CARD_REPOSITORY,"params: gameId:$gameId; playerIds:$playerIds; stageNumber:$stageNumber")
+            Log.d("GameCardRepository", it.toString())
             it.map { gameCardWithCard ->
                 gameCardWithCard.toUserCard()
             }
@@ -118,13 +143,19 @@ class GameCardRepositoryImpl @Inject constructor(
 
     override fun getTopPlayedCard(
         gameId: String,
-        playerIds: List<String>
+        playerIds: List<String>,
+        stageNumber: Int
     ): Flow<GameCardWithCard?> {
-        return db.gameCardDao().getTopPlayedCard(gameId, playerIds)
+        return db.gameCardDao()
+            .getTopPlayedCard(gameId = gameId, playerIds = playerIds, stageNumber = stageNumber)
     }
 
-    override fun getUnPlayedCardsForPlayer(gameId: String, playerId: String): Flow<List<UserCard>> {
-        return db.gameCardDao().getUnPlayedCardsForPlayer(gameId, playerId)
+    override fun getUnPlayedCardsForPlayer(
+        gameId: String,
+        playerId: String,
+        stageNumber: Int
+    ): Flow<List<UserCard>> {
+        return db.gameCardDao().getUnPlayedCardsForPlayer(gameId, playerId, stageNumber)
             .map {
                 it.map { gameCardWithCard ->
                     gameCardWithCard.toUserCard()
@@ -135,11 +166,13 @@ class GameCardRepositoryImpl @Inject constructor(
     override suspend fun pickCardsFromLibrary(
         playerId: String,
         gameId: String,
-        numOfCardsToPick: Int
+        numOfCardsToPick: Int,
+        stageNumber: Int
     ): Response<Int> {
         return try {
-            val cardsInDustbin = db.gameCardDao().getCardsInDustbin(gameId)
-                .first()
+            val cardsInDustbin =
+                db.gameCardDao().getCardsInDustbin(gameId = gameId, stageNumber = stageNumber)
+                    .first()
 
             val numOfCardsInDustbin = cardsInDustbin.size
 
@@ -158,7 +191,8 @@ class GameCardRepositoryImpl @Inject constructor(
                 val response = requestCardsFromSceneToBePicked(
                     gameId = gameId,
                     numOfCardsToPick = numOfCardsToPick,
-                    numOfCardsAlreadyAvailableToPick = numOfCardsInDustbin
+                    numOfCardsAlreadyAvailableToPick = numOfCardsInDustbin,
+                    stageNumber = stageNumber
                 )
 
                 when (response) {
@@ -169,7 +203,7 @@ class GameCardRepositoryImpl @Inject constructor(
                     is Response.Success -> {
 
                         val cardsInDustbinAfterRequesting =
-                            db.gameCardDao().getCardsInDustbin(gameId)
+                            db.gameCardDao().getCardsInDustbin(gameId, stageNumber = stageNumber)
                                 .first()
                                 .shuffled()
                                 .take(numOfCardsToPick)
@@ -219,6 +253,7 @@ class GameCardRepositoryImpl @Inject constructor(
 
     override suspend fun requestCardsFromSceneToBePicked(
         gameId: String,
+        stageNumber: Int,
         numOfCardsToPick: Int,
         numOfCardsAlreadyAvailableToPick: Int
     ): Response<Int> {
@@ -232,7 +267,8 @@ class GameCardRepositoryImpl @Inject constructor(
 
             val cardsInDustbin = db.gameCardDao().getPlayedCardsForPlayers(
                 gameId = gameId,
-                playerIds = playersIds
+                playerIds = playersIds,
+                stageNumber = stageNumber
             )
                 .first()
                 .sortedByDescending { it.playTime }
@@ -271,21 +307,47 @@ class GameCardRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun numOfCardsAvailableToPick(gameId: String): Int {
-        return db.gameCardDao().getCardsInDustbin(gameId = gameId).count()
+    override suspend fun numOfCardsAvailableToPick(gameId: String, stageNumber: Int): Int {
+        return db.gameCardDao().getCardsInDustbin(gameId = gameId, stageNumber = stageNumber)
+            .count()
     }
 
     override fun getUnPlayedCardsForPlayerSorted(
         gameId: String,
         playerId: String,
+        stageNumber: Int,
         sortBy: MainViewModel.UserCardsSortBy
     ): Flow<List<UserCard>> {
-        return db.gameCardDao().getUnPlayedCardsForPlayerSorted(gameId, playerId, sortBy)
-            .map {
-                it.map { gameCardWithCard ->
-                    gameCardWithCard.toUserCard()
-                }
+
+        return when (sortBy) {
+            MainViewModel.UserCardsSortBy.CardName -> {
+                db.gameCardDao().getUnPlayedCardsForPlayerSortedByCardName(
+                    gameId = gameId,
+                    playerId = playerId,
+                    stageNumber = stageNumber
+                )
             }
+
+            MainViewModel.UserCardsSortBy.CardType -> {
+                db.gameCardDao().getUnPlayedCardsForPlayerSortedByCardType(
+                    gameId = gameId,
+                    playerId = playerId,
+                    stageNumber = stageNumber
+                )
+            }
+
+            MainViewModel.UserCardsSortBy.TimePicked -> {
+                db.gameCardDao().getUnPlayedCardsForPlayerSortedByCardType(
+                    gameId = gameId,
+                    playerId = playerId,
+                    stageNumber = stageNumber
+                )
+            }
+        }.map {
+            it.map { gameCardWithCard ->
+                gameCardWithCard.toUserCard()
+            }
+        }
     }
 
 }

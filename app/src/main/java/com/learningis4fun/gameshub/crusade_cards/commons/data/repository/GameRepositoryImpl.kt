@@ -60,6 +60,7 @@ class GameRepositoryImpl @Inject constructor(
                 }
                 db.gameDao().deleteGame(game.game)
                 db.gameStageDao().deleteGameStages(gameId = gameId)
+                db.gameCardDao().deleteAllGameCards(gameId = gameId)
                 val currentGameId = crusadeCardsPreferencesManager.recentGameId.first()
                 if (currentGameId == gameId) {
                     crusadeCardsPreferencesManager.updateRecentGameId("").getDataOrThrowException()
