@@ -653,7 +653,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         }
     }
 
-    // when jack is played, the names switch on the screen; fix the issue
+    // The players info update before the cards are shown on screen
     private suspend fun playersScreenInfo(
         cardState: CardStates,
         gameWithPlayers: GameWithPlayers
