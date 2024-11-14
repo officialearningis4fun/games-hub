@@ -41,9 +41,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
     private val userRepository: UserRepository,
     private val preferences: CrusadeCardsPreferencesManager,
     private val getOngoingGamesUseCase: GetOngoingGamesUseCase,
-    private val gameCardRepository: GameCardRepository,
     private val gameStageRepository: GameStageRepository,
-    private val getLatestStageNumber: GetLatestStageNumber,
     private val getLatestUnPlayedCards: GetLatestUnPlayedCards
 ) : ViewModel() {
 
@@ -156,6 +154,8 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 val currentStageNumber = if (gameStages.size > 1) gameStages.take(2)
                     .last().stageNumber else gameStages.first().stageNumber
 
+                val nextStageNumber = gameStages.first().stageNumber
+
                 // load next stage
                 val gameWithPlayers = gameRepository
                     .getGameWithPlayers(gameId = gameId)
@@ -185,7 +185,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 val unPlayedCards = getLatestUnPlayedCards(
                     gameId = gameId,
                     playerIds = playerIds,
-                    stagesToIgnore = listOf(currentStageNumber)
+                    stagesToIgnore = listOf(nextStageNumber)
                 )
 
                 playedGameStateFlow.update {

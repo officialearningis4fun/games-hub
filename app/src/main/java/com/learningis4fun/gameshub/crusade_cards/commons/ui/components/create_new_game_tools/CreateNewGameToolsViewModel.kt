@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
@@ -9,13 +10,13 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.AssignCardsUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.CreateGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.GamesHubLogTags
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -36,35 +37,44 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
     val createNewGameToolsState = createNewGameToolsStateFlow.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            combine(
-                preferences.numberOfCardsPerPlayer,
-                preferences.eliminationCountLimitForCrusade
-            ) { numberOfCards, eliminationLimit ->
-                Pair(
-                    numberOfCards,
-                    eliminationLimit
-                )
-            }.collectLatest { (numberOfCards, eliminationLimit) ->
 
+        viewModelScope.launch {
+            preferences.numberOfCardsPerPlayer.collectLatest { numberOfCards ->
+                createNewGameToolsStateFlow.update {
+                    it.copy(numberOfCardsPerPlayer = numberOfCards)
+                }
+            }
+        }
+
+        viewModelScope.launch {
+
+            preferences.eliminationCountLimitForCrusade.collectLatest { eliminationLimit ->
                 createNewGameToolsStateFlow.update {
                     it.copy(
-                        numberOfCardsPerPlayer = numberOfCards,
                         eliminationLimitForCrusade = eliminationLimit
                     )
                 }
             }
         }
 
+
         viewModelScope.launch {
             preferences.numberOfParticipantsInCrusadeGame.collectLatest { numOfParticipants ->
                 val loggedInUserId = preferences.user.first().uniqueId
                 createNewGameToolsStateFlow.update {
                     it.copy(
-                        playersInfo = getPlayers(count = numOfParticipants, userId = loggedInUserId),
-                        numberOfParticipants = numOfParticipants
-                    )
+                        playersInfo = getPlayers(
+                            count = numOfParticipants,
+                            userId = loggedInUserId
+                        )
+                    ).updateNumberOfParticipants()
                 }
+            }
+        }
+
+        viewModelScope.launch {
+            createNewGameToolsStateFlow.collectLatest {
+                Log.d(GamesHubLogTags.CREATE_NEW_GAME_VIEWMODEL, "state: $it")
             }
         }
     }
@@ -158,7 +168,7 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                                 playerInfo
                             }
                         }
-                    )
+                    ).updateNumberOfParticipants()
                 }
             }
         }

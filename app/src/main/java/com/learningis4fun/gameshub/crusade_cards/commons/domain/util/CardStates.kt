@@ -4,6 +4,11 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 
 sealed class CardStates(val name: String) {
 
+    /**
+     * The winner from the previous game stage or game
+     * or the first player should start the game
+     * else the computer will start the game
+     */
     data object Start : CardStates("start")
     data class Play(
         val playerId: String,

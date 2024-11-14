@@ -17,4 +17,5 @@ object GamesHubLogTags{
     const val GAME_CARD_REPOSITORY = "gameCardRepository"
     const val PLAY_CARDS_VIEW_MODEL = "playCardsViewModel"
     const val GET_LATEST_UN_PLAYED_CARDS = "getLatestUnPlayedCards"
+    const val CREATE_NEW_GAME_VIEWMODEL = "createNewGameViewModel"
 }

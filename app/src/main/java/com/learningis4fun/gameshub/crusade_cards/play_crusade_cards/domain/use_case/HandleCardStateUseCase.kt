@@ -9,7 +9,6 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.getPlayerId
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -23,7 +22,8 @@ class HandleCardStateUseCase @Inject constructor(
     private val preferenceManager: CrusadeCardsPreferencesManager,
     private val defaultCardRepository: DefaultCardRepository,
     private val cardsController: MultiplayerCrusadeCardsController,
-    private val computerCardsController: CrusadeComputerCardsController
+    private val computerCardsController: CrusadeComputerCardsController,
+    private val getLastGameStageWinnerOrFirstPlayer: GetLastGameStageWinnerOrFirstPlayer
 ) {
 
     private val computerPlayers = listOf(
@@ -301,9 +301,11 @@ class HandleCardStateUseCase @Inject constructor(
             }
 
             is CardStates.Start -> {
-                // computer always start the game for now
+
+                val idOfPlayerToPlay = getLastGameStageWinnerOrFirstPlayer(gameId = gameId)
+
                 cardState = CardStates.Play(
-                    playerId = computerPlayersIds.first(),
+                    playerId = idOfPlayerToPlay?.uniqueId ?: computerPlayersIds.first(),
                     canPick = false
                 )
 
