@@ -7,7 +7,6 @@ import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUserCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
@@ -119,7 +118,10 @@ class GameCardRepositoryImpl @Inject constructor(
             playerIds = playerIds,
             stageNumber = stageNumber
         ).map {
-            Log.d(GamesHubLogTags.GAME_CARD_REPOSITORY,"params: gameId:$gameId; playerIds:$playerIds; stageNumber:$stageNumber")
+            Log.d(
+                GamesHubLogTags.GAME_CARD_REPOSITORY,
+                "params: gameId:$gameId; playerIds:$playerIds; stageNumber:$stageNumber"
+            )
             Log.d("GameCardRepository", it.toString())
             it.map { gameCardWithCard ->
                 gameCardWithCard.toUserCard()
@@ -157,6 +159,7 @@ class GameCardRepositoryImpl @Inject constructor(
     ): Flow<List<UserCard>> {
         return db.gameCardDao().getUnPlayedCardsForPlayer(gameId, playerId, stageNumber)
             .map {
+                Log.d(GamesHubLogTags.GAME_CARD_REPOSITORY, "userCards: $it")
                 it.map { gameCardWithCard ->
                     gameCardWithCard.toUserCard()
                 }

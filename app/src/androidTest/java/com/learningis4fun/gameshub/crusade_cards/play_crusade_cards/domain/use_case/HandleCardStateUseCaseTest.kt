@@ -151,7 +151,8 @@ class HandleCardStateUseCaseTest {
 
         val playerCard = gameCardRepository.getUnPlayedCardsForPlayer(
             gameId = gameId,
-            playerId = player.uniqueId
+            playerId = player.uniqueId,
+            stageNumber = 1
         ).first().first()
 
 
@@ -165,7 +166,7 @@ class HandleCardStateUseCaseTest {
 
         val cardStates = CardStates.Play(playerId = player.uniqueId)
 
-       val playersCards = gameCardRepository.getUnPlayedCardsForPlayer(gameId, playerId = player.uniqueId).first()
+       val playersCards = gameCardRepository.getUnPlayedCardsForPlayer(gameId, playerId = player.uniqueId, stageNumber = 1).first()
 
         println("player's cards: $playersCards")
         handleCardStateUseCase.saveCardStateToPreferences(CardStates.Play(player.uniqueId))

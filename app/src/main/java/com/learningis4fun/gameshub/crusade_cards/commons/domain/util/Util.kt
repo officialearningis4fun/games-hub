@@ -2,26 +2,11 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.util
 
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
-
-fun GameCardWithCard.toUserCard() = UserCard(
-    gameCardId = this.gameCard.id,
-    playerId = this.gameCard.playerId,
-    cardId = this.card.id,
-    name = this.card.name,
-    type = this.card.type,
-    gameId = this.gameCard.gameId,
-    isPlayed = this.gameCard.isPlayed,
-    image = this.card.image,
-    playTime = this.gameCard.playTime,
-    pickedTime = this.gameCard.pickedTime
-)
 
 fun Int.toHiddenCardsCountAboveThree(): String {
     return if (this > 3) {

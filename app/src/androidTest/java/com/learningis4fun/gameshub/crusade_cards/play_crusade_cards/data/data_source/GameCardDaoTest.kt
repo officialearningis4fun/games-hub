@@ -53,7 +53,7 @@ class GameCardDaoTest {
         )
         gameCardDao.insertGameCard(gameCard)
 
-        assertThat(gameCardDao.getGameCards(gameId = "gameId")).contains(gameCard)
+        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).contains(gameCard)
     }
 
     @Test
@@ -69,8 +69,8 @@ class GameCardDaoTest {
         val newGameCard = gameCard.copy(isPlayed = true)
         gameCardDao.updateGameCard(newGameCard)
 
-        assertThat(gameCardDao.getGameCards(gameId = "gameId")).contains(newGameCard)
-        assertThat(gameCardDao.getGameCards(gameId = "gameId")).doesNotContain(gameCard)
+        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).contains(newGameCard)
+        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).doesNotContain(gameCard)
     }
 
     @Test
@@ -83,6 +83,6 @@ class GameCardDaoTest {
         gameCardDao.insertGameCard(gameCard)
         gameCardDao.deleteGameCard(gameCard)
 
-        assertThat(gameCardDao.getGameCards(gameId = "gameId")).doesNotContain(gameCard)
+        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).doesNotContain(gameCard)
     }
 }

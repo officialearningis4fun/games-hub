@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -35,6 +36,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_c
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.HandleCardStateUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.PauseGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.ResumeGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.GamesHubLogTags
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineDispatcher
@@ -138,7 +140,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
                     val (gameWithPlayers, lastThreePlayedCards, gamePlayerActions, userCards, cardState) = value
 
-                    println("last played: $lastThreePlayedCards")
                     if (playCardsStateFlow.value.wonGame.gameId.isNotEmpty()) {
                         return@map
                     }
@@ -201,7 +202,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                             }
                         }
                     }
-                    println("current game: $game")
+                    Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "current game: $game")
                 }
         }
     }
@@ -268,7 +269,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 }
             }
             .flatMapLatest { gameWithUsers ->
-                println(gameWithUsers)
                 if (gameWithUsers == null || gameWithUsers.game.gameState == GameState.Completed.name) {
                     emptyFlow()
                 } else {
@@ -318,7 +318,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             val cardState = preference.recentCardState.first()
 
-            println("playing: cardState $cardState")
+            Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "cardState $cardState")
             if (gameId.isEmpty()) {
                 throw Exception("Game not found: gameId empty")
             }
@@ -328,7 +328,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             val gameState = toState(currGame.gameState)
 
-            println("playing: gameState $gameState")
+            Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "gameState $gameState")
 
             when (gameState) {
                 GameState.Completed -> {
@@ -346,7 +346,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 GameState.Started -> {
                     // check if any user has no cards - if yes, they wom so, end game
                     val hasWinner = anyPlayedAllCards(gameId = gameId)
-                    println("hasWinner: $hasWinner")
+                    Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "hasWinner: $hasWinner")
 
                     val playerIds = gameRepository.getGameWithLatestStagePlayers(gameId = gameId)
                         .first()
@@ -372,11 +372,13 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                             gameId = gameId
                         )
                     } else {
-                        println("handleCardStateUseCase started...")
                         val playCardState = handleCardStateUseCase
                             .handleCardState(state = cardState, gameId = gameId)
-                        println("handleCardStateUseCase ended...")
-                        println("nextPlayState: $playCardState")
+
+                        Log.d(
+                            GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
+                            "nextPlayState: $playCardState"
+                        )
                         // game action messages
                         gamePlayerActionsFlow.update {
                             playCardState ?: it
@@ -599,6 +601,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     playerIds = playerIds
                 ).first()?.card?.name ?: throw Exception("Top card not found")
 
+            Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "top played card name: $topPlayedCardName")
+
             when {
                 topPlayedCardName == Constants.CardNames.JOKER
                         || topPlayedCardName == Constants.CardNames.EIGHT
@@ -610,6 +614,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             type
         } catch (exception: Exception) {
+            exception.printStackTrace()
             type
         }
     }

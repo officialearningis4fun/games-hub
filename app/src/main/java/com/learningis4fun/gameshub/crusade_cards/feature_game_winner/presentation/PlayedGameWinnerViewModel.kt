@@ -18,6 +18,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenR
 import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetOngoingGamesUseCase
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OngoingGamesOrNewGameState
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.GetLatestStageNumber
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.GetLatestUnPlayedCards
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -40,7 +42,9 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
     private val preferences: CrusadeCardsPreferencesManager,
     private val getOngoingGamesUseCase: GetOngoingGamesUseCase,
     private val gameCardRepository: GameCardRepository,
-    private val gameStageRepository: GameStageRepository
+    private val gameStageRepository: GameStageRepository,
+    private val getLatestStageNumber: GetLatestStageNumber,
+    private val getLatestUnPlayedCards: GetLatestUnPlayedCards
 ) : ViewModel() {
 
     private val gameId = savedStateHandle.toRoute<WinnerScreenRoute>().wonGameId
@@ -148,9 +152,6 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
 
                 val gameStages = gameStageRepository.getGameStages(gameId).getDataOrThrowException()
 
-                // next stage
-                val nextStageNumber = gameStages.first().stageNumber
-
                 // pre stage
                 val currentStageNumber = if (gameStages.size > 1) gameStages.take(2)
                     .last().stageNumber else gameStages.first().stageNumber
@@ -177,33 +178,14 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
 
                 val winnerNames = loggedInUser.toWinnerNames(winner)
 
-                val unPlayedCardsForNextStagePlayers = nextStagePlayers
+                val playerIds = (nextStagePlayers.union(eliminatedPlayers))
                     .map { it.uniqueId }
-                    .flatMap { playerId ->
-                        gameCardRepository
-                            .getUnPlayedCardsForPlayer(
-                                gameId = gameId,
-                                playerId = playerId,
-                                stageNumber = nextStageNumber
-                            )
-                            .first()
-                    }
 
-                val unPlayedCardsForEliminatedPlayers = eliminatedPlayers
-                    .map { it.uniqueId }
-                    .flatMap { playerId ->
-                        gameCardRepository
-                            .getUnPlayedCardsForPlayer(
-                                gameId = gameId,
-                                playerId = playerId,
-                                stageNumber = currentStageNumber
-                            )
-                            .first()
-                    }
-
-                val unPlayedCards =
-                    unPlayedCardsForEliminatedPlayers.union(unPlayedCardsForNextStagePlayers)
-                        .toList()
+                val unPlayedCards = getLatestUnPlayedCards(
+                    gameId = gameId,
+                    playerIds = playerIds,
+                    stagesToIgnore = listOf(currentStageNumber)
+                )
 
                 playedGameStateFlow.update {
                     PlayedGameWinnerOrNextStage.PlayedGameNextStageState(
@@ -242,13 +224,10 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 )
             }
 
-            val unPlayedCards = otherPlayers.flatMap { player ->
-                gameCardRepository.getUnPlayedCardsForPlayer(
-                    playerId = player.uniqueId,
-                    gameId = completedGame.game.id,
-                    stageNumber = 0
-                ).first()
-            }
+            val unPlayedCards = getLatestUnPlayedCards(
+                gameId = gameId,
+                playerIds = otherPlayers.map { it.uniqueId }
+            )
 
             val winner = completedGame.winner
                 ?: throw Exception("Unexpected error occurred; please restart the app")

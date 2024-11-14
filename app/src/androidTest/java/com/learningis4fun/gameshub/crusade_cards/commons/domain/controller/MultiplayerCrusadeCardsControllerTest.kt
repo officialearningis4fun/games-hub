@@ -147,7 +147,8 @@ class MultiplayerCrusadeCardsControllerTest {
 
         val playerCard = gameCardRepository.getUnPlayedCardsForPlayer(
             gameId = gameId,
-            playerId = player.uniqueId
+            playerId = player.uniqueId,
+            stageNumber = 1
         ).first().first()
 
 

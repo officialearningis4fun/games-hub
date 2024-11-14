@@ -15,4 +15,6 @@ object GamesHubLogTags{
     const val MULTIPLAYER_CRUSADE_CARDS_CONTROLLER = "MultiplayerController"
     const val GAME_REPOSITORY = "gameRepository"
     const val GAME_CARD_REPOSITORY = "gameCardRepository"
+    const val PLAY_CARDS_VIEW_MODEL = "playCardsViewModel"
+    const val GET_LATEST_UN_PLAYED_CARDS = "getLatestUnPlayedCards"
 }

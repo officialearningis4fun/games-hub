@@ -7,7 +7,6 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCr
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUserCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GamesOfPlayer
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard

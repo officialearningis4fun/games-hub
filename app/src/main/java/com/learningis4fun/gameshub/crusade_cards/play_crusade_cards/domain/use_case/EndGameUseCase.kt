@@ -49,10 +49,16 @@ class EndGameUseCase @Inject constructor(
 
         return try {
 
-            println("requested to end game")
             val gameWithPlayers =
                 gameRepository.getGameWithLatestStagePlayers(gameId = currGameId).first()
 
+            // pause the game
+            gameRepository.updateGame(
+                gameWithPlayers.game.copy(
+                    gameDuration = duration,
+                    gameState = GameState.Paused.name
+                )
+            )
             val game = gameWithPlayers.game.copy(
                 gameDuration = duration,
                 gameState = GameState.Paused.name,

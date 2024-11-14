@@ -23,6 +23,9 @@ data class UserCard(
     @ColumnInfo(name = "gameId")
     val gameId: String = "",
 
+    @ColumnInfo(name = "stageNumber", defaultValue = "1")
+    val stageNumber: Int = 1,
+
     @ColumnInfo(name = "isPlayed")
     val isPlayed: Boolean = false,
 
@@ -30,11 +33,11 @@ data class UserCard(
     val image: String = "",
 
     @ColumnInfo(name = "playTime")
-    val playTime : Long = 0L,
+    val playTime: Long = 0L,
 
     @ColumnInfo(name = "pickedTime")
-    val pickedTime : Long = 0L
-){
+    val pickedTime: Long = 0L
+) {
     @Ignore
     val card = "${name.uppercase()} - ${type.uppercase()}"
     fun toCard(): Card = Card(
@@ -42,5 +45,16 @@ data class UserCard(
         name = name,
         type = type,
         image = image
+    )
+
+    fun toGameCard() = GameCard(
+        id = gameCardId,
+        gameId = gameId,
+        cardId = cardId,
+        playerId = playerId,
+        stageNumber = stageNumber,
+        isPlayed = isPlayed,
+        playTime = playTime,
+        pickedTime = pickedTime
     )
 }
