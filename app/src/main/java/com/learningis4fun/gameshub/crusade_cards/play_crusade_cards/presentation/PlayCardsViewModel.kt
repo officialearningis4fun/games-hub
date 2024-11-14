@@ -134,14 +134,14 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                         loadPlayingGameInfo(null)
                     }
                 }
-                .map { value ->
+                .mapLatest { value ->
 
-                    if (value == null) return@map
+                    if (value == null) return@mapLatest
 
                     val (gameWithPlayers, lastThreePlayedCards, gamePlayerActions, userCards, cardState) = value
 
                     if (playCardsStateFlow.value.wonGame.gameId.isNotEmpty()) {
-                        return@map
+                        return@mapLatest
                     }
 
                     val isGameComplete = try {
@@ -150,7 +150,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                         false
                     }
 
-                    if (isGameComplete) return@map
+                    if (isGameComplete) return@mapLatest
 
                     updateUIState(
                         gameWithPlayers = gameWithPlayers,

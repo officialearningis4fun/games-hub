@@ -180,6 +180,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
 
                 val playerIds = (nextStagePlayers.union(eliminatedPlayers))
                     .map { it.uniqueId }
+                    .filterNot { it == winner?.uniqueId }
 
                 val unPlayedCards = getLatestUnPlayedCards(
                     gameId = gameId,
