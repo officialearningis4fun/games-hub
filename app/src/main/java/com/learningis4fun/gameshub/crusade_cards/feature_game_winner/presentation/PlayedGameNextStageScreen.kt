@@ -30,13 +30,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.PlayerScreenInfo
 
 @Composable
-fun PlayedGameNextStage(
+fun PlayedGameNextStageScreen(
     modifier: Modifier = Modifier,
     playedGameNextStageState: PlayedGameWinnerOrNextStage.PlayedGameNextStageState,
     onStartGame: () -> Unit = {}
@@ -65,12 +63,12 @@ private fun NextStageSection(
         mutableStateOf(Pair("", false))
     }
 
-
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
@@ -198,35 +196,10 @@ private fun PlayersSection(
 @Composable
 private fun PlayedGameWinnerLoadingLightPrev() {
     GamesHubAppTheme {
-        PlayedGameNextStage(
-            modifier = Modifier
-                .fillMaxSize(),
-            playedGameNextStageState = playedGameNextStageState,
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun PlayedGameWinnerLoadingDarkPrev() {
-    GamesHubAppTheme {
-        PlayedGameNextStage(
+        PlayedGameNextStageScreen(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White),
-            playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(),
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun PlayedGameWinnerPrev() {
-    GamesHubAppTheme(darkTheme = false) {
-        PlayedGameNextStage(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
+                .background(MaterialTheme.colorScheme.background),
             playedGameNextStageState = playedGameNextStageState,
         )
     }
@@ -236,9 +209,10 @@ private fun PlayedGameWinnerPrev() {
 @Composable
 private fun PlayedGameWinnerDarkPrev() {
     GamesHubAppTheme(darkTheme = true) {
-        PlayedGameNextStage(
+        PlayedGameNextStageScreen(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
             playedGameNextStageState = playedGameNextStageState,
         )
     }

@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -82,7 +83,6 @@ fun CreateGameSetupToolsSection(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
             .padding(bottom = 32.dp)
     ) {
 
@@ -169,7 +169,7 @@ fun CreateGameSetupToolsSection(
             }
         }
 
-        if (expandTools) {
+        AnimatedVisibility(visible = expandTools) {
             ToolsSection(
                 modifier = Modifier,
                 maxPlayers = maxPlayers,

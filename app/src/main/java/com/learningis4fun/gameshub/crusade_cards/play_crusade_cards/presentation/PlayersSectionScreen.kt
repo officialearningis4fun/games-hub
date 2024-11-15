@@ -46,6 +46,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model
 @Composable
 fun MultiplePlayersSectionScreen(
     modifier: Modifier = Modifier,
+    textColor: Color = MaterialTheme.colorScheme.onPrimary,
     playersScreenInfo: List<PlayerScreenInfo>,
 ) {
 
@@ -73,6 +74,7 @@ fun MultiplePlayersSectionScreen(
         itemsIndexed(playersScreenInfo) { _, player ->
             PlayerItem(
                 modifier = Modifier,
+                textColor = textColor,
                 playerScreenInfo = player
             )
         }
@@ -85,7 +87,8 @@ fun MultiplePlayersSectionScreen(
 fun PlayersSectionScreen(
     modifier: Modifier = Modifier,
     playersScreenInfo: List<PlayerScreenInfo>,
-    duration: String
+    duration: String,
+    textColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
 
     val playerImgHeight = 64.dp
@@ -111,16 +114,18 @@ fun PlayersSectionScreen(
 
                 PlayerItem(
                     modifier = Modifier,
+                    textColor = textColor,
                     playerScreenInfo = player1
                 )
                 Heading(
                     modifier = Modifier,
                     text = duration,
-                    textColor = MaterialTheme.colorScheme.onPrimary
+                    textColor = textColor
                 )
 
                 PlayerItem(
                     modifier = Modifier,
+                    textColor = textColor,
                     playerScreenInfo = player2
                 )
             }
@@ -134,6 +139,7 @@ fun PlayersSectionScreen(
 fun PlayerItem(
     modifier: Modifier,
     sizeOfPhoto: Dp = 64.dp,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
     playerScreenInfo: PlayerScreenInfo,
 ) {
 
@@ -198,7 +204,7 @@ fun PlayerItem(
             modifier = Modifier
                 .padding(vertical = 4.dp, horizontal = 8.dp),
             text = playerScreenInfo.playerName,
-            color = MaterialTheme.colorScheme.onPrimary,
+            color = textColor,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium
             ),
@@ -274,7 +280,8 @@ fun CardItem(
 private fun PlayerItemLightPrev() {
     GamesHubAppTheme {
         PlayerItem(
-            modifier = Modifier,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background),
             playerScreenInfo = playersScreenInfo.first()
         )
     }
@@ -285,6 +292,8 @@ private fun PlayerItemLightPrev() {
 private fun PlayersSectionLightPrev() {
     GamesHubAppTheme {
         PlayersSectionScreen(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background),
             playersScreenInfo = playersScreenInfo.take(2), duration = "00:20"
         )
     }
@@ -295,6 +304,8 @@ private fun PlayersSectionLightPrev() {
 private fun PlayersSectionDarkPrev() {
     GamesHubAppTheme(darkTheme = true) {
         PlayersSectionScreen(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background),
             playersScreenInfo = playersScreenInfo.take(2), duration = "00:20"
         )
     }
@@ -305,6 +316,8 @@ private fun PlayersSectionDarkPrev() {
 private fun MultiPlayersSectionLightPrev() {
     GamesHubAppTheme {
         MultiplePlayersSectionScreen(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background),
             playersScreenInfo = playersScreenInfo,
         )
     }
@@ -315,6 +328,8 @@ private fun MultiPlayersSectionLightPrev() {
 private fun MultiPlayersSectionDarkPrev() {
     GamesHubAppTheme(darkTheme = true) {
         MultiplePlayersSectionScreen(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background),
             playersScreenInfo = playersScreenInfo,
         )
     }

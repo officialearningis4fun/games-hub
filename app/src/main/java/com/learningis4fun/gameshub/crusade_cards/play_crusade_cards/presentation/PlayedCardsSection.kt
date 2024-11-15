@@ -36,7 +36,7 @@ fun PlayedCardsSection(
         Heading(
             modifier = Modifier,
             text = "Played",
-            textColor = MaterialTheme.colorScheme.onSurface
+            textColor = Color.Black
         )
 
         val card3Img = getImageOrDefault(cards, 0)

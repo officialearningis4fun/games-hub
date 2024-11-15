@@ -188,9 +188,9 @@ fun PlayCardsScreen(
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                    navigationIconContentColor = Color.Black,
+                    actionIconContentColor = Color.Black,
+                    titleContentColor = Color.Black
                 ),
                 title = {
                     if (playCardsState.isLoading.not() && playCardsState.error == null) {
@@ -224,7 +224,8 @@ fun PlayCardsScreen(
             PlayCardsLoadingScreen(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
+                    .padding(paddingValues),
+                textColor = Color.Black
             )
         } else if (playCardsState.error != null) {
             PlayCardsErrorScreen(
@@ -266,6 +267,7 @@ fun PlayCardsDataRoot(
                 MultiplePlayersSectionScreen(
                     modifier = Modifier
                         .fillMaxWidth(),
+                    textColor = Color.Black,
                     playersScreenInfo = playCardsState.playersScreenInfo,
                 )
             } else {
@@ -273,6 +275,7 @@ fun PlayCardsDataRoot(
                 PlayersSectionScreen(
                     modifier = Modifier
                         .fillMaxWidth(),
+                    textColor = Color.Black,
                     playersScreenInfo = playCardsState.playersScreenInfo,
                     duration = gameDuration
                 )
@@ -329,14 +332,15 @@ fun PlayCardsDataRoot(
 
 @Composable
 fun PlayCardsLoadingScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    textColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
 
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        Text(text = "Setting up the scene...")
+        Text(text = "Setting up the scene...", color = textColor)
     }
 
 }
@@ -404,7 +408,7 @@ private fun DustbinSection(
         Heading(
             modifier = Modifier,
             text = "Dustbin",
-            textColor = MaterialTheme.colorScheme.onSurface
+            textColor = Color.Black
         )
 
         Box {
@@ -438,13 +442,13 @@ private fun MessagesSection(
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.onSurface
+                color = Color.Black
             )
             .padding(horizontal = 16.dp, vertical = 8.dp),
         contentAlignment = Alignment.CenterStart
     ) {
         Text(
-            text = message, color = MaterialTheme.colorScheme.onSurface,
+            text = message, color = Color.Black,
             style = MaterialTheme.typography.bodyMedium,
             maxLines = 1
         )
@@ -483,7 +487,7 @@ private fun UserCardsSection(
         Heading(
             modifier = Modifier.padding(top = 16.dp),
             text = "Your Cards",
-            textColor = MaterialTheme.colorScheme.onSurface
+            textColor = Color.Black
         )
 
         UserCardsSummary(
@@ -603,21 +607,9 @@ private fun ChooseCardTypeScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 ChooseCardTypeItem(
-                    type = Constants.CardTypes.SPADE,
-                    icon = R.drawable.suit_spade,
-                    buttonColor = Color.Black,
-                    onClick = onClick
-                )
-                ChooseCardTypeItem(
                     type = Constants.CardTypes.CLUBS,
                     icon = R.drawable.suit_club,
                     buttonColor = Color.Black,
-                    onClick = onClick
-                )
-                ChooseCardTypeItem(
-                    type = Constants.CardTypes.HEART,
-                    icon = R.drawable.suit_heart,
-                    buttonColor = Color.Red,
                     onClick = onClick
                 )
                 ChooseCardTypeItem(
@@ -626,6 +618,21 @@ private fun ChooseCardTypeScreen(
                     buttonColor = Color.Red,
                     onClick = onClick
                 )
+                ChooseCardTypeItem(
+                    type = Constants.CardTypes.HEART,
+                    icon = R.drawable.suit_heart,
+                    buttonColor = Color.Red,
+                    onClick = onClick
+                )
+
+                ChooseCardTypeItem(
+                    type = Constants.CardTypes.SPADE,
+                    icon = R.drawable.suit_spade,
+                    buttonColor = Color.Black,
+                    onClick = onClick
+                )
+
+
             }
         }
     }
@@ -789,7 +796,6 @@ fun PlayCardsDefaultScreenLightPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            testing = true,
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
@@ -806,7 +812,6 @@ fun PlayCardsDefaultScreenDarkPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            testing = true,
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
@@ -823,7 +828,6 @@ fun PlayCardsDefaultScreenWithMultiPlayerLightPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            testing = true,
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
@@ -841,7 +845,6 @@ fun PlayCardsDefaultScreenWithMultiPlayerDarkPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            testing = true,
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
@@ -854,37 +857,12 @@ fun PlayCardsDefaultScreenWithMultiPlayerDarkPrev() {
 
 @Preview
 @Composable
-fun PlayCardsLoadingScreenPrev() {
-    PlayCardsScreen(
-        modifier = Modifier
-            .fillMaxSize(),
-        testing = true,
-        gameDuration = "00:01",
-        playCardsState = PlayCardsState()
-    )
-}
-
-@Preview
-@Composable
-fun PlayCardsErrorScreenPrev() {
-    PlayCardsScreen(
-        modifier = Modifier
-            .fillMaxSize(),
-        testing = true,
-        gameDuration = "00:01",
-        playCardsState = PlayCardsState(error = "Unexpected error occurred", isLoading = false)
-    )
-}
-
-@Preview
-@Composable
 fun PlayCardsChangeJokerActionScreenDarkPrev() {
 
     GamesHubAppTheme(darkTheme = true) {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            testing = true,
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 showDefineJokerActions = true,
@@ -901,7 +879,6 @@ fun PlayCardsChangeJokerActionScreenLightPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            testing = true,
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 showDefineJokerActions = true,
@@ -917,7 +894,6 @@ fun PlayCardsChangeCardTypeScreenLightPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            testing = true,
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 showChooseCardTypeScreen = true
@@ -933,7 +909,6 @@ fun PlayCardsChangeCardTypeScreenDarkPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            testing = true,
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 showChooseCardTypeScreen = true

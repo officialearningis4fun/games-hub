@@ -4,10 +4,10 @@ import android.content.res.Configuration
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -44,6 +44,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_ne
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OngoingGamesOrNewGameState
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
@@ -126,7 +127,7 @@ fun PlayedGameScreen(
                 title = {
                     Text(text = stringResource(id = R.string.screen_winner_title))
                 },
-                actions = {
+                navigationIcon = {
                     IconButton(onClick = onCloseClick) {
                         Icon(
                             imageVector = Icons.Default.Close,
@@ -137,7 +138,7 @@ fun PlayedGameScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
@@ -146,33 +147,39 @@ fun PlayedGameScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            PlayedGameWinnerSection(
-                imageRes = winnerImageRes,
-            )
+            item {
+                PlayedGameWinnerSection(
+                    imageRes = winnerImageRes,
+                )
+            }
 
-            when (playedGameWinnerOrNextStage) {
-                PlayedGameWinnerOrNextStage.Loading -> {
-                    CircularProgressIndicator()
-                }
+            item {
+                when (playedGameWinnerOrNextStage) {
+                    PlayedGameWinnerOrNextStage.Loading -> {
+                        CircularProgressIndicator()
+                    }
 
-                is PlayedGameWinnerOrNextStage.PlayedGameNextStageState -> {
-                    PlayedGameNextStage(
-                        playedGameNextStageState = playedGameWinnerOrNextStage,
-                        onStartGame = onStartNextStage
-                    )
-                }
+                    is PlayedGameWinnerOrNextStage.PlayedGameNextStageState -> {
+                        PlayedGameNextStageScreen(
+                            playedGameNextStageState = playedGameWinnerOrNextStage,
+                            onStartGame = onStartNextStage
+                        )
+                    }
 
-                is PlayedGameWinnerOrNextStage.PlayedGameWinnerState -> {
-                    PlayedGameWinner(
-                        playedGameWinnerState = playedGameWinnerOrNextStage,
-                        createNewGameToolsState = createNewGameToolsState,
-                        onEvent = onEvent,
-                        onStartGame = onStartGame,
-                        onResumeClick = onResumeClick,
-                        onCreateEvent = onCreateEvent
-                    )
+                    is PlayedGameWinnerOrNextStage.PlayedGameWinnerState -> {
+                        PlayedGameWinner(
+                            playedGameWinnerState = playedGameWinnerOrNextStage,
+                            createNewGameToolsState = createNewGameToolsState,
+                            onEvent = onEvent,
+                            onStartGame = onStartGame,
+                            onResumeClick = onResumeClick,
+                            onCreateEvent = onCreateEvent
+                        )
+                    }
                 }
             }
+
+
         }
     }
 }
@@ -246,7 +253,7 @@ private fun PlayedGameWinnerDarkPrev() {
             modifier = Modifier
                 .fillMaxSize(),
             playedGameWinnerOrNextStage = playedGameWinnerState,
-            createNewGameToolsState = CreateNewGameToolsState()
+            createNewGameToolsState = CreateNewGameToolsState(),
         )
     }
 
@@ -283,7 +290,8 @@ val playedGameWinnerState = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
         )
     },
     winnerNames = "Hlompho",
-    winnerImageUrl = R.drawable.avatar_boy1.toString()
+    winnerImageUrl = R.drawable.avatar_boy1.toString(),
+    ongoingGamesOrNewGameState = OngoingGamesOrNewGameState.NewGameState
 )
 
 val playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(

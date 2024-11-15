@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -84,12 +83,12 @@ fun PlayedGameWinner(
 
     Column(
         modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.Center
         ) {
@@ -120,14 +119,17 @@ fun PlayedGameWinner(
         }
 
         PlayerCardsViewPopupContainer(
+            modifier = Modifier,
             cardsOfPlayer = playedGameWinnerState.unPlayedCardsOfPlayer(onShowCardsState.first),
             onPopupDismissRequested = { onShowCardsState = Pair("", false) },
             isVisible = onShowCardsState.second && onShowCardsState.first.isNotEmpty()
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         FlowRow(
             modifier = Modifier,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             playedGameWinnerState.otherPlayersScreenInfo().forEach {
                 val showCardsPopupView =
@@ -142,13 +144,18 @@ fun PlayedGameWinner(
             }
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
         when (playedGameWinnerState.ongoingGamesOrNewGameState) {
             OngoingGamesOrNewGameState.Loading -> {
-                CircularProgressIndicator()
+                CircularProgressIndicator(
+                    modifier = Modifier
+                )
             }
 
             OngoingGamesOrNewGameState.NewGameState -> {
                 CreateNewGameSection(
+                    modifier = Modifier,
                     createNewGameToolsState = createNewGameToolsState,
                     onCreateEvent = onCreateEvent,
                     onStartGame = onStartGame
@@ -157,6 +164,7 @@ fun PlayedGameWinner(
 
             is OngoingGamesOrNewGameState.OngoingGamesState -> {
                 PlayedGameOngoingGamesSection(
+                    modifier = Modifier,
                     ongoingGamesState = playedGameWinnerState.ongoingGamesOrNewGameState,
                     onDeleteGame = { gameId ->
                         onEvent(PlayedGameWinnerEvents.DeleteGame(gameId))
@@ -177,8 +185,8 @@ fun PlayerCardsViewPopupContainer(
     onPopupDismissRequested: () -> Unit,
     isVisible: Boolean
 ) {
-    Box {
-        Spacer(modifier = Modifier.height((0.5).dp))
+    Box(modifier) {
+        Spacer(modifier = Modifier.height(0.dp))
         if (isVisible) {
             Popup(
                 alignment = Alignment.BottomCenter,
@@ -187,7 +195,7 @@ fun PlayerCardsViewPopupContainer(
             ) {
 
                 Card(
-                    modifier = modifier,
+                    modifier = Modifier,
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer
                     ),
@@ -308,18 +316,14 @@ private fun CreateNewGameSection(
     Column(modifier) {
         HorizontalDivider()
 
-        LazyColumn {
-            item {
-                CreateGameSetupToolsSection(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    createGameButtonText = "Play another game",
-                    createNewGameToolsState = createNewGameToolsState,
-                    onEvent = onCreateEvent,
-                    onStartGame = onStartGame
-                )
-            }
-        }
+        CreateGameSetupToolsSection(
+            modifier = Modifier
+                .fillMaxWidth(),
+            createGameButtonText = "Play another game",
+            createNewGameToolsState = createNewGameToolsState,
+            onEvent = onCreateEvent,
+            onStartGame = onStartGame
+        )
 
     }
 }
@@ -348,33 +352,6 @@ private fun PlayedGameOngoingGamesSection(
     }
 }
 
-@Preview
-@Composable
-private fun PlayedGameWinnerLoadingLightPrev() {
-    MaterialTheme {
-        PlayedGameWinner(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            playedGameWinnerState = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(),
-            createNewGameToolsState = CreateNewGameToolsState(),
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun PlayedGameWinnerLoadingDarkPrev() {
-    MaterialTheme {
-        PlayedGameWinner(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White),
-            playedGameWinnerState = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(),
-            createNewGameToolsState = CreateNewGameToolsState()
-        )
-    }
-}
 
 @Preview
 @Composable
@@ -420,11 +397,11 @@ private fun PlayedGameWinnerPrev() {
 @Preview
 @Composable
 private fun PlayedGameWinnerDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
+    GamesHubAppTheme {
         PlayedGameWinner(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White),
+                .background(MaterialTheme.colorScheme.background),
             playedGameWinnerState = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
                 loading = false,
                 gameDuration = (8L).toUIDuration(),
@@ -442,7 +419,7 @@ private fun PlayedGameWinnerDarkPrev() {
                 ),
                 winnerNames = "Hlompho",
                 winnerImageUrl = R.drawable.avatar_boy1.toString(),
-                ongoingGamesOrNewGameState = ongoingGamesState
+                ongoingGamesOrNewGameState = OngoingGamesOrNewGameState.NewGameState
             ),
             createNewGameToolsState = CreateNewGameToolsState()
         )
@@ -478,3 +455,4 @@ val ongoingGamesState = OngoingGamesOrNewGameState.OngoingGamesState(
         )
     )
 )
+
