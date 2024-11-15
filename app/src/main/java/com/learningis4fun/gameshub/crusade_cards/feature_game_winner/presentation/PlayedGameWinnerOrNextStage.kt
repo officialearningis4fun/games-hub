@@ -45,6 +45,12 @@ sealed interface PlayedGameWinnerOrNextStage {
             )
         }
 
+        fun isPlayerHaveCards(playerId: String, hasCards: () -> Unit = {}) {
+            if (unPlayedCards.count { it.playerId == playerId } > 0) {
+                hasCards()
+            }
+        }
+
     }
 
     data class PlayedGameWinnerState(
@@ -69,6 +75,12 @@ sealed interface PlayedGameWinnerOrNextStage {
             player.toPlayerScreenInfo().copy(
                 numOfCardsLeft = if (numOfLeftCards == 0) "" else numOfLeftCards.toString()
             )
+        }
+
+        fun isPlayerHaveCards(playerId: String, hasCards: () -> Unit = {}) {
+            if (unPlayedCards.count { it.playerId == playerId } > 0) {
+                hasCards()
+            }
         }
     }
 }

@@ -105,7 +105,9 @@ private fun NextStageSection(
             title = "Next stage players",
             titleColor = MaterialTheme.colorScheme.onBackground,
             onPlayerClick = { playerId ->
-                showNextPlayersCardsView = Pair(playerId, true)
+                playedGameNextStageState.isPlayerHaveCards(playerId) {
+                    showNextPlayersCardsView = Pair(playerId, true)
+                }
             }
         )
 
@@ -121,7 +123,9 @@ private fun NextStageSection(
             title = "Eliminated players",
             titleColor = MaterialTheme.colorScheme.error,
             onPlayerClick = { playerId ->
-                showEliminatedPlayersCardsView = Pair(playerId, true)
+                playedGameNextStageState.isPlayerHaveCards(playerId) {
+                    showEliminatedPlayersCardsView = Pair(playerId, true)
+                }
             }
         )
 

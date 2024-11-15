@@ -138,7 +138,9 @@ fun PlayedGameWinner(
                     modifier = Modifier,
                     playerScreenInfo = it.copy(isCurrentlyPlaying = showCardsPopupView),
                     onClick = {
-                        onShowCardsState = Pair(it.playerId, true)
+                        playedGameWinnerState.isPlayerHaveCards(playerId = it.playerId) {
+                            onShowCardsState = Pair(it.playerId, true)
+                        }
                     }
                 )
             }
