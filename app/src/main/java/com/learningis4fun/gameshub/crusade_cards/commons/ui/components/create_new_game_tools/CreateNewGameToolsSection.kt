@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.ui.components.create_new_game_tools
 
+import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,7 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -216,10 +216,13 @@ private fun ToolsSection(
         Column {
             HorizontalDivider()
 
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = 16.dp),
                 text = "Number of cards per player"
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             LazyRow(
                 modifier = Modifier.height(144.dp),
@@ -249,16 +252,22 @@ private fun ToolsSection(
 
         Column {
             HorizontalDivider()
-            Text(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                text = "Number of participants"
-            )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = "Participants"
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             LazyRow(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp)
             ) {
-                items(createNewGameToolsState.availablePlayers) { playerInfo ->
+                items(
+                    createNewGameToolsState.availablePlayers,
+                    key = { player -> player.player.uniqueId }) { playerInfo ->
                     PlayerItem(
                         modifier = Modifier.animateItem(),
                         playerInfo = playerInfo,
@@ -281,10 +290,15 @@ private fun ToolsSection(
 
         Column {
             HorizontalDivider()
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                text = "Elimination limit for losers"
+                modifier = Modifier.padding(horizontal = 16.dp),
+                text = "Elimination limit"
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             LazyRow(
                 modifier = Modifier.height(144.dp),
@@ -293,7 +307,8 @@ private fun ToolsSection(
             ) {
                 item {
                     IncreaseDecreaseItem(
-                        modifier = Modifier.padding(end = 8.dp),
+                        modifier = Modifier
+                            .padding(end = 8.dp),
                         count = createNewGameToolsState.eliminationLimitForCrusade,
                         onDecrease = {
                             onEvent(CreateNewGameToolsEvents.DecreaseEliminationLimitForCrusade)
@@ -311,7 +326,6 @@ private fun ToolsSection(
                     )
                 }
             }
-
 
         }
     }
@@ -520,7 +534,7 @@ private fun CardItem(
                     .align(Alignment.Center)
                     .padding(horizontal = 1.dp)
                     .background(
-                        color = MaterialTheme.colorScheme.error,
+                        color = MaterialTheme.colorScheme.errorContainer,
                         shape = RectangleShape
                     )
                     .padding(8.dp),
@@ -540,30 +554,23 @@ private fun AddPlayerButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-
-        IconButton(
-            modifier = Modifier
-                .size(56.dp)
-                .border(
-                    width = 3.dp,
-                    shape = CircleShape,
-                    color = Color.LightGray.copy(alpha = 0.8f)
-                ),
-            onClick = onClick
-        ) {
-            Icon(
-                modifier = Modifier.fillMaxSize(),
-                imageVector = Icons.Default.Add,
-                contentDescription = "Add player"
+    IconButton(
+        modifier = modifier
+            .border(
+                width = 3.dp,
+                shape = CircleShape,
+                color = Color.LightGray.copy(alpha = 0.8f)
             )
-        }
+            .size(56.dp),
+        onClick = onClick
+    ) {
+        Icon(
+            modifier = Modifier,
+            imageVector = Icons.Default.Add,
+            contentDescription = "Add player"
+        )
     }
+
 }
 
 @Preview
@@ -571,12 +578,39 @@ private fun AddPlayerButton(
 private fun CreateGameSetupTools() {
     GamesHubAppTheme {
         CreateGameSetupToolsSection(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background),
             createNewGameToolsState = CreateNewGameToolsState(
                 playersInfo = listOf(
                     Constants.Players.USER,
                     Constants.Players.DEVICE1,
                     Constants.Players.DEVICE2,
-                    Constants.Players.DEVICE3
+                ).map {
+                    PlayerInfo(
+                        player = it.copy(
+                            profileName = it.playerName(Constants.Players.USER.uniqueId)
+                        ),
+                        canRemove = it.uniqueId != Constants.Players.USER.uniqueId,
+                        includeInList = true
+                    )
+                }
+            )
+        )
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CreateGameSetupToolsDark() {
+    GamesHubAppTheme {
+        CreateGameSetupToolsSection(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background),
+            createNewGameToolsState = CreateNewGameToolsState(
+                playersInfo = listOf(
+                    Constants.Players.USER,
+                    Constants.Players.DEVICE1,
+                    Constants.Players.DEVICE2,
                 ).map {
                     PlayerInfo(
                         player = it.copy(

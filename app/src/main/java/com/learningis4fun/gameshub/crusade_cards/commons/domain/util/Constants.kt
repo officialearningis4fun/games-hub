@@ -54,12 +54,7 @@ object Constants {
         const val ANTICLOCKWISE = "anticlockwise"
     }
 
-    const val NUM_OF_CARDS_TO_PICK_FOR_JOKER = 4
     const val GAME_DURATION_INTERVAL = 1000L
-
-    object CardsImages {
-        val ONE_CLUB_IMG = R.drawable.club_1
-    }
 
     object Players {
         val ANDROID_PLAYER = User("1", "Android")
@@ -97,6 +92,8 @@ object Constants {
 
     }
 
+    const val PROFILE_NAME_COUNT_LIMIT = 5
+
     const val DEFAULT_CARDS_PER_USER = 5
 
     const val DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME = 2
@@ -125,20 +122,6 @@ object Constants {
         val card1 = Card(
             id = "cardId",
             name = CardNames.THREE,
-            type = CardTypes.HEART,
-            image = ""
-        )
-
-        val card2 = Card(
-            id = "cardId",
-            name = CardNames.FIVE,
-            type = CardTypes.CLUBS,
-            image = ""
-        )
-
-        val card3 = Card(
-            id = "cardId",
-            name = CardNames.FIVE,
             type = CardTypes.HEART,
             image = ""
         )

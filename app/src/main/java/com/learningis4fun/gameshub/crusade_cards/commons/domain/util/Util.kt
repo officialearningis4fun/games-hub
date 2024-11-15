@@ -16,6 +16,10 @@ fun Int.toHiddenCardsCountAboveThree(): String {
     }
 }
 
+fun String.isProfileNameCountLimitReached(): Boolean {
+    return this.trim().length > Constants.PROFILE_NAME_COUNT_LIMIT
+}
+
 fun Int.toDoubleDigits(): String {
     return if (this < 10) "0${this}" else "$this"
 }
@@ -84,9 +88,6 @@ data class FiveFold<out A, out B, out C, out D, out E>(
     override fun toString(): String = "($first, $second, $third, $fourth, $fifth)"
 }
 
-fun <T> FiveFold<T, T, T, T, T>.toList(): List<T> =
-    listOf(first, second, third, fourth, fifth)
-
 data class SixFold<out A, out B, out C, out D, out E, out F>(
     val first: A,
     val second: B,
@@ -101,6 +102,3 @@ data class SixFold<out A, out B, out C, out D, out E, out F>(
      */
     override fun toString(): String = "($first, $second, $third, $fourth, $fifth, $sixth)"
 }
-
-fun <T> SixFold<T, T, T, T, T, T>.toList(): List<T> =
-    listOf(first, second, third, fourth, fifth, sixth)

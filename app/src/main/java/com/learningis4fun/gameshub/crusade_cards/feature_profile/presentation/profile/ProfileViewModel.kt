@@ -2,9 +2,9 @@ package com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.p
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.isProfileNameCountLimitReached
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.ProfileEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,8 +19,7 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository,
-    private val preferences: CrusadeCardsPreferencesManager
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val userProfileFlow = MutableStateFlow(Player())
@@ -56,12 +55,20 @@ class ProfileViewModel @Inject constructor(
 
             is ProfileEvents.UpdateUserName -> {
                 profileStateFlow.update {
-                    it.copy(
-                        user = it.user.copy(
-                            profileName = event.username,
-                            email = "${event.username}@gameshub.com"
+
+                    if (event.username.isProfileNameCountLimitReached()) {
+                        it.copy(
+                            isProfileNameCountLimitReached = true
                         )
-                    ).enableSaveButton(profileStateFlow.value.user)
+                    } else {
+                        it.copy(
+                            user = it.user.copy(
+                                profileName = event.username,
+                                email = "${event.username}@gameshub.com"
+                            ),
+                            isProfileNameCountLimitReached = false
+                        ).enableSaveButton(profileStateFlow.value.user)
+                    }
                 }
             }
         }

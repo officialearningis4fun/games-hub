@@ -2,13 +2,17 @@ package com.learningis4fun.gameshub.crusade_cards.feature_profile.presentation.p
 
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 
 data class ProfileState(
     val avatars: List<Int> = defaultAvatars,
     val user: Player = Player(),
     val isEnableSaveButton: Boolean = false,
+    val isProfileNameCountLimitReached: Boolean = false,
+    val profileNameCountLimit: String = Constants.PROFILE_NAME_COUNT_LIMIT.toString(),
     val error: String? = null
 ) {
+
     fun enableSaveButton(newUser: Player): ProfileState {
         val enable = newUser.imageUrl != user.imageUrl || newUser.profileName != user.profileName
         return this.copy(

@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -41,6 +42,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -189,24 +191,44 @@ private fun EditProfileScreen(
                     textColor = MaterialTheme.colorScheme.onSurface
                 )
 
-                OutlinedTextField(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                        focusedBorderColor = MaterialTheme.colorScheme.primary
-                    ),
-                    maxLines = 1,
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Words,
-                        autoCorrectEnabled = false
-                    ),
-                    value = profileState.user.profileName,
-                    onValueChange = {
-                        updateUsername(it.trim())
-                    }
-                )
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .weight(1f),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            cursorColor = MaterialTheme.colorScheme.primary,
+                            focusedBorderColor = if (profileState.isProfileNameCountLimitReached) {
+                                MaterialTheme.colorScheme.errorContainer
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            }
+                        ),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            autoCorrectEnabled = false
+                        ),
+                        value = profileState.user.profileName,
+                        onValueChange = {
+                            updateUsername(it.trim())
+                        }
+                    )
+
+                    Text(
+                        modifier = Modifier.padding(start = 16.dp),
+                        text = "${profileState.user.profileName.length}/${profileState.profileNameCountLimit}",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Black
+                        )
+                    )
+
+                }
+
 
             }
 
