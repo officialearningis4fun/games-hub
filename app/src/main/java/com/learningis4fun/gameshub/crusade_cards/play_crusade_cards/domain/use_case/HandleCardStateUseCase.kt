@@ -302,11 +302,15 @@ class HandleCardStateUseCase @Inject constructor(
 
             is CardStates.Start -> {
 
-                val idOfPlayerToPlay = getLastGameStageWinnerOrFirstPlayer(gameId = gameId)
+                val playerToStartTheGame = getLastGameStageWinnerOrFirstPlayer(gameId = gameId)
 
-                cardState = CardStates.Play(
-                    playerId = idOfPlayerToPlay?.uniqueId ?: computerPlayersIds.first(),
-                    canPick = false
+                cardState = playerToStartTheGame?.let { player ->
+                    CardStates.Play(
+                        playerId = player.uniqueId,
+                        canPick = false
+                    )
+                } ?: CardStates.Error(
+                    "Could not find an appropriate player to start the game"
                 )
 
             }

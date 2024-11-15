@@ -481,7 +481,6 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             is CardStates.Chance -> {
                 CardsActionMessage("...", true)
             }
-
             is CardStates.Play -> {
                 if (state.playerId in userRepository.getComputerPlayerIds()) {
                     CardsActionMessage("...", true)
@@ -527,7 +526,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         val showAllowOthersPlayView = when (gamePlayerAction) {
             is GamePlayerActions.PromptPlayerPlayOrPick -> {
-                !gamePlayerAction.canPick
+                !gamePlayerAction.canPick && lastThreePlayedCards.isNotEmpty()
             }
 
             else -> {
