@@ -5,8 +5,6 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 sealed interface CreateNewGameToolsEvents {
     data object IncreaseNumberOfCards : CreateNewGameToolsEvents
     data object DecreaseNumberOfCards : CreateNewGameToolsEvents
-    data object IncreaseNumberOfParticipants : CreateNewGameToolsEvents
-    data object DecreaseNumberOfParticipants : CreateNewGameToolsEvents
     data class RemoveParticipant(val player: Player) : CreateNewGameToolsEvents
     data object AddParticipant : CreateNewGameToolsEvents
     data object IncreaseEliminationLimitForCrusade : CreateNewGameToolsEvents

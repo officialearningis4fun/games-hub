@@ -60,15 +60,23 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
 
         viewModelScope.launch {
             preferences.numberOfParticipantsInCrusadeGame.collectLatest { numOfParticipants ->
-                val loggedInUserId = preferences.user.first().uniqueId
-                createNewGameToolsStateFlow.update {
-                    it.copy(
-                        playersInfo = getPlayers(
-                            count = numOfParticipants,
-                            userId = loggedInUserId
-                        )
-                    ).updateNumberOfParticipants()
+                Log.d(
+                    GamesHubLogTags.CREATE_NEW_GAME_VIEWMODEL,
+                    "numOfParticipants from db:$numOfParticipants; numOfParticipants in viewmodel:${createNewGameToolsStateFlow.value.numberOfParticipants}"
+                )
+
+                if (createNewGameToolsStateFlow.value.playersInfo.isEmpty()) {
+                    val loggedInUserId = preferences.user.first().uniqueId
+                    createNewGameToolsStateFlow.update {
+                        it.copy(
+                            playersInfo = getPlayers(
+                                count = numOfParticipants,
+                                userId = loggedInUserId
+                            )
+                        ).updateNumberOfParticipants()
+                    }
                 }
+
             }
         }
 
@@ -98,26 +106,6 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                         createNewGameToolsStateFlow.value.numberOfCardsPerPlayer + 1
                     if (numberOfCardsPerPlayer <= Constants.NumberOfCardsOptions.HIGHEST_CARDS_PER_PLAYER) {
                         preferences.updateNumberOfCardsPerPlayer(numberOfCardsPerPlayer)
-                    }
-                }
-            }
-
-            CreateNewGameToolsEvents.DecreaseNumberOfParticipants -> {
-                viewModelScope.launch {
-                    val numberOfParticipants =
-                        createNewGameToolsStateFlow.value.numberOfParticipants - 1
-                    if (numberOfParticipants >= Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME) {
-                        preferences.updateNumberOfParticipantsInCrusadeGame(numberOfParticipants)
-                    }
-                }
-            }
-
-            CreateNewGameToolsEvents.IncreaseNumberOfParticipants -> {
-                viewModelScope.launch {
-                    val numberOfParticipants =
-                        createNewGameToolsStateFlow.value.numberOfParticipants + 1
-                    if (numberOfParticipants <= Constants.MAX_PARTICIPANTS_IN_CRUSADE_GAME) {
-                        preferences.updateNumberOfParticipantsInCrusadeGame(numberOfParticipants)
                     }
                 }
             }
