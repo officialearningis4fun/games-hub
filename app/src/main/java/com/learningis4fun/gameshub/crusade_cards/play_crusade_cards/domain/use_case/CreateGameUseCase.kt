@@ -31,13 +31,21 @@ class CreateGameUseCase @Inject constructor(
      * the number of gameCards should be the same as that of cards
      * return type is a gameId
      */
-    suspend fun createGame(gameName: String, participants: List<Pair<Player, Int>>): String {
+    suspend operator fun invoke(
+        gameName: String,
+        participants: List<Pair<Player, Int>>,
+        createdGameId: String = ""
+    ): String {
 
         return try {
 
             println("requested to create game")
 
-            val gameId = System.currentTimeMillis().toString()
+            val gameId = createdGameId.ifEmpty {
+                System.currentTimeMillis()
+                    .toString()
+            }
+
             // make gamaCardId unique to each game created
             val gameCardId = System.currentTimeMillis().toString()
             val gameCards = cardRepository.getCards().mapIndexed { index, card ->
@@ -87,7 +95,8 @@ class CreateGameUseCase @Inject constructor(
             )
 
             gameCards.forEach { gameCard ->
-                gameCardRepository.insertGameCard(gameCard.copy(stageNumber = gameStage.stageNumber)).getDataOrThrowException()
+                gameCardRepository.insertGameCard(gameCard.copy(stageNumber = gameStage.stageNumber))
+                    .getDataOrThrowException()
             }
 
             gameRepository.insertGame(game).getDataOrThrowException()

@@ -6,6 +6,7 @@ import com.learningis4fun.gameshub.MainViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardsErrorMessages
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
@@ -300,7 +301,7 @@ class GameCardRepositoryImpl @Inject constructor(
                 Response.Success(cardsToRequest.size)
 
             } else {
-                throw Exception("Not enough cards to be picked")
+                throw Exception(CardsErrorMessages.NOT_ENOUGH_CARDS_TO_BE_PICKED)
             }
         } catch (exception: Exception) {
             Response.Error(

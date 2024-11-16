@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -193,7 +194,7 @@ fun PlayCardsScreen(
                     titleContentColor = Color.Black
                 ),
                 title = {
-                    if (playCardsState.isLoading.not() && playCardsState.error == null) {
+                    if (playCardsState.isLoading.not()) {
                         Text(
                             modifier = Modifier.padding(horizontal = 16.dp),
                             style = MaterialTheme.typography.titleSmall,
@@ -226,13 +227,6 @@ fun PlayCardsScreen(
                     .fillMaxSize()
                     .padding(paddingValues),
                 textColor = Color.Black
-            )
-        } else if (playCardsState.error != null) {
-            PlayCardsErrorScreen(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                error = playCardsState.error
             )
         } else {
             PlayCardsDataRoot(
@@ -300,9 +294,11 @@ fun PlayCardsDataRoot(
             UserCardsSection(
                 modifier = Modifier.fillMaxWidth(),
                 cards = playCardsState.userUnPlayedCards,
+                error = playCardsState.playCardsErrorState,
                 onClick = {
                     onEvent(PlayCardsEvent.PlayCard(it))
                 },
+                onEvent = onEvent,
                 scrollToItemConsumed = {
                     onEvent(PlayCardsEvent.ScrollToItemPositionConsumed)
                 }
@@ -348,14 +344,62 @@ fun PlayCardsLoadingScreen(
 @Composable
 fun PlayCardsErrorScreen(
     modifier: Modifier = Modifier,
-    error: String
+    playCardsErrorState: PlayCardsErrorState,
+    dismissible: Boolean = false,
+    onEvent: (PlayCardsEvent) -> Unit
 ) {
 
-    Box(
-        modifier = modifier.background(MaterialTheme.colorScheme.primaryContainer),
-        contentAlignment = Alignment.Center
+    Card(
+        modifier = modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
     ) {
-        Text(text = error)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+
+            Row {
+
+                Text(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(
+                            horizontal = 16.dp,
+                            vertical = 16.dp
+                        ),
+                    text = playCardsErrorState.errorMessage
+                )
+
+                if (dismissible) {
+                    IconButton(
+                        modifier = Modifier,
+                        onClick = {
+                            onEvent(PlayCardsEvent.DismissErrorClick)
+                        }) {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "dismiss")
+                    }
+                }
+
+            }
+
+            if (dismissible.not()) {
+                Button(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = {
+                        onEvent(
+                            PlayCardsEvent.ErrorButtonClick(
+                                errorAction = playCardsErrorState.errorAction
+                            )
+                        )
+                    }) {
+                    Text(text = playCardsErrorState.errorButtonText.uppercase())
+                }
+            }
+        }
     }
 
 }
@@ -461,7 +505,9 @@ private fun MessagesSection(
 private fun UserCardsSection(
     modifier: Modifier,
     cards: Pair<List<UserCard>, UserCard?>,
+    error: PlayCardsErrorState? = null,
     onClick: (UserCard) -> Unit,
+    onEvent: (PlayCardsEvent) -> Unit,
     scrollToItemConsumed: () -> Unit
 ) {
 
@@ -480,45 +526,57 @@ private fun UserCardsSection(
         }
     }
 
-    Column(
-        modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Heading(
-            modifier = Modifier.padding(top = 16.dp),
-            text = "Your Cards",
-            textColor = Color.Black
-        )
-
-        UserCardsSummary(
-            modifier = Modifier
-                .padding(bottom = 16.dp, top = 8.dp),
-            cards = cards.first.map { it.toCard() }
-        )
-
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            state = userCardsState
+    Box {
+        Column(
+            modifier,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(cards.first, key = { it.cardId }) {
-                val image = it.image.toIntOrNull() ?: R.drawable.card_base
-                Image(
-                    modifier = Modifier
-                        .animateItem(fadeInSpec = null, fadeOutSpec = null)
-                        .clickable { onClick(it) }
-                        .aspectRatio(0.7f),
-                    painter = painterResource(id = image),
-                    contentDescription = it.name
-                )
+            Heading(
+                modifier = Modifier.padding(top = 16.dp),
+                text = "Your Cards",
+                textColor = Color.Black
+            )
+
+            UserCardsSummary(
+                modifier = Modifier
+                    .padding(bottom = 16.dp, top = 8.dp),
+                cards = cards.first.map { it.toCard() }
+            )
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                state = userCardsState
+            ) {
+                items(cards.first, key = { it.cardId }) {
+                    val image = it.image.toIntOrNull() ?: R.drawable.card_base
+                    Image(
+                        modifier = Modifier
+                            .animateItem(fadeInSpec = null, fadeOutSpec = null)
+                            .clickable { onClick(it) }
+                            .aspectRatio(0.7f),
+                        painter = painterResource(id = image),
+                        contentDescription = it.name
+                    )
+                }
             }
+        }
+
+        if (error != null) {
+            PlayCardsErrorScreen(
+                modifier = Modifier
+                    .align(Alignment.TopCenter),
+                playCardsErrorState = error,
+                onEvent = onEvent
+            )
         }
     }
 
 }
+
 
 @Composable
 fun UserCardsSummary(
@@ -799,7 +857,12 @@ fun PlayCardsDefaultScreenLightPrev() {
             gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
-                error = null
+                error = "Not enough cards to be picked",
+                playCardsErrorState = PlayCardsErrorState(
+                    errorMessage = "Not enough cards to be picked",
+                    dismissible = false,
+                    errorButtonText = "Reset game"
+                )
             )
         )
     }

@@ -104,7 +104,7 @@ class HandleCardStateUseCaseTest {
 
         // create game
 
-        val gameId = createGameUseCase.createGame(
+        val gameId = createGameUseCase(
             gameName = "001",
             participants = players.mapIndexed { index, player -> Pair(player, index + 1) }
         )

@@ -9,6 +9,8 @@ sealed interface PlayCardsEvent {
     data class DefineJokerAction(val action: JokerActions) : PlayCardsEvent
     data object PickCardFromDustbin : PlayCardsEvent
     data object ClosePlayCardsScreen : PlayCardsEvent
-    data object ScrollToItemPositionConsumed: PlayCardsEvent
+    data object ScrollToItemPositionConsumed : PlayCardsEvent
     data object AllowOthersPlay : PlayCardsEvent
+    data class ErrorButtonClick(val errorAction: PlayCardsErrorAction) : PlayCardsEvent
+    data object DismissErrorClick : PlayCardsEvent
 }

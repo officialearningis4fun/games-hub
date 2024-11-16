@@ -34,7 +34,7 @@ class GetOngoingGamesUseCase @OptIn(ExperimentalCoroutinesApi::class)
         }.flatMapLatest { gameWithPlayers ->
 
             val showOngoing = try {
-                gameWithPlayers.game.gameState == GameState.Paused.name
+                gameWithPlayers.game.gameState != GameState.Completed.name
             } catch (e: Exception) {
                 false
             }

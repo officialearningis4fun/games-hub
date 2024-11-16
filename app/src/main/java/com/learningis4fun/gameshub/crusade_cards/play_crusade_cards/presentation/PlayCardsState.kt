@@ -19,6 +19,7 @@ data class PlayCardsState(
     val showDefineJokerActions: Boolean = false,
     val wonGame: WonGame = WonGame(),
     val error: String? = null,
+    val playCardsErrorState: PlayCardsErrorState? = null,
     val warning: String? = null,
     val isLoading: Boolean = true
 ) {
@@ -51,3 +52,17 @@ data class WonGame(
     val winner: Player = Player(),
     val gameId: String = ""
 )
+
+data class PlayCardsErrorState(
+    val errorMessage: String,
+    val dismissible: Boolean,
+    val errorButtonText: String = "",
+    val errorAction: PlayCardsErrorAction = PlayCardsErrorAction.Nothing
+)
+
+sealed interface PlayCardsErrorAction {
+    data object Nothing: PlayCardsErrorAction
+    data object ResetGame : PlayCardsErrorAction
+    data object RetryCardState : PlayCardsErrorAction
+    data object RetryResumeGame : PlayCardsErrorAction
+}

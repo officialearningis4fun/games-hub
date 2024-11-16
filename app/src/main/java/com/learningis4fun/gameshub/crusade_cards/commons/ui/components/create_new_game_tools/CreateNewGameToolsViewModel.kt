@@ -4,12 +4,9 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.AssignCardsUseCase
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.CreateGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.SetupGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.GamesHubLogTags
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,10 +24,7 @@ import javax.inject.Inject
 class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
 @Inject constructor(
     private val preferences: CrusadeCardsPreferencesManager,
-    private val gameRepository: GameRepository,
-    private val createGameUseCase: CreateGameUseCase,
-    private val assignCardsUseCase: AssignCardsUseCase,
-    private val userRepository: UserRepository
+    private val setupGameUseCase: SetupGameUseCase
 ) : ViewModel() {
 
     private val createNewGameToolsStateFlow = MutableStateFlow(CreateNewGameToolsState())
@@ -173,36 +167,15 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
 
                 preferences.updateNumberOfParticipantsInCrusadeGame(numberOfParticipants)
 
-                // create a game with the selected participants
-                val participants = createNewGameToolsStateFlow
+                val players = createNewGameToolsStateFlow
                     .value
                     .availablePlayers
-                    .mapIndexed { index, player -> Pair(player, index + 1) }
+                    .map { it.player }
 
-                val numOfCardsPerPlayer = preferences.numberOfCardsPerPlayer.first()
-
-                participants.forEach { player ->
-                    userRepository.savePlayer(player.first.player).getDataOrThrowException()
-                }
-
-                val gameId = createGameUseCase.createGame(
-                    gameName = "",
-                    participants = participants.map { Pair(it.first.player, it.second) }
-                )
-                // assign cards
-                if (gameId.isEmpty()) {
-                    throw Exception("Game identifier not available")
-                }
-
-                val assigned = assignCardsUseCase.assignCards(
-                    gameId = gameId,
-                    howManyCardsPerPlayer = numOfCardsPerPlayer
-                )
-
-                if (!assigned) {
-                    throw Exception("Cards not assigned yet")
-                }
-                gameRepository.updateRecentGameId(gameId = gameId).getDataOrThrowException()
+                // create a game with the selected participants
+                val gameId = setupGameUseCase(
+                    players = players
+                ).getDataOrThrowException()
                 onGameCreated(gameId)
             } catch (e: Exception) {
                 e.printStackTrace()

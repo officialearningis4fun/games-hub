@@ -67,6 +67,8 @@ sealed class CardStates(val name: String) {
         CardStates("no-available-card")
 
     data class Error(val message: String) : CardStates("error")
+
+
 }
 
 fun toCardState(state: CardStateEntity): CardStates = when (state.cardStateName) {
@@ -157,6 +159,10 @@ object CardStatesDefaultMsg {
     const val Chance = "Play another card"
     const val PlayError = "Play another card or pick"
     const val NoAvailableCard = "Have no card to play"
+}
+
+object CardsErrorMessages{
+    const val NOT_ENOUGH_CARDS_TO_BE_PICKED = "Not enough cards to be picked"
 }
 
 

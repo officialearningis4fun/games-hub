@@ -16,6 +16,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameR
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardsErrorMessages
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.FiveFold
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
@@ -35,6 +36,7 @@ import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_c
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.GetLatestStageNumber
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.HandleCardStateUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.PauseGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.ResetGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.ResumeGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.GamesHubLogTags
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
@@ -75,6 +77,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     private val loggedUserCardsController: CrusadeLoggedUserCardsController,
     private val gameCardRepository: GameCardRepository,
     private val getLatestStageNumber: GetLatestStageNumber,
+    private val resetGameUseCase: ResetGameUseCase,
     savedStateHandle: SavedStateHandle,
     @CrusadeCardsDataModule.DefaultDispatcher private val defaultCoroutineDispatcher: CoroutineDispatcher
 ) : ViewModel() {
@@ -177,12 +180,18 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         // create or resume game
         viewModelScope.launch {
-            val response = createOrResumeGame()
+            val response = resumeGame()
 
             if (response is Response.Error) {
                 playCardsStateFlow.update {
                     it.copy(
-                        error = response.message
+                        error = response.message,
+                        playCardsErrorState = PlayCardsErrorState(
+                            errorMessage = response.message.toString(),
+                            dismissible = false,
+                            errorButtonText = "Resume game",
+                            errorAction = PlayCardsErrorAction.RetryResumeGame
+                        )
                     )
                 }
             }
@@ -461,7 +470,24 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 }
             }
 
-            is CardStates.Error -> CardsActionMessage(message = state.message)
+            // when there are no cards from the dustbin; we should end the game and start again!
+            is CardStates.Error -> {
+                if (state.message == CardsErrorMessages.NOT_ENOUGH_CARDS_TO_BE_PICKED) {
+                    playCardsStateFlow.update {
+                        it.copy(
+                            playCardsErrorState = PlayCardsErrorState(
+                                errorMessage = state.message,
+                                dismissible = false,
+                                errorButtonText = "Reset game",
+                                errorAction = PlayCardsErrorAction.ResetGame
+                            )
+                        )
+                    }
+                    pauseGameAndReleaseResources()
+                }
+                CardsActionMessage(message = state.message)
+            }
+
             is CardStates.Hit -> {
                 if (state.playerId in userRepository.getComputerPlayerIds()) {
                     CardsActionMessage("...", true)
@@ -481,6 +507,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             is CardStates.Chance -> {
                 CardsActionMessage("...", true)
             }
+
             is CardStates.Play -> {
                 if (state.playerId in userRepository.getComputerPlayerIds()) {
                     CardsActionMessage("...", true)
@@ -711,6 +738,58 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     )
                 }
             }
+
+            PlayCardsEvent.DismissErrorClick -> {
+                playCardsStateFlow.update {
+                    it.copy(
+                        playCardsErrorState = null
+                    )
+                }
+            }
+
+            is PlayCardsEvent.ErrorButtonClick -> {
+                when (event.errorAction) {
+                    PlayCardsErrorAction.RetryCardState -> {
+                        Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "preparing to retry cardState")
+                    }
+
+                    PlayCardsErrorAction.ResetGame -> {
+                        viewModelScope.launch {
+                            try {
+                                Log.d(
+                                    GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
+                                    "preparing to reset game"
+                                )
+                                resetGameUseCase(
+                                    gameId = currentGameId
+                                ).getDataOrThrowException()
+                                resumeGame().getDataOrThrowException()
+
+                            } catch (e: Exception) {
+                                Log.d(
+                                    GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
+                                    "failed to reset game: $e"
+                                )
+
+                            }
+                        }
+                    }
+
+                    PlayCardsErrorAction.RetryResumeGame -> {
+                        Log.d(
+                            GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
+                            "preparing to retry resuming game"
+                        )
+                    }
+
+                    PlayCardsErrorAction.Nothing -> {
+                        Log.d(
+                            GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
+                            "expected no action from user, this is a warning"
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -774,7 +853,11 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 else -> {
                     playCardsStateFlow.update {
                         it.copy(
-                            warning = "Unexpected behaviour, user has to define joker action"
+                            warning = "Unexpected behaviour, user has to define joker action",
+                            playCardsErrorState = PlayCardsErrorState(
+                                errorMessage = "Unexpected behaviour, user has to define joker action",
+                                dismissible = true,
+                            )
                         )
                     }
                 }
@@ -792,7 +875,11 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         if (response is Response.Error) {
             playCardsStateFlow.update {
                 it.copy(
-                    warning = response.message
+                    warning = response.message,
+                    playCardsErrorState = PlayCardsErrorState(
+                        errorMessage = response.message.toString(),
+                        dismissible = true
+                    )
                 )
             }
         }
@@ -811,7 +898,12 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
         if (response is Response.Error) {
             playCardsStateFlow.update {
-                it.copy(warning = response.message)
+                it.copy(
+                    warning = response.message, playCardsErrorState = PlayCardsErrorState(
+                        errorMessage = response.message.toString(),
+                        dismissible = true
+                    )
+                )
             }
         }
     }
@@ -819,24 +911,20 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     private suspend fun pauseGameAndReleaseResources() {
         if (currentGameId.isNotEmpty()) {
             val duration = _gameDuration.value.second
+            _gameDuration.update { it.copy(first = false) }
             pauseGameUseCase.pauseGame(currGameId = currentGameId, gameDuration = duration)
         }
     }
 
     @Throws
-    private suspend fun resumeGame() {
-        if (currentGameId.isNotEmpty()) {
-            resumeGameUseCase.resumeGame(currentGameId).getDataOrThrowException()
-        }
-    }
+    private suspend fun resumeGame(): Response<Unit> {
 
-    private suspend fun createOrResumeGame(): Response<Unit> {
         return try {
-
             val gameId = currentGameId
 
-            resumeGame()
-
+            if (currentGameId.isNotEmpty()) {
+                resumeGameUseCase.resumeGame(currentGameId).getDataOrThrowException()
+            }
             //resume duration
             val game = gameRepository.getGame(gameId).first()
             _gameDuration.update { duration ->
@@ -852,6 +940,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             e.printStackTrace()
             Response.Error("Failed to start the game, please start the game again.")
         }
+
+
     }
 
     fun onCloseNavigationIconClicked(

@@ -61,7 +61,7 @@ class CrusadeComputerCardsControllerTest {
         val participants = fakeUserRepositoryImpl.getPlayers().first()
         val playerId = fakeUserRepositoryImpl.getAndroidUserId()
 
-        val gameId = createGameUseCase.createGame(gameName = "game", participants = participants)
+        val gameId = createGameUseCase(gameName = "game", participants = participants)
         val card = fakeCardRepositoryImpl.getCards()
             .first {
                 it.name == Constants.CardNames.THREE }
