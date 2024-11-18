@@ -117,11 +117,8 @@ fun PlayersSectionScreen(
                     textColor = textColor,
                     playerScreenInfo = player1
                 )
-                Heading(
-                    modifier = Modifier,
-                    text = duration,
-                    textColor = textColor
-                )
+
+                Heading(text = duration, textColor = textColor)
 
                 PlayerItem(
                     modifier = Modifier,
@@ -281,7 +278,7 @@ private fun PlayerItemLightPrev() {
     GamesHubAppTheme {
         PlayerItem(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.background),
+                .background(MaterialTheme.colorScheme.primary),
             playerScreenInfo = playersScreenInfo.first()
         )
     }
@@ -293,7 +290,7 @@ private fun PlayersSectionLightPrev() {
     GamesHubAppTheme {
         PlayersSectionScreen(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.background),
+                .background(MaterialTheme.colorScheme.primary),
             playersScreenInfo = playersScreenInfo.take(2), duration = "00:20"
         )
     }
@@ -305,7 +302,7 @@ private fun PlayersSectionDarkPrev() {
     GamesHubAppTheme(darkTheme = true) {
         PlayersSectionScreen(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.background),
+                .background(MaterialTheme.colorScheme.primary),
             playersScreenInfo = playersScreenInfo.take(2), duration = "00:20"
         )
     }
@@ -317,7 +314,7 @@ private fun MultiPlayersSectionLightPrev() {
     GamesHubAppTheme {
         MultiplePlayersSectionScreen(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.background),
+                .background(MaterialTheme.colorScheme.primary),
             playersScreenInfo = playersScreenInfo,
         )
     }
@@ -329,7 +326,7 @@ private fun MultiPlayersSectionDarkPrev() {
     GamesHubAppTheme(darkTheme = true) {
         MultiplePlayersSectionScreen(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.background),
+                .background(MaterialTheme.colorScheme.primary),
             playersScreenInfo = playersScreenInfo,
         )
     }

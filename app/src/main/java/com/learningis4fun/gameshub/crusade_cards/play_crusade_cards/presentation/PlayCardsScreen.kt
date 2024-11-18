@@ -195,11 +195,20 @@ fun PlayCardsScreen(
                 ),
                 title = {
                     if (playCardsState.isLoading.not()) {
-                        Text(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            style = MaterialTheme.typography.titleSmall,
-                            text = if (playCardsState.playersScreenInfo.size > 2) gameDuration else "PLAYERS",
-                        )
+                        if (playCardsState.playersScreenInfo.size > 2) {
+                            TimerSection(
+                                duration = gameDuration,
+                                textColor = Color.Black,
+                                direction = playCardsState.playingDirection
+                            )
+                        } else {
+                            Text(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                style = MaterialTheme.typography.titleSmall,
+                                text = "PLAYERS",
+                            )
+                        }
+
                     }
                 },
                 navigationIcon = {
@@ -414,25 +423,30 @@ private fun PlayedAndDustbinSection(
     onAllowOthersPlay: () -> Unit
 ) {
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-    ) {
-        PlayedCardsSection(
-            modifier = Modifier.weight(1f),
-            cards = playedCards,
-            showCurrentCardType = showCurrentCardType
-        )
+    Box {
 
-        Spacer(modifier = Modifier.weight(0.6f))
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+        ) {
+            PlayedCardsSection(
+                modifier = Modifier.weight(1f),
+                cards = playedCards,
+                showCurrentCardType = showCurrentCardType
+            )
 
-        DustbinSection(
-            modifier = Modifier.weight(1f),
-            onDustbinClick = onDustbinClick,
-            onAllowOthersPlay = onAllowOthersPlay,
-            showAllowOthersPlay = showAllowOthersPlay
-        )
+            Spacer(modifier = Modifier.weight(0.6f))
+
+            DustbinSection(
+                modifier = Modifier.weight(1f),
+                onDustbinClick = onDustbinClick,
+                onAllowOthersPlay = onAllowOthersPlay,
+                showAllowOthersPlay = showAllowOthersPlay
+            )
+        }
+
+
     }
 
 }
@@ -835,7 +849,7 @@ private fun AllowOthersPlayScreen(
 
 @Composable
 fun Heading(
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     text: String,
     textColor: Color = Color.White
 ) {
@@ -844,6 +858,36 @@ fun Heading(
         text = text.uppercase(),
         color = textColor
     )
+}
+
+@Composable
+fun TimerSection(
+    modifier: Modifier = Modifier,
+    duration: String,
+    textColor: Color,
+    direction: String = ""
+) {
+
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Heading(modifier = Modifier, text = duration, textColor = textColor)
+        /*if (direction.isNotEmpty()) {
+           *//* Icon(
+                modifier = Modifier,
+                imageVector = if (direction == Constants.CrusadePlayingDirection.CLOCKWISE) {
+                    Icons.AutoMirrored.Filled.ArrowForward
+                } else {
+                    Icons.AutoMirrored.Filled.ArrowBack
+                },
+                contentDescription = ""
+            )*//*
+        }*/
+    }
+
 }
 
 
@@ -895,7 +939,8 @@ fun PlayCardsDefaultScreenWithMultiPlayerLightPrev() {
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
                 error = null,
-                playersScreenInfo = playersScreenInfo
+                playersScreenInfo = playersScreenInfo,
+                playingDirection = Constants.CrusadePlayingDirection.ANTICLOCKWISE
             )
         )
     }

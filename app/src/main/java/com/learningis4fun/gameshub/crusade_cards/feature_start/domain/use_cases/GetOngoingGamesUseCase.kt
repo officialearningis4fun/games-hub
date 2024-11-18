@@ -9,6 +9,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.playerName
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OnGoingGame
 import com.learningis4fun.gameshub.crusade_cards.feature_start.presentation.OngoingGamesOrNewGameState
+import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.GetLatestStageNumber
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -23,7 +24,7 @@ class GetOngoingGamesUseCase @OptIn(ExperimentalCoroutinesApi::class)
     val gameRepository: GameRepository,
     val gameCardRepository: GameCardRepository,
     private val preferences: CrusadeCardsPreferencesManager,
-    private val gameStageRepository: GameStageRepository
+    private val getLatestStageNumber: GetLatestStageNumber
 ) {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,8 +44,7 @@ class GetOngoingGamesUseCase @OptIn(ExperimentalCoroutinesApi::class)
                 return@flatMapLatest flowOf(OngoingGamesOrNewGameState.OngoingGamesState(isLoading = false))
             }
 
-            val stageNumber = gameStageRepository.getGameStages(gameId = gameWithPlayers.game.id)
-                .getDataOrThrowException().first().stageNumber
+            val stageNumber = getLatestStageNumber(gameId = gameWithPlayers.game.id)
 
             gameCardRepository.getThreeTopPlayedCards(
                 gameId = gameWithPlayers.game.id,

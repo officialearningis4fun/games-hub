@@ -20,6 +20,7 @@ data class PlayCardsState(
     val wonGame: WonGame = WonGame(),
     val error: String? = null,
     val playCardsErrorState: PlayCardsErrorState? = null,
+    val playingDirection: String = "",
     val warning: String? = null,
     val isLoading: Boolean = true
 ) {
@@ -61,7 +62,7 @@ data class PlayCardsErrorState(
 )
 
 sealed interface PlayCardsErrorAction {
-    data object Nothing: PlayCardsErrorAction
+    data object Nothing : PlayCardsErrorAction
     data object ResetGame : PlayCardsErrorAction
     data object RetryCardState : PlayCardsErrorAction
     data object RetryResumeGame : PlayCardsErrorAction

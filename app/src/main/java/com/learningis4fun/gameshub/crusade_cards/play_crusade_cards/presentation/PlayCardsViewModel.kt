@@ -593,6 +593,13 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 Pair(newUserCards, null)
             }
 
+            val playingDirection = try {
+                gameWithPlayers.game.playingDirection
+            } catch (e: Exception) {
+                e.printStackTrace()
+                ""
+            }
+
             it.copy(
                 playersScreenInfo = uiState.playersScreenInfo,
                 playedCards = uiState.lastThreePlayedCards,
@@ -602,6 +609,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 showDefineJokerActions = uiState.showDefineJokerActions,
                 showCurrentCardType = uiState.showCurrentCardType,
                 showChooseCardTypeScreen = uiState.showChooseCardTypeScreen,
+                playingDirection = playingDirection,
                 isLoading = false
             )
         }
