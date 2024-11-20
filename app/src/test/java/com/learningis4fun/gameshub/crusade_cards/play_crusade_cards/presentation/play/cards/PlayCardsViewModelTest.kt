@@ -5,7 +5,7 @@ import com.google.common.truth.Truth.assertThat
 import com.learningis4fun.gameshub.MainCoroutineRule
 import com.learningis4fun.gameshub.crusade_cards.common.data.data_source.FakeCrusadeCardsPreferenceManager
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsController
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsControllerImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeLoggedUserCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
@@ -39,7 +39,7 @@ class PlayCardsViewModelTest {
 
     private lateinit var fakeGameCardRepositoryImpl: FakeGameCardRepositoryImpl
 
-    private lateinit var crusadeComputerCardsController: CrusadeComputerCardsController
+    private lateinit var crusadeComputerCardsControllerImpl: CrusadeComputerCardsControllerImpl
     private lateinit var cardsController: MultiplayerCrusadeCardsController
     private lateinit var loggedUserCardsController: CrusadeLoggedUserCardsController
 
@@ -65,7 +65,7 @@ class PlayCardsViewModelTest {
         fakeGameCardRepositoryImpl = FakeGameCardRepositoryImpl(
             cardsRepositoryImpl = fakeCardRepositoryImpl
         )
-        crusadeComputerCardsController = CrusadeComputerCardsController(
+        crusadeComputerCardsControllerImpl = CrusadeComputerCardsControllerImpl(
             gameRepository = fakeGameRepositoryImpl,
             cardRepository = fakeCardRepositoryImpl,
             gameCardRepository = fakeGameCardRepositoryImpl
@@ -81,7 +81,7 @@ class PlayCardsViewModelTest {
             userRepository = fakeUserRepositoryImpl,
             defaultCardRepository = fakeDefaultRepositoryImpl,
             cardsController = cardsController,
-            computerCardsController = crusadeComputerCardsController,
+            computerCardsController = crusadeComputerCardsControllerImpl,
             preferenceManager = fakePreference
         )
         loggedUserCardsController = CrusadeLoggedUserCardsController(

@@ -2,23 +2,15 @@ package com.learningis4fun.gameshub.crusade_cards.feature_start
 
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.google.common.truth.Truth.assertThat
 import com.learningis4fun.gameshub.MainCoroutineRule
 import com.learningis4fun.gameshub.crusade_cards.common.data.data_source.FakeCrusadeCardsPreferenceManager
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsController
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsControllerImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeLoggedUserCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.*
-import com.learningis4fun.gameshub.models.CardsStartChallengeAIBtnClickTestResult
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.test.runBlockingTest
-import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 
 @ExperimentalCoroutinesApi
 @ExperimentalStdlibApi
@@ -40,7 +32,7 @@ class CardsStartViewModelTest {
 
     private lateinit var fakeGameCardRepositoryImpl: FakeGameCardRepositoryImpl
 
-    private lateinit var crusadeComputerCardsController: CrusadeComputerCardsController
+    private lateinit var crusadeComputerCardsControllerImpl: CrusadeComputerCardsControllerImpl
     private lateinit var cardsController: MultiplayerCrusadeCardsController
     private lateinit var loggedUserCardsController: CrusadeLoggedUserCardsController
 

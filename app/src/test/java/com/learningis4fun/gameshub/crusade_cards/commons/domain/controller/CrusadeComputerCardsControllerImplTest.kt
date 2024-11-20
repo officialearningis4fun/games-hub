@@ -4,7 +4,6 @@ import com.google.common.truth.Truth.assertThat
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toUserCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.CreateGameUseCase
@@ -15,9 +14,9 @@ import org.junit.Before
 import org.junit.Test
 
 @ExperimentalCoroutinesApi
-class CrusadeComputerCardsControllerTest {
+class CrusadeComputerCardsControllerImplTest {
 
-    private lateinit var computerCardsController: CrusadeComputerCardsController
+    private lateinit var computerCardsController: CrusadeComputerCardsControllerImpl
     private lateinit var fakeGameRepositoryImpl: FakeGameRepositoryImpl
     private lateinit var fakeCardRepositoryImpl: FakeCardRepositoryImpl
     private lateinit var fakeUserRepositoryImpl: FakeUserRepositoryImpl
@@ -37,7 +36,7 @@ class CrusadeComputerCardsControllerTest {
         fakeGameCardRepositoryImpl = FakeGameCardRepositoryImpl(
             cardsRepositoryImpl = fakeCardRepositoryImpl
         )
-        computerCardsController = CrusadeComputerCardsController(
+        computerCardsController = CrusadeComputerCardsControllerImpl(
             gameRepository = fakeGameRepositoryImpl,
             cardRepository = fakeCardRepositoryImpl,
             gameCardRepository = fakeGameCardRepositoryImpl

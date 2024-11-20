@@ -29,7 +29,7 @@ class CrusadeLoggedUserCardsControllerTest {
     private lateinit var fakeCardRepository: FakeCardRepositoryImpl
     private lateinit var fakeGameCardRepositoryImpl: FakeGameCardRepositoryImpl
     private lateinit var fakeGameRepositoryImpl: FakeGameRepositoryImpl
-    private lateinit var computerCardsController: CrusadeComputerCardsController
+    private lateinit var computerCardsController: CrusadeComputerCardsControllerImpl
     private lateinit var createGameUseCase: CreateGameUseCase
 
     @get:Rule
@@ -59,7 +59,7 @@ class CrusadeLoggedUserCardsControllerTest {
             defaultRepositoryImpl = fakeDefaultRepositoryImpl
         )
 
-        computerCardsController = CrusadeComputerCardsController(
+        computerCardsController = CrusadeComputerCardsControllerImpl(
             gameRepository = fakeGameRepositoryImpl,
             cardRepository = fakeCardRepository,
             gameCardRepository = fakeGameCardRepositoryImpl

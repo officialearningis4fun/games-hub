@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,6 +49,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RectangleShape
@@ -870,22 +872,27 @@ fun TimerSection(
 
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        Heading(modifier = Modifier, text = duration, textColor = textColor)
-        /*if (direction.isNotEmpty()) {
-           *//* Icon(
-                modifier = Modifier,
-                imageVector = if (direction == Constants.CrusadePlayingDirection.CLOCKWISE) {
-                    Icons.AutoMirrored.Filled.ArrowForward
-                } else {
-                    Icons.AutoMirrored.Filled.ArrowBack
-                },
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            style = MaterialTheme.typography.titleSmall,
+            text = duration,
+            color = textColor
+        )
+        if (direction.isNotEmpty()) {
+            val scaleX = if (direction == Constants.CrusadePlayingDirection.CLOCKWISE) 1f else -1f
+            Icon(
+                modifier = Modifier
+                    .scale(
+                        scaleX,
+                        1f
+                    ),
+                imageVector = Icons.Default.Refresh,
                 contentDescription = ""
-            )*//*
-        }*/
+            )
+        }
     }
 
 }

@@ -9,7 +9,6 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.*
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.mappers.toGameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.CreateGameUseCase
@@ -31,7 +30,7 @@ class MultiplayerCrusadeCardsControllerTest {
     private lateinit var fakeGameCardRepositoryImpl: FakeGameCardRepositoryImpl
     private lateinit var fakeCardRepositoryImpl: FakeCardRepositoryImpl
     private lateinit var fakeGameRepositoryImpl: FakeGameRepositoryImpl
-    private lateinit var crusadeComputerCardsController: CrusadeComputerCardsController
+    private lateinit var crusadeComputerCardsControllerImpl: CrusadeComputerCardsControllerImpl
     private lateinit var createGameUseCase: CreateGameUseCase
 
     @get:Rule
@@ -60,7 +59,7 @@ class MultiplayerCrusadeCardsControllerTest {
             cardRepositoryImpl = fakeCardRepositoryImpl
         )
 
-        crusadeComputerCardsController = CrusadeComputerCardsController(
+        crusadeComputerCardsControllerImpl = CrusadeComputerCardsControllerImpl(
             gameRepository = fakeGameRepositoryImpl,
             cardRepository = fakeCardRepositoryImpl,
             gameCardRepository = fakeGameCardRepositoryImpl

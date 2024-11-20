@@ -1,6 +1,7 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case
 
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.remote.GeminiCardController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
@@ -9,6 +10,7 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.getPlayerId
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -23,7 +25,8 @@ class HandleCardStateUseCase @Inject constructor(
     private val defaultCardRepository: DefaultCardRepository,
     private val cardsController: MultiplayerCrusadeCardsController,
     private val computerCardsController: CrusadeComputerCardsController,
-    private val getLastGameStageWinnerOrFirstPlayer: GetLastGameStageWinnerOrFirstPlayer
+    private val getLastGameStageWinnerOrFirstPlayer: GetLastGameStageWinnerOrFirstPlayer,
+    private val geminiCardController: GeminiCardController
 ) {
 
     private val computerPlayers = listOf(
@@ -91,6 +94,17 @@ class HandleCardStateUseCase @Inject constructor(
 
         var currPlayerId = ""
         var message = ""
+
+     /*   val aiPlayerId = computerPlayers.first().first().uniqueId
+
+        if (state.getPlayerId() == aiPlayerId) {
+            geminiCardController(
+                state = state,
+                playerId = aiPlayerId,
+                gameId = gameId
+            )
+        }*/
+
 
         val computerPlayersIds = computerPlayers.map { it.first().uniqueId }
 
@@ -201,26 +215,21 @@ class HandleCardStateUseCase @Inject constructor(
 
             is CardStates.Play -> {
                 if (state.playerId in computerPlayersIds) {
-                    println("${state.playerId} is playing")
 
                     val card = computerCardsController.playCardForComputer(
                         playerId = state.playerId,
                         gameId = gameId
                     )
-                    println("the available card is ${card?.card}")
                     cardState = card?.let {
-                        println("${state.playerId} is playing the card")
                         cardsController.requestUserPlay(
                             card = card,
                             canPick = state.canPick
                         )
                     } ?: if (state.canPick) {
-                        println("${state.playerId} is requesting to pick a card")
                         CardStates.Pick(
                             playerId = state.playerId,
                         )
                     } else {
-                        println("${state.playerId} is doesn't have a card")
                         CardStates.NoAvailableCard(
                             playerId = state.playerId
                         )
@@ -259,6 +268,8 @@ class HandleCardStateUseCase @Inject constructor(
 
             is CardStates.ChangeType -> {
                 if (state.playerId in computerPlayersIds) {
+                    // delegate this to AI but takeover if failed
+
                     val newCardType = computerCardsController.newCardType(state.playerId)
                     cardState = cardsController.requestPlayerChangeType(
                         playerId = state.playerId,

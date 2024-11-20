@@ -20,9 +20,10 @@ android {
         minSdkVersion 21
         targetSdkVersion 34
         multiDexEnabled true
-        versionCode 8
-        versionName "1.0.0-beta7"
+        versionCode 10
+        versionName "1.0.0-beta9"
 
+        buildConfigField("String", "GEMINI_API_KEY", "${GEMINI_API_KEY}")
         testInstrumentationRunner "com.learningis4fun.gameshub.HiltTestRunner"
 
         javaCompileOptions {
@@ -33,6 +34,7 @@ android {
                         "room.expandProjection": "true"]
             }
         }
+
     }
 
     buildTypes {
@@ -78,6 +80,7 @@ android {
     buildFeatures {
         viewBinding true
         compose true
+        buildConfig true
     }
     kapt {
         javacOptions {
@@ -99,6 +102,9 @@ dependencies {
     def retrofit_version = "2.9.0"
     def koin_version = "3.5.3"
     def ktor_version = "1.6.3"
+
+    // gemini api
+    implementation "com.google.ai.client.generativeai:generativeai:0.9.0"
 
     // ui
     implementation 'androidx.appcompat:appcompat:1.7.0'
@@ -178,7 +184,7 @@ dependencies {
     implementation "io.ktor:ktor-client-serialization:$ktor_version"
     implementation "io.ktor:ktor-client-websockets:$ktor_version"
     implementation "io.ktor:ktor-client-logging:$ktor_version"
-    implementation "ch.qos.logback:logback-classic:1.4.11"
+    implementation "ch.qos.logback:logback-classic:1.2.11"
 
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
 

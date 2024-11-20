@@ -5,14 +5,13 @@ import com.google.common.truth.Truth.assertThat
 import com.learningis4fun.gameshub.MainCoroutineRule
 import com.learningis4fun.gameshub.crusade_cards.common.data.data_source.FakeCrusadeCardsPreferenceManager
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsController
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsControllerImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.mappers.toGameCard
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GamePlayerActions
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.UserCard
@@ -42,7 +41,7 @@ class HandleCardStateUseCaseTest {
     private lateinit var fakeCardRepositoryImpl: FakeCardRepositoryImpl
     private lateinit var fakeGameCardRepositoryImpl: FakeGameCardRepositoryImpl
     private lateinit var fakeUserRepositoryImpl: FakeUserRepositoryImpl
-    private lateinit var crusadeComputerCardsController: CrusadeComputerCardsController
+    private lateinit var crusadeComputerCardsControllerImpl: CrusadeComputerCardsControllerImpl
 
     @Before
     fun setup() {
@@ -57,7 +56,7 @@ class HandleCardStateUseCaseTest {
         fakeGameCardRepositoryImpl = FakeGameCardRepositoryImpl(
             cardsRepositoryImpl = fakeCardRepositoryImpl
         )
-        crusadeComputerCardsController = CrusadeComputerCardsController(
+        crusadeComputerCardsControllerImpl = CrusadeComputerCardsControllerImpl(
             gameRepository = fakeGameRepositoryImpl,
             cardRepository = fakeCardRepositoryImpl,
             gameCardRepository = fakeGameCardRepositoryImpl
@@ -73,7 +72,7 @@ class HandleCardStateUseCaseTest {
                 gameCardRepository = fakeGameCardRepositoryImpl,
                 userRepository = fakeUserRepositoryImpl
             ),
-            computerCardsController = CrusadeComputerCardsController(
+            computerCardsController = CrusadeComputerCardsControllerImpl(
                 gameRepository = fakeGameRepositoryImpl,
                 cardRepository = fakeCardRepositoryImpl,
                 gameCardRepository = fakeGameCardRepositoryImpl

@@ -13,6 +13,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.GameCar
 import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.GameRepositoryImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.GameStageRepositoryImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.data.repository.UserRepositoryImpl
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsController
+import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsControllerImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
@@ -74,6 +76,20 @@ object CrusadeCardsDataModule {
         db = db,
         crusadeCardsPreferencesManager = crusadeCardsPreferencesManager
     ) as CardRepository
+
+    @Singleton
+    @Provides
+    fun provideComputerCardController(
+        gameRepository: GameRepository,
+        cardRepository: CardRepository,
+        gameCardRepository: GameCardRepository,
+        gameStageRepository: GameStageRepository
+    ) = CrusadeComputerCardsControllerImpl(
+        gameRepository = gameRepository,
+        cardRepository = cardRepository,
+        gameCardRepository = gameCardRepository,
+        gameStageRepository = gameStageRepository
+    ) as CrusadeComputerCardsController
 
     @Singleton
     @Provides

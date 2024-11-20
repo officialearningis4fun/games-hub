@@ -1,23 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.play.cards
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.google.common.truth.Truth.assertThat
-import com.learningis4fun.gameshub.MainCoroutineRule
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.common.data.data_source.FakeCrusadeCardsPreferenceManager
-import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsController
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeLoggedUserCardsController
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.*
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.PlayCardsViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runBlockingTest
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
 
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
