@@ -10,8 +10,13 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.Crusa
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.CreateGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.EndGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.HandleCardStateUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.PauseGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.ResumeGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.*
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.presentation.PlayCardsViewModel
+import com.learningis4fun.gameshub.crusade_cards.presentation.play_crusade_cards.PlayCardsViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runBlockingTest
@@ -44,7 +49,7 @@ class PlayCardsViewModelTest {
     private lateinit var loggedUserCardsController: CrusadeLoggedUserCardsController
 
     private lateinit var handleCardStateUseCase: HandleCardStateUseCase
-    private lateinit var createGameUseCase:CreateGameUseCase
+    private lateinit var createGameUseCase: CreateGameUseCase
 
     private lateinit var resumeGameUseCase: ResumeGameUseCase
 

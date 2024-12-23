@@ -13,9 +13,6 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="CardsStartScreenWithEmptyCompletedGamesPrev">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="CardDaoTest">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>

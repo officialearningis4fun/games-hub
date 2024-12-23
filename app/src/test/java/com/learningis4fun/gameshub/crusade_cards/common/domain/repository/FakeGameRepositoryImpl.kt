@@ -3,8 +3,8 @@ package com.learningis4fun.gameshub.crusade_cards.common.domain.repository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameWithPlayers
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.CardStateEntity
+import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
+import com.learningis4fun.gameshub.domain.model.CardStateEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -58,7 +58,7 @@ class FakeGameRepositoryImpl(
         }
     }
 
-    override suspend fun saveGameCardState(stateEntity: CardStateEntity) {
+    override suspend fun saveGameCardState(stateEntity: com.learningis4fun.gameshub.domain.model.CardStateEntity) {
         TODO("Not yet implemented")
     }
 

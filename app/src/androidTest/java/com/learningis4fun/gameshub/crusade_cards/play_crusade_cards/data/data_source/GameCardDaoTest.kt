@@ -3,8 +3,9 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_s
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.filters.MediumTest
 import com.google.common.truth.Truth.assertThat
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
+import com.learningis4fun.gameshub.data.data_source.GameCardDao
+import com.learningis4fun.gameshub.data.data_source.local.GamesDatabase
+import com.learningis4fun.gameshub.domain.model.GameCard
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -45,7 +46,7 @@ class GameCardDaoTest {
     }
 
     @Test
-    fun insertGameCard_success() = runBlockingTest{
+    fun insertGameCard_success() = runBlockingTest {
         val gameCard = GameCard(
             id = "id",
             gameId = "gameId",
@@ -57,7 +58,7 @@ class GameCardDaoTest {
     }
 
     @Test
-    fun updateGameCard_success() = runBlockingTest{
+    fun updateGameCard_success() = runBlockingTest {
         val gameCard = GameCard(
             id = "id",
             gameId = "gameId",
@@ -69,12 +70,16 @@ class GameCardDaoTest {
         val newGameCard = gameCard.copy(isPlayed = true)
         gameCardDao.updateGameCard(newGameCard)
 
-        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).contains(newGameCard)
-        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).doesNotContain(gameCard)
+        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).contains(
+            newGameCard
+        )
+        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).doesNotContain(
+            gameCard
+        )
     }
 
     @Test
-    fun deleteGameCard_success() = runBlockingTest{
+    fun deleteGameCard_success() = runBlockingTest {
         val gameCard = GameCard(
             id = "id",
             gameId = "gameId",
@@ -83,6 +88,8 @@ class GameCardDaoTest {
         gameCardDao.insertGameCard(gameCard)
         gameCardDao.deleteGameCard(gameCard)
 
-        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).doesNotContain(gameCard)
+        assertThat(gameCardDao.getGameCards(gameId = "gameId", stageNumber = 1)).doesNotContain(
+            gameCard
+        )
     }
 }

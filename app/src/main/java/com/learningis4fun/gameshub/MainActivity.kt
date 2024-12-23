@@ -7,8 +7,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.ads.MobileAds
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.ktx.logEvent
 import com.google.firebase.ktx.Firebase
-import com.learningis4fun.gameshub.crusade_cards.commons.ui.theme.GamesHubAppTheme
+import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,5 +41,9 @@ class MainActivity : AppCompatActivity() {
 
         // firebase analysis
         analytics = Firebase.analytics
+
+        analytics.logEvent("send_gemini_prompt"){
+            param("error", "Testing firebase logging")
+        }
     }
 }

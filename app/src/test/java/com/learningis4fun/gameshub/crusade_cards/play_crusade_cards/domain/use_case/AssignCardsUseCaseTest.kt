@@ -8,7 +8,8 @@ import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.AssignCardsUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.model.GameCard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runBlockingTest

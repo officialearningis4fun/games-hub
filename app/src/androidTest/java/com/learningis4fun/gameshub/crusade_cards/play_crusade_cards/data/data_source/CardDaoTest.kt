@@ -3,8 +3,9 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_s
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.filters.MediumTest
 import com.google.common.truth.Truth.assertThat
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
+import com.learningis4fun.gameshub.commons.domain.model.Card
+import com.learningis4fun.gameshub.data.data_source.CardDao
+import com.learningis4fun.gameshub.data.data_source.local.GamesDatabase
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -45,7 +46,7 @@ class CardDaoTest {
     }
 
     @Test
-    fun insertCardWithEmptyId_notSave() = runBlockingTest{
+    fun insertCardWithEmptyId_notSave() = runBlockingTest {
         val card = Card(
             name = "name",
             type = "type"
@@ -56,7 +57,7 @@ class CardDaoTest {
     }
 
     @Test
-    fun insertCardWithValidInput_SaveSuccessfully() = runBlockingTest{
+    fun insertCardWithValidInput_SaveSuccessfully() = runBlockingTest {
         val card = Card(
             id = "id",
             name = "name",
@@ -68,7 +69,7 @@ class CardDaoTest {
     }
 
     @Test
-    fun updateCardWithValidInput_UpdateSuccessfully() = runBlockingTest{
+    fun updateCardWithValidInput_UpdateSuccessfully() = runBlockingTest {
         val card = Card(
             id = "id",
             name = "name",

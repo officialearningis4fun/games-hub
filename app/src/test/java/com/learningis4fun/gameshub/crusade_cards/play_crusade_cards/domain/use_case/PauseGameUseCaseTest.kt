@@ -3,6 +3,9 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_
 import com.google.common.truth.Truth.assertThat
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.CreateGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.PauseGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.ResumeGameUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runBlockingTest

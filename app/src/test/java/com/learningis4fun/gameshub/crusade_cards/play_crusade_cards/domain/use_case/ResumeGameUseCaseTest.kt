@@ -5,6 +5,9 @@ import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.GameState
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toState
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.CreateGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.PauseGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.ResumeGameUseCase
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Before

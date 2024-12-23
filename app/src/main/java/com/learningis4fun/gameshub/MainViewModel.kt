@@ -3,14 +3,16 @@ package com.learningis4fun.gameshub
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
+import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.commons.domain.repository.DefaultCardRepository
+import com.learningis4fun.gameshub.commons.domain.util.CardStates
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi
@@ -37,7 +39,7 @@ class MainViewModel @Inject constructor(
         object TimePicked : UserCardsSortBy("time picked")
     }
 
-    fun uhfh(){
+    fun uhfh() {
         UserCardsSortBy.CardName.name
     }
 

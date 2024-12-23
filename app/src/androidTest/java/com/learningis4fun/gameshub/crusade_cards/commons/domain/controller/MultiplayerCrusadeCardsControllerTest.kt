@@ -3,19 +3,20 @@ package com.learningis4fun.gameshub.crusade_cards.commons.domain.controller
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.filters.MediumTest
 import com.google.common.truth.Truth.assertThat
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameStageRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.UserRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.CreateGameUseCase
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.util.getDataOrThrowException
+import com.learningis4fun.gameshub.commons.domain.controller.MultiplayerCrusadeCardsController
+import com.learningis4fun.gameshub.commons.domain.repository.CardRepository
+import com.learningis4fun.gameshub.commons.domain.repository.DefaultCardRepository
+import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
+import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
+import com.learningis4fun.gameshub.commons.domain.repository.GameStageRepository
+import com.learningis4fun.gameshub.commons.domain.repository.UserRepository
+import com.learningis4fun.gameshub.commons.domain.util.CardStates
+import com.learningis4fun.gameshub.commons.domain.util.Constants
+import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.data.data_source.local.GamesDatabase
+import com.learningis4fun.gameshub.domain.model.GameCard
+import com.learningis4fun.gameshub.domain.use_cases.CreateGameUseCase
+import com.learningis4fun.gameshub.util.getDataOrThrowException
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -97,7 +98,7 @@ class MultiplayerCrusadeCardsControllerTest {
 
         // create game
 
-        val gameId = createGameUseCase.createGame(
+        val gameId = createGameUseCase(
             gameName = "001",
             participants = players.mapIndexed { index, player -> Pair(player, index + 1) }
         )

@@ -8,7 +8,14 @@ import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeComputerCardsControllerImpl
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.CrusadeLoggedUserCardsController
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.controller.MultiplayerCrusadeCardsController
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.AssignCardsUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.CreateGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.EndGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.HandleCardStateUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.PauseGameUseCase
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.ResumeGameUseCase
 import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.*
+import com.learningis4fun.gameshub.crusade_cards.presentation.start.CardsStartViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.Rule
 

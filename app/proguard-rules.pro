@@ -27,4 +27,17 @@
 -dontwarn com.google.android.gms.**
 -dontwarn jakarta.servlet.ServletContainerInitializer
 
+-dontwarn io.ktor.client.features.HttpTimeout$Feature
+-dontwarn io.ktor.client.features.HttpTimeout$HttpTimeoutCapabilityConfiguration
+-dontwarn io.ktor.client.features.HttpTimeout
+-dontwarn io.ktor.client.features.HttpTimeoutKt
+-dontwarn io.ktor.client.features.websocket.WebSocketCapability
+-dontwarn io.ktor.client.features.websocket.WebSocketExtensionsCapability
+-dontwarn io.ktor.network.sockets.ConnectTimeoutException
+-dontwarn io.ktor.network.sockets.SocketTimeoutException
+-dontwarn io.ktor.network.sockets.TimeoutExceptionsCommonKt
+-dontwarn io.ktor.util.Lock
+-dontwarn io.ktor.utils.io.NativeUtilsJvmKt
+-dontwarn javax.servlet.ServletContainerInitializer
+
 -keepclassmembers class  com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.** {<fields>; <methods>;}

@@ -3,7 +3,7 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.feature_start.domain.use_cases.GetAllCards
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.GetAllCards
 
 class FakeGetAllCardsImpl(
 

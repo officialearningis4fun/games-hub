@@ -3,8 +3,9 @@ package com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_s
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.filters.MediumTest
 import com.google.common.truth.Truth.assertThat
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.local.GamesDatabase
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
+import com.learningis4fun.gameshub.commons.domain.model.Game
+import com.learningis4fun.gameshub.data.data_source.GameDao
+import com.learningis4fun.gameshub.data.data_source.local.GamesDatabase
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,7 +45,7 @@ class GameDaoTest {
     }
 
     @Test
-    fun insertGame_success() = runBlockingTest{
+    fun insertGame_success() = runBlockingTest {
         val game = Game(
             id = "id",
             name = "name"
@@ -56,7 +57,7 @@ class GameDaoTest {
     }
 
     @Test
-    fun updateGame_success() = runBlockingTest{
+    fun updateGame_success() = runBlockingTest {
         val game = Game(
             id = "id",
             name = "name"

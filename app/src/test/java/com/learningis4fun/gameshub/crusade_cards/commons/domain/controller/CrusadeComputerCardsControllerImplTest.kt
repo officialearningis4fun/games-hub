@@ -4,9 +4,9 @@ import com.google.common.truth.Truth.assertThat
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.data.data_source.relations.GameCardWithCard
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.model.GameCard
-import com.learningis4fun.gameshub.crusade_cards.play_crusade_cards.domain.use_case.CreateGameUseCase
+import com.learningis4fun.gameshub.data.data_source.relations.GameCardWithCard
+import com.learningis4fun.gameshub.crusade_cards.domain.model.GameCard
+import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.CreateGameUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runBlockingTest
