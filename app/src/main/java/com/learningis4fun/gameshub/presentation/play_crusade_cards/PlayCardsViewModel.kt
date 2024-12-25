@@ -105,7 +105,10 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 preference.recentCardState,
                 updateOnGameStartedFlow
             ) { cardState, update -> Pair(cardState, update) }.collect {
-                playCardsGameWhenOnCardStateChange()
+                // if animating, skip
+                if (playCardsStateFlow.value.animatingCardStages != AnimatingCardStages.ANIMATING) {
+                    playCardsGameWhenOnCardStateChange()
+                }
             }
         }
 
@@ -625,10 +628,14 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 ""
             }
 
+            val animatingCard =
+                if (updatedUserCards.first.contains(it.animatingCard)) it.animatingCard else null
+
             it.copy(
                 playersScreenInfo = uiState.playersScreenInfo,
                 playedCards = uiState.lastThreePlayedCards,
                 userUnPlayedCards = updatedUserCards,
+                animatingCard = animatingCard,
                 message = uiState.messages.message,
                 allowOthersPlay = uiState.allowOthersPlay,
                 showDefineJokerActions = uiState.showDefineJokerActions,
@@ -825,9 +832,26 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
 
             is PlayCardsEvent.PlayedCard -> {
-                playCardsStateFlow.update {
-                    it.copy(animatingCard = event.userCard)
+
+                // if the card is successfully played; start animation
+                if (event.userCard == null) {
+                    // completed the animation
+
+                    playCardsStateFlow.update {
+                        it.copy(
+                            animatingCardStages = AnimatingCardStages.NOT_STARTED
+                        )
+                    }
+                    updateOnGameStartedFlow.update { it.not() }
+                } else {
+                    playCardsStateFlow.update {
+                        it.copy(
+                            animatingCard = event.userCard,
+                            animatingCardStages = AnimatingCardStages.ANIMATING
+                        )
+                    }
                 }
+
             }
         }
     }
@@ -838,18 +862,46 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
     private fun onUserCardClick(userCard: UserCard) =
         viewModelScope.launch(defaultCoroutineDispatcher) {
-
             // hit back or play or error
             when (val currentCardState = preference.recentCardState.first()) {
                 is CardStates.Play -> {
 
                     if (currentCardState.playerId == user.first().uniqueId) {
 
-                        loggedUserCardsController.userRequestToPlay(
+                        playCardsStateFlow.update {
+                            it.copy(
+                                animatingCardStages = AnimatingCardStages.INITIATED,
+                                animatingCard = userCard
+                            )
+                        }
+                        val response = loggedUserCardsController.userRequestToPlay(
                             userCard = userCard,
                             canPick = currentCardState.canPick
                         )
-                        onEvent(PlayCardsEvent.PlayedCard(userCard))
+                        when (response) {
+                            is Response.Error -> {
+                                Log.e(
+                                    GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
+                                    response.message.toString()
+                                )
+                                playCardsStateFlow.update {
+                                    it.copy(
+                                        animatingCard = null,
+                                        animatingCardStages = AnimatingCardStages.NOT_STARTED
+                                    )
+                                }
+                                updateOnGameStartedFlow.update { it.not() }
+                            }
+
+                            is Response.Success -> {
+                                playCardsStateFlow.update {
+                                    it.copy(
+                                        animatingCard = userCard,
+                                        animatingCardStages = AnimatingCardStages.ANIMATING
+                                    )
+                                }
+                            }
+                        }
                     }
 
                 }
@@ -857,13 +909,41 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 is CardStates.Hit -> {
 
                     if (currentCardState.playerId == user.first().uniqueId) {
-
-                        loggedUserCardsController.userRequestToHitBack(
+                        playCardsStateFlow.update {
+                            it.copy(
+                                animatingCardStages = AnimatingCardStages.INITIATED,
+                                animatingCard = userCard
+                            )
+                        }
+                        val response = loggedUserCardsController.userRequestToHitBack(
                             playerId = currentCardState.playerId,
                             cardsToPick = currentCardState.cardsToPick,
                             userCard = userCard
                         )
-                        onEvent(PlayCardsEvent.PlayedCard(userCard))
+                        when (response) {
+                            is Response.Error -> {
+                                Log.d(
+                                    GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
+                                    response.message.toString()
+                                )
+                                playCardsStateFlow.update {
+                                    it.copy(
+                                        animatingCard = null,
+                                        animatingCardStages = AnimatingCardStages.NOT_STARTED
+                                    )
+                                }
+                                updateOnGameStartedFlow.update { it.not() }
+                            }
+
+                            is Response.Success -> {
+                                playCardsStateFlow.update {
+                                    it.copy(
+                                        animatingCard = userCard,
+                                        animatingCardStages = AnimatingCardStages.ANIMATING
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 

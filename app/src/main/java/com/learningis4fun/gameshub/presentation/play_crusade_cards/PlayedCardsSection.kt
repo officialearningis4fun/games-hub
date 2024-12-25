@@ -10,21 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInParent
-import androidx.compose.ui.layout.positionInRoot
-import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
@@ -39,9 +30,7 @@ fun PlayedCardsSection(
     modifier: Modifier,
     cards: List<UserCard>,
     showCurrentCardType: Pair<Boolean, String?>,
-    animatingCard: UserCard? = null,
-    endOffset: (Offset) -> Unit = {},
-    endSize: (IntSize) -> Unit = {}
+    targetAnimDim: (CardAnimDim) -> Unit = {}
 ) {
 
     Column(
@@ -95,10 +84,16 @@ fun PlayedCardsSection(
                 Image(
                     modifier = Modifier
                         .onGloballyPositioned { coordinates ->
-                            endOffset(coordinates.localToWindow(Offset.Zero))
-                            endSize(coordinates.size)
 
-                            println("targetOffset: ${coordinates.localToWindow(Offset.Zero)}")
+                            val cardAnimDim = CardAnimDim(
+                                size = coordinates.size,
+                                offset = coordinates.localToWindow(Offset.Zero)
+                            )
+                            targetAnimDim(
+                                cardAnimDim
+                            )
+
+                            println("target: $cardAnimDim")
                         }
                         .constrainAs(endImg) {
                             top.linkTo(parent.top)

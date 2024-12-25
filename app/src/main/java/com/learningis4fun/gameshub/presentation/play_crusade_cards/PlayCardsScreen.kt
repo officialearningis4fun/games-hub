@@ -2,6 +2,7 @@ package com.learningis4fun.gameshub.presentation.play_crusade_cards
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.AnimationEndReason
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
@@ -275,25 +276,23 @@ fun PlayCardsDataRoot(
     onEvent: (PlayCardsEvent) -> Unit = {},
 ) {
 
+    val animatingCard: UserCard? = playCardsState.animatingCard
 
-    var animatingCard by remember {
+    val playedCards = when (playCardsState.animatingCardStages) {
+        AnimatingCardStages.NOT_STARTED -> playCardsState.playedCards
+        AnimatingCardStages.INITIATED -> {
+            playCardsState.playedCards.filterNot { it.gameCardId == animatingCard?.gameCardId }
+        }
+
+        AnimatingCardStages.ANIMATING -> playCardsState.playedCards.filterNot { it.gameCardId == animatingCard?.gameCardId }
+    }
+
+    var userCardReversible by remember {
         mutableStateOf<UserCard?>(null)
     }
 
-    var startOffset by remember {
-        mutableStateOf(Offset.Zero)
-    }
-
-    var endOffset by remember {
-        mutableStateOf(Offset.Zero)
-    }
-
-    var startSize by remember {
-        mutableStateOf(IntSize.Zero)
-    }
-
-    var targetSize by remember {
-        mutableStateOf(IntSize.Zero)
+    var playCardAnimDim by remember {
+        mutableStateOf(PlayCardAnimDim())
     }
 
     val animatedOffsetX = remember {
@@ -312,71 +311,62 @@ fun PlayCardsDataRoot(
         androidx.compose.animation.core.Animatable(0f)
     }
 
-    LaunchedEffect(key1 = animatingCard) {
-        if (animatingCard != null && startOffset != Offset.Zero) {
+    LaunchedEffect(key1 = playCardsState.animatingCardStages) {
+        Log.d("PlayCardsScreen", "animating card: ${animatingCard.toString()}")
+        if (animatingCard != null && playCardAnimDim != PlayCardAnimDim() && playCardsState.animatingCardStages == AnimatingCardStages.ANIMATING) {
 
-            val startOffsetY = startOffset.y - startSize.height.div(2)
-            val targetOffsetY = endOffset.y - targetSize.height.div(2)
+            animatedOffsetX.snapTo(playCardAnimDim.startOffsetX)
+            animatedOffsetY.snapTo(playCardAnimDim.startOffsetY)
 
-            animatedOffsetX.snapTo(startOffset.x)
-            animatedOffsetY.snapTo(startOffsetY)
+            Log.d("PlayCardsScreen", playCardAnimDim.toString())
 
-            val startDim = startSize
-            val endDim = targetSize
-
-
-            val offsetMsg = "animation offset: from-${
-                Offset(
-                    startOffset.x,
-                    startOffsetY
-                )
-            } to-${Offset(x = endOffset.x, y = targetOffsetY)}"
-
-            val sizeMsg = "animation size: from-${startSize} to-${targetSize}"
-
-            Log.d("PlayCardsScreen", offsetMsg)
-            Log.d("PlayCardsScreen", sizeMsg)
-
-            animatedWidth.snapTo(startDim.width.toFloat())
-            animatedHeight.snapTo(startDim.height.toFloat())
+            animatedWidth.snapTo(playCardAnimDim.startSizeWidth)
+            animatedHeight.snapTo(playCardAnimDim.startSizeHeight)
 
             launch {
-                animatedOffsetX.animateTo(endOffset.x, animationSpec = tween(durationMillis = 500))
+                animatedOffsetX.animateTo(
+                    playCardAnimDim.targetOffsetX
+                )
             }
             launch {
                 val result = animatedOffsetY.animateTo(
-                    targetOffsetY,
-                    animationSpec = tween(durationMillis = 500)
+                    playCardAnimDim.targetOffsetY
                 )
 
-                animatingCard = when (result.endReason) {
+                val animatedCard = when (result.endReason) {
                     AnimationEndReason.BoundReached -> {
-                        startOffset = Offset.Zero
-                        endOffset = Offset.Zero
-                        startSize = IntSize.Zero
-                        targetSize = IntSize.Zero
+                        // rest card offset
+                        playCardAnimDim = PlayCardAnimDim()
+
+                        animatedOffsetX.snapTo(0f)
+                        animatedOffsetY.snapTo(0f)
+
+                        animatedWidth.snapTo(0f)
+                        animatedHeight.snapTo(0f)
                         null
                     }
 
                     AnimationEndReason.Finished -> {
-                        startOffset = Offset.Zero
-                        endOffset = Offset.Zero
-                        startSize = IntSize.Zero
-                        targetSize = IntSize.Zero
+                        playCardAnimDim = PlayCardAnimDim()
+
+                        animatedOffsetX.snapTo(0f)
+                        animatedOffsetY.snapTo(0f)
+
+                        animatedWidth.snapTo(0f)
+                        animatedHeight.snapTo(0f)
                         null
                     }
                 }
+                onEvent(PlayCardsEvent.PlayedCard(animatedCard))
             }
             launch {
                 animatedWidth.animateTo(
-                    endDim.width.toFloat(),
-                    animationSpec = tween(durationMillis = 500)
+                    playCardAnimDim.targetSizeWidth
                 )
             }
             launch {
                 animatedHeight.animateTo(
-                    endDim.height.toFloat(),
-                    animationSpec = tween(durationMillis = 500)
+                    playCardAnimDim.targetSizeHeight
                 )
             }
 
@@ -423,32 +413,28 @@ fun PlayCardsDataRoot(
                 onAllowOthersPlay = {
                     onEvent(PlayCardsEvent.AllowOthersPlay)
                 },
-                animatingCard = animatingCard,
-                endOffset = {
-                    endOffset = it
-                },
-                endSize = {
-                    targetSize = it
+                targetAnimDim = {
+                    playCardAnimDim = playCardAnimDim.copy(
+                        target = it
+                    )
                 }
             )
 
             UserCardsSection(
                 modifier = Modifier.fillMaxWidth(),
-                cards = playCardsState.userUnPlayedCards,
+                cards = playCardsState.userUnPlayedCards.userCardsWithAnimation(animatingCard),
                 error = playCardsState.playCardsErrorState,
                 onClick = {
-                    animatingCard = it
                     onEvent(PlayCardsEvent.PlayCard(it))
                 },
                 onEvent = onEvent,
                 scrollToItemConsumed = {
                     onEvent(PlayCardsEvent.ScrollToItemPositionConsumed)
                 },
-                startOffset = {
-                    startOffset = it
-                },
-                startSize = {
-                    startSize = it
+                startAnimDim = {
+                    playCardAnimDim = playCardAnimDim.copy(
+                        start = it
+                    )
                 }
             )
             Spacer(modifier = Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
@@ -580,9 +566,7 @@ private fun PlayedAndDustbinSection(
     showCurrentCardType: Pair<Boolean, String?>,
     onDustbinClick: () -> Unit,
     onAllowOthersPlay: () -> Unit,
-    animatingCard: UserCard? = null,
-    endOffset: (Offset) -> Unit = {},
-    endSize: (IntSize) -> Unit = {}
+    targetAnimDim: (CardAnimDim) -> Unit = {}
 ) {
 
     Box {
@@ -596,9 +580,7 @@ private fun PlayedAndDustbinSection(
                 modifier = Modifier.weight(1f),
                 cards = playedCards,
                 showCurrentCardType = showCurrentCardType,
-                animatingCard = animatingCard,
-                endOffset = endOffset,
-                endSize = endSize
+                targetAnimDim = targetAnimDim
             )
 
             Spacer(modifier = Modifier.weight(0.6f))
@@ -685,8 +667,7 @@ private fun UserCardsSection(
     modifier: Modifier,
     cards: Pair<List<UserCard>, UserCard?>,
     error: PlayCardsErrorState? = null,
-    startOffset: (Offset) -> Unit = {},
-    startSize: (IntSize) -> Unit = {},
+    startAnimDim: (CardAnimDim) -> Unit = {},
     onClick: (UserCard) -> Unit,
     onEvent: (PlayCardsEvent) -> Unit,
     scrollToItemConsumed: () -> Unit
@@ -751,11 +732,14 @@ private fun UserCardsSection(
                                     val cardId = it.cardId
                                     val offsetAndSize = imageOffsets[cardId]!!
 
-                                    startOffset(offsetAndSize.first)
-                                    startSize(offsetAndSize.second)
+                                    val cardAnimDim = CardAnimDim(
+                                        size = offsetAndSize.second,
+                                        offset = offsetAndSize.first
+                                    )
 
-                                    val onClickMsg = "$offsetAndSize for card:${it.cardId}"
-                                    Log.d("PlayCardsScreen", onClickMsg)
+                                    startAnimDim(cardAnimDim)
+
+                                    Log.d("PlayCardsScreen", "card:${it.cardId}-$cardAnimDim")
                                     Log.d("PlayCardsScreen", imageOffsets.toString())
                                 } catch (e: Exception) {
                                     e.printStackTrace()

@@ -11,6 +11,7 @@ data class PlayCardsState(
     val playersScreenInfo: List<PlayerScreenInfo> = emptyList(),
     val playedCards: List<UserCard> = emptyList(),
     val animatingCard: UserCard? = null,
+    val animatingCardStages: AnimatingCardStages = AnimatingCardStages.NOT_STARTED,
     val dustbin: List<GameCard> = emptyList(),
     val userUnPlayedCards: Pair<List<UserCard>, UserCard?> = Pair(emptyList(), null),
     val message: String = "",
@@ -48,6 +49,21 @@ data class PlayCardsState(
     }?.toString()
 
     val showCurrentCardTypeAndImage = Pair(showCurrentCardType.first, imageOfCurrentCardType)
+}
+
+enum class AnimatingCardStages {
+    NOT_STARTED,
+    INITIATED,
+    ANIMATING,
+}
+
+fun Pair<List<UserCard>, UserCard?>.userCardsWithAnimation(
+    animatingCard: UserCard?
+): Pair<List<UserCard>, UserCard?> {
+    return this.copy(
+        this.first.filterNot { it.gameCardId == animatingCard?.gameCardId },
+        this.second
+    )
 }
 
 data class WonGame(

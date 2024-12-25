@@ -2,6 +2,7 @@ package com.learningis4fun.gameshub.commons.domain.controller
 
 import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.commons.domain.util.CardStates
+import com.learningis4fun.gameshub.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.commons.domain.util.JokerActions
 import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.domain.model.UserCard
@@ -57,12 +58,24 @@ class CrusadeLoggedUserCardsController @Inject constructor(
     suspend fun userRequestToPlay(
         userCard: UserCard,
         canPick: Boolean
-    ) {
+    ): Response<Unit> {
         val cardState = multiplayerCrusadeCardsController.requestUserPlay(
             card = userCard,
             canPick = canPick
         )
         handleCardStateUseCase.saveCardStateToPreferences(cardState)
+
+        return when (cardState) {
+            is CardStates.Error -> {
+                Response.Error(cardState.message)
+            }
+
+            is CardStates.Play -> {
+                Response.Error(CardStatesDefaultMsg.PlayError)
+            }
+
+            else -> Response.Success(Unit)
+        }
     }
 
     suspend fun userRequestToPick(
@@ -82,13 +95,17 @@ class CrusadeLoggedUserCardsController @Inject constructor(
         playerId: String,
         cardsToPick: Int,
         userCard: UserCard
-    ) {
+    ): Response<Unit> {
         val cardState = multiplayerCrusadeCardsController.requestPlayerHitBack(
             playerId = playerId,
             cardsToPick = cardsToPick,
             userCard = userCard
         )
         handleCardStateUseCase.saveCardStateToPreferences(cardState)
+
+        return if (cardState is CardStates.Error) {
+            Response.Error(cardState.message)
+        } else Response.Success(Unit)
     }
 
     suspend fun userRequestToChangeCardType(
