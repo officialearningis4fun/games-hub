@@ -1,12 +1,11 @@
 package com.learningis4fun.gameshub.crusade_cards.common.data.data_source
 
-import com.learningis4fun.gameshub.MainViewModel
+import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toCardState
-import com.learningis4fun.gameshub.domain.model.CardStateEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf

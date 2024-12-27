@@ -1,6 +1,6 @@
 package com.learningis4fun.gameshub.data.data_source
 
-import com.learningis4fun.gameshub.MainViewModel
+import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.commons.domain.util.Response

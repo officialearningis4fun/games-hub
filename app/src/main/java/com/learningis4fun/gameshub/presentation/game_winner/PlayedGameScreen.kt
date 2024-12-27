@@ -3,9 +3,7 @@
 package com.learningis4fun.gameshub.presentation.game_winner
 
 import android.content.res.Configuration
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,12 +46,13 @@ import com.learningis4fun.gameshub.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
+import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameState
+import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameToolsSection
+import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameViewModel
 import com.learningis4fun.gameshub.commons.ui.routes.WinnerScreenRoute
-import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.domain.model.UserCard
-import com.learningis4fun.gameshub.presentation.start.OngoingGamesOrNewGameState
 import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
-import com.learningis4fun.gameshub.presentation.util.GamesHubTransitionScopeAndAnimatedContentScope
+import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 import com.learningis4fun.gameshub.presentation.util.LocalAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.LocalCustomSharedTransitionScope
 import com.learningis4fun.gameshub.presentation.util.sharedImageElementKey
@@ -67,7 +66,14 @@ fun NavGraphBuilder.playedGameWinnerComposable(
     onStartNextStage: (String) -> Unit
 ) {
 
-    composable<WinnerScreenRoute>() { backStateEntry ->
+    composable<WinnerScreenRoute>(
+        enterTransition = {
+            scaleIntoContainer()
+        },
+        popEnterTransition = {
+            scaleIntoContainer(direction = ScaleTransitionDirection.INWARDS)
+        }
+    ) { backStateEntry ->
 
         val wonGameId = backStateEntry.toRoute<WinnerScreenRoute>().wonGameId
 
@@ -78,8 +84,13 @@ fun NavGraphBuilder.playedGameWinnerComposable(
                 ?: R.drawable.game_test_profile
 
         val viewModel: PlayedGameWinnerViewModel = hiltViewModel()
-
         val playedGameState by viewModel.playedGameState.collectAsStateWithLifecycle()
+
+        val ongoingGamesOrCreateNewGameViewModel: OngoingGamesOrCreateNewGameViewModel =
+            hiltViewModel()
+        val ongoingGamesOrCreateNewGameState by ongoingGamesOrCreateNewGameViewModel.ongoingGamesOrCreateNewGameState.collectAsStateWithLifecycle()
+
+        ongoingGamesOrCreateNewGameViewModel.setGameId(wonGameId)
 
         val createNewGameToolsViewModel: CreateNewGameToolsViewModel = hiltViewModel()
         val createNewGameToolsState by createNewGameToolsViewModel.createNewGameToolsState.collectAsStateWithLifecycle()
@@ -91,6 +102,7 @@ fun NavGraphBuilder.playedGameWinnerComposable(
                 modifier = Modifier
                     .fillMaxSize(),
                 playedGameWinnerOrNextStage = playedGameState,
+                ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
                 createNewGameToolsState = createNewGameToolsState,
                 winnerImageRes = winnerImageRes,
                 wonGameId = wonGameId,
@@ -118,6 +130,7 @@ fun NavGraphBuilder.playedGameWinnerComposable(
 fun PlayedGameScreen(
     modifier: Modifier = Modifier,
     playedGameWinnerOrNextStage: PlayedGameWinnerOrNextStage,
+    ongoingGamesOrCreateNewGameState: OngoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.Loading,
     createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
     winnerImageRes: Int = R.drawable.avatar_boy1,
     wonGameId: String = "",
@@ -185,15 +198,23 @@ fun PlayedGameScreen(
 
                     is PlayedGameWinnerOrNextStage.PlayedGameWinnerState -> {
                         PlayedGameWinner(
-                            playedGameWinnerState = playedGameWinnerOrNextStage,
-                            createNewGameToolsState = createNewGameToolsState,
-                            onEvent = onEvent,
-                            onStartGame = onStartGame,
-                            onResumeClick = onResumeClick,
-                            onCreateEvent = onCreateEvent
+                            playedGameWinnerState = playedGameWinnerOrNextStage
                         )
                     }
                 }
+            }
+
+            item {
+                OngoingGamesOrCreateNewGameToolsSection(
+                    ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
+                    createNewGameToolsState = createNewGameToolsState,
+                    onCreateEvent = onCreateEvent,
+                    onStartGame = onStartGame,
+                    onResumeClick = onResumeClick,
+                    onDeleteGame = { gameId ->
+                        onEvent(PlayedGameWinnerEvents.DeleteGame(gameId))
+                    }
+                )
             }
 
 
@@ -237,24 +258,15 @@ private fun PlayedGameWinnerSection(
 @Preview
 @Composable
 private fun PlayedGameNextStageScreenPrev() {
-    GamesHubAppTheme {
-        SharedTransitionLayout {
-            AnimatedContent(targetState = true, label = "") {
-                it
-                GamesHubTransitionScopeAndAnimatedContentScope(
-                    transitionScope = this@SharedTransitionLayout,
-                    animatedContentScope = this
-                ) {
-                    PlayedGameScreen(
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        playedGameWinnerOrNextStage = playedGameNextStageState,
-                        createNewGameToolsState = CreateNewGameToolsState(),
-                        onCloseClick = {}
-                    )
-                }
-            }
-        }
+    GamesHubAppThemePrev {
+
+        PlayedGameScreen(
+            modifier = Modifier
+                .fillMaxSize(),
+            playedGameWinnerOrNextStage = playedGameNextStageState,
+            createNewGameToolsState = CreateNewGameToolsState(),
+            onCloseClick = {}
+        )
     }
 }
 
@@ -262,7 +274,7 @@ private fun PlayedGameNextStageScreenPrev() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PlayedGameNextStageScreenDarkPrev() {
-    GamesHubAppTheme {
+    GamesHubAppThemePrev {
 
         PlayedGameScreen(
             modifier = Modifier
@@ -277,10 +289,11 @@ private fun PlayedGameNextStageScreenDarkPrev() {
 @Preview
 @Composable
 private fun PlayedGameWinnerPrev() {
-    GamesHubAppTheme {
+    GamesHubAppThemePrev {
         PlayedGameScreen(
             modifier = Modifier
                 .fillMaxSize(),
+            ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
             playedGameWinnerOrNextStage = playedGameWinnerState,
             createNewGameToolsState = CreateNewGameToolsState()
         )
@@ -292,10 +305,11 @@ private fun PlayedGameWinnerPrev() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun PlayedGameWinnerDarkPrev() {
-    GamesHubAppTheme {
+    GamesHubAppThemePrev {
         PlayedGameScreen(
             modifier = Modifier
                 .fillMaxSize(),
+            ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
             playedGameWinnerOrNextStage = playedGameWinnerState,
             createNewGameToolsState = CreateNewGameToolsState(),
         )
@@ -335,7 +349,6 @@ val playedGameWinnerState = PlayedGameWinnerOrNextStage.PlayedGameWinnerState(
     },
     winnerNames = "Hlompho",
     winnerImageUrl = R.drawable.avatar_boy1.toString(),
-    ongoingGamesOrNewGameState = OngoingGamesOrNewGameState.NewGameState
 )
 
 val playedGameNextStageState = PlayedGameWinnerOrNextStage.PlayedGameNextStageState(

@@ -16,8 +16,6 @@ import com.learningis4fun.gameshub.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
 import com.learningis4fun.gameshub.domain.use_cases.GetLatestUnPlayedCards
-import com.learningis4fun.gameshub.domain.use_cases.GetOngoingGamesUseCase
-import com.learningis4fun.gameshub.presentation.start.OngoingGamesOrNewGameState
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
@@ -38,7 +36,6 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
     private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
     private val preferences: CrusadeCardsPreferencesManager,
-    private val getOngoingGamesUseCase: GetOngoingGamesUseCase,
     private val gameStageRepository: GameStageRepository,
     private val getLatestUnPlayedCards: GetLatestUnPlayedCards
 ) : ViewModel() {
@@ -53,20 +50,17 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
     init {
         viewModelScope.launch {
             combine(
-                getOngoingGamesUseCase(),
                 gameRepository.getGame(gameId = gameId),
                 preferences.numberOfCardsPerPlayer
-            ) { ongoingGame, game, numberOfCardsPerPlayer ->
-                Triple(
-                    ongoingGame,
+            ) { game, numberOfCardsPerPlayer ->
+                Pair(
                     game,
                     numberOfCardsPerPlayer
                 )
-            }.collect { (ongoingGame, game, numberOfCardsPerPlayer) ->
+            }.collect { (game, numberOfCardsPerPlayer) ->
 
                 game?.let {
                     loadWinnerScreenInfo(
-                        ongoingGamesState = ongoingGame,
                         game = game,
                         numberOfCardsPerPlayer = numberOfCardsPerPlayer
                     )
@@ -107,7 +101,6 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
     }
 
     private suspend fun loadWinnerScreenInfo(
-        ongoingGamesState: OngoingGamesOrNewGameState.OngoingGamesState,
         game: Game,
         numberOfCardsPerPlayer: Int
     ) {
@@ -115,14 +108,6 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
             println("winner: $game")
 
             if (game.gameState == GameState.Completed.name) {
-
-                val ongoingGamesOrNewGameState: OngoingGamesOrNewGameState =
-                    if (ongoingGamesState.games.isNotEmpty()) {
-                        ongoingGamesState
-                    } else {
-                        OngoingGamesOrNewGameState.NewGameState
-                    }
-
                 // completed
                 val gameWithPlayers = gameRepository
                     .getGameWithPlayers(gameId = gameId)
@@ -141,7 +126,6 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                         numberOfCardsPerPlayer = numberOfCardsPerPlayer,
                         winnerNames = completedState.winnerNames,
                         error = completedState.error,
-                        ongoingGamesOrNewGameState = ongoingGamesOrNewGameState
                     )
                 }
             } else {

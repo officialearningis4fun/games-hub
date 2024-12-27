@@ -1,6 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.common.domain.repository
 
-import com.learningis4fun.gameshub.MainViewModel
+import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.data.data_source.relations.GameCardWithCard

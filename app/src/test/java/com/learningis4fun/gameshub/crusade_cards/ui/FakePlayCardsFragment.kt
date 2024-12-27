@@ -1,6 +1,6 @@
 package com.learningis4fun.gameshub.crusade_cards.ui
 
-import com.learningis4fun.gameshub.MainViewModel
+import com.learningis4fun.gameshub.app.MainViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi

@@ -62,7 +62,6 @@ sealed interface PlayedGameWinnerOrNextStage {
         val numberOfCardsPerPlayer: Int = Constants.NumberOfCardsOptions.DEFAULT_CARDS_PER_PLAYER,
         val winnerNames: String = "",
         val error: String? = null,
-        val ongoingGamesOrNewGameState: OngoingGamesOrNewGameState = OngoingGamesOrNewGameState.Loading
     ) : PlayedGameWinnerOrNextStage {
 
         fun unPlayedCardsOfPlayer(playerId: String): List<Card> {

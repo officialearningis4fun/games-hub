@@ -2,7 +2,7 @@ package com.learningis4fun.gameshub.data.repository
 
 import android.util.Log
 import androidx.room.withTransaction
-import com.learningis4fun.gameshub.MainViewModel
+import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.commons.domain.model.Card
 import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.commons.domain.util.CardsErrorMessages

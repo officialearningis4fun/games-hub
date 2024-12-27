@@ -58,10 +58,14 @@ enum class AnimatingCardStages {
 }
 
 fun Pair<List<UserCard>, UserCard?>.userCardsWithAnimation(
-    animatingCard: UserCard?
+    animatingCard: UserCard?,
+    animatingCardStages: AnimatingCardStages
 ): Pair<List<UserCard>, UserCard?> {
+    val userUnPlayedCards = if (animatingCardStages == AnimatingCardStages.ANIMATING) {
+        this.first.filterNot { it.gameCardId == animatingCard?.gameCardId }
+    } else this.first
     return this.copy(
-        this.first.filterNot { it.gameCardId == animatingCard?.gameCardId },
+        userUnPlayedCards,
         this.second
     )
 }

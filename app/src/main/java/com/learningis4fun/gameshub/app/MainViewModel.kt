@@ -1,4 +1,4 @@
-package com.learningis4fun.gameshub
+package com.learningis4fun.gameshub.app
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel

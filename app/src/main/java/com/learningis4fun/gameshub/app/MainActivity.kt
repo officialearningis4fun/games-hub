@@ -1,4 +1,4 @@
-package com.learningis4fun.gameshub
+package com.learningis4fun.gameshub.app
 
 import android.os.Bundle
 import androidx.activity.compose.setContent

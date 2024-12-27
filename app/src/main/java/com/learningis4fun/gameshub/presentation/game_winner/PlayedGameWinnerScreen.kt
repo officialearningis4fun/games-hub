@@ -1,5 +1,8 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.learningis4fun.gameshub.presentation.game_winner
 
+import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,7 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -54,27 +56,23 @@ import com.learningis4fun.gameshub.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateGameSetupToolsSection
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
-import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
 import com.learningis4fun.gameshub.presentation.play_crusade_cards.CardItem
-import com.learningis4fun.gameshub.presentation.start.Heading
 import com.learningis4fun.gameshub.presentation.start.OnGoingGame
 import com.learningis4fun.gameshub.presentation.start.OngoingGamesOrNewGameState
-import com.learningis4fun.gameshub.presentation.start.OngoingGamesSection
+import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
+import com.learningis4fun.gameshub.presentation.util.LocalAnimatedContentScope
+import com.learningis4fun.gameshub.presentation.util.LocalCustomSharedTransitionScope
+import com.learningis4fun.gameshub.presentation.util.sharedElementKeyOfOngoingGameSection
 
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PlayedGameWinner(
     modifier: Modifier = Modifier,
-    playedGameWinnerState: PlayedGameWinnerOrNextStage.PlayedGameWinnerState,
-    createNewGameToolsState: CreateNewGameToolsState,
-    onStartGame: () -> Unit = {},
-    onResumeClick: (String) -> Unit = {},
-    onEvent: (PlayedGameWinnerEvents) -> Unit = {},
-    onCreateEvent: (CreateNewGameToolsEvents) -> Unit = {}
+    playedGameWinnerState: PlayedGameWinnerOrNextStage.PlayedGameWinnerState
 ) {
 
     var onShowCardsState by remember {
@@ -147,34 +145,6 @@ fun PlayedGameWinner(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        when (playedGameWinnerState.ongoingGamesOrNewGameState) {
-            OngoingGamesOrNewGameState.Loading -> {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                )
-            }
-
-            OngoingGamesOrNewGameState.NewGameState -> {
-                CreateNewGameSection(
-                    modifier = Modifier,
-                    createNewGameToolsState = createNewGameToolsState,
-                    onCreateEvent = onCreateEvent,
-                    onStartGame = onStartGame
-                )
-            }
-
-            is OngoingGamesOrNewGameState.OngoingGamesState -> {
-                PlayedGameOngoingGamesSection(
-                    modifier = Modifier,
-                    ongoingGamesState = playedGameWinnerState.ongoingGamesOrNewGameState,
-                    onDeleteGame = { gameId ->
-                        onEvent(PlayedGameWinnerEvents.DeleteGame(gameId))
-                    },
-                    onResumeClick = onResumeClick
-                )
-            }
-        }
 
     }
 
@@ -309,56 +279,42 @@ fun PlayerItemWithPopup(
 
 
 @Composable
-private fun CreateNewGameSection(
+fun CreateNewGameSection(
     modifier: Modifier = Modifier,
     createNewGameToolsState: CreateNewGameToolsState,
     onCreateEvent: (CreateNewGameToolsEvents) -> Unit,
     onStartGame: () -> Unit
 ) {
-    Column(modifier) {
-        HorizontalDivider()
+    val sharedTransitionScope = LocalCustomSharedTransitionScope.current
+    val animatedContentScope = LocalAnimatedContentScope.current
 
-        CreateGameSetupToolsSection(
-            modifier = Modifier
-                .fillMaxWidth(),
-            createGameButtonText = "Play another game",
-            createNewGameToolsState = createNewGameToolsState,
-            onStartGame = onStartGame,
-            onEvent = onCreateEvent
-        )
+    with(sharedTransitionScope) {
+        Column(
+            modifier = modifier
+                .sharedElement(
+                    state = rememberSharedContentState(key = sharedElementKeyOfOngoingGameSection),
+                    animatedVisibilityScope = animatedContentScope
+                )
+        ) {
+            HorizontalDivider()
 
+            CreateGameSetupToolsSection(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                createGameButtonText = "Play another game",
+                createNewGameToolsState = createNewGameToolsState,
+                onStartGame = onStartGame,
+                onEvent = onCreateEvent
+            )
+
+        }
     }
 }
-
-@Composable
-private fun PlayedGameOngoingGamesSection(
-    modifier: Modifier = Modifier,
-    ongoingGamesState: OngoingGamesOrNewGameState.OngoingGamesState,
-    onResumeClick: (String) -> Unit = {},
-    onDeleteGame: (String) -> Unit = {}
-) {
-    Column(modifier) {
-        HorizontalDivider()
-
-        Heading(
-            text = "Ongoing games",
-            modifier = Modifier.padding(16.dp),
-            textColor = MaterialTheme.colorScheme.onBackground
-        )
-
-        OngoingGamesSection(
-            ongoingGamesState = ongoingGamesState,
-            onDeleteGame = onDeleteGame,
-            onResumeClick = onResumeClick
-        )
-    }
-}
-
 
 @Preview
 @Composable
 private fun PlayedGameWinnerPrev() {
-    GamesHubAppTheme(darkTheme = false) {
+    GamesHubAppThemePrev(darkTheme = false) {
         PlayedGameWinner(
             modifier = Modifier
                 .fillMaxSize()
@@ -389,9 +345,7 @@ private fun PlayedGameWinnerPrev() {
                 },
                 winnerNames = "Hlompho",
                 winnerImageUrl = R.drawable.avatar_boy1.toString(),
-                ongoingGamesOrNewGameState = ongoingGamesState
-            ),
-            createNewGameToolsState = CreateNewGameToolsState()
+            )
         )
     }
 }
@@ -399,7 +353,7 @@ private fun PlayedGameWinnerPrev() {
 @Preview
 @Composable
 private fun PlayedGameWinnerDarkPrev() {
-    GamesHubAppTheme {
+    GamesHubAppThemePrev {
         PlayedGameWinner(
             modifier = Modifier
                 .fillMaxSize()
@@ -421,9 +375,7 @@ private fun PlayedGameWinnerDarkPrev() {
                 ),
                 winnerNames = "Hlompho",
                 winnerImageUrl = R.drawable.avatar_boy1.toString(),
-                ongoingGamesOrNewGameState = OngoingGamesOrNewGameState.NewGameState
-            ),
-            createNewGameToolsState = CreateNewGameToolsState()
+            )
         )
     }
 }

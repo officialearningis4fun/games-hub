@@ -43,7 +43,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.domain.model.Player
-import com.learningis4fun.gameshub.commons.ui.routes.ProfileScreenRoute
+import com.learningis4fun.gameshub.commons.ui.routes.ViewProfile
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
@@ -54,7 +54,7 @@ fun NavGraphBuilder.profileScreenComposable(
     onBackClick: () -> Unit,
     onEditProfile: () -> Unit
 ) {
-    composable<ProfileScreenRoute>(
+    composable<ViewProfile>(
         enterTransition = {
             scaleIntoContainer()
         },

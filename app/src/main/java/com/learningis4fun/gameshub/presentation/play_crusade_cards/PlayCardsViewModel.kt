@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.learningis4fun.gameshub.MainViewModel
+import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.domain.controller.CrusadeLoggedUserCardsController
 import com.learningis4fun.gameshub.commons.domain.model.Player

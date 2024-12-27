@@ -1,9 +1,5 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.learningis4fun.gameshub.presentation.start
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,12 +7,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -43,10 +39,13 @@ import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
+import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameState
+import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameToolsSection
+import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameViewModel
 import com.learningis4fun.gameshub.commons.ui.routes.StartScreenRoute
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
-import com.learningis4fun.gameshub.presentation.util.GamesHubTransitionScopeAndAnimatedContentScope
+import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
@@ -57,37 +56,43 @@ fun NavGraphBuilder.cardsStartScreenComposable(
     onProfileClick: () -> Unit,
     onGameClick: (Pair<Game, Player>) -> Unit = {},
 ) {
-    composable<StartScreenRoute> {
+    composable<StartScreenRoute> { backStackEntry ->
+        backStackEntry.destination.parent
 
         val cardsStartViewModel: CardsStartViewModel = hiltViewModel()
         val cardsStartState by cardsStartViewModel.cardsStartState.collectAsStateWithLifecycle()
 
+        val ongoingGamesOrCreateNewGameViewModel: OngoingGamesOrCreateNewGameViewModel =
+            hiltViewModel()
+        val ongoingGamesOrCreateNewGameState by ongoingGamesOrCreateNewGameViewModel.ongoingGamesOrCreateNewGameState.collectAsStateWithLifecycle()
+
+        ongoingGamesOrCreateNewGameViewModel.setGameId("")
+
         val createNewGameToolsViewModel = hiltViewModel<CreateNewGameToolsViewModel>()
         val createNewGameToolsState by createNewGameToolsViewModel.createNewGameToolsState.collectAsStateWithLifecycle()
 
-        SharedTransitionLayout {
-            GamesHubTransitionScopeAndAnimatedContentScope(
-                transitionScope = this,
-                animatedContentScope = this@composable
-            ) {
-                CardsStartScreen(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    cardsStartState = cardsStartState,
-                    createNewGameToolsState = createNewGameToolsState,
-                    onStartClick = {
-                        createNewGameToolsViewModel.setupNewGameOnStartClick { gameId ->
-                            onStartClick(gameId)
-                        }
-                    },
-                    onResumeClick = onResumeClick,
-                    onProfileClick = onProfileClick,
-                    onGameClick = onGameClick,
-                    onEvent = cardsStartViewModel::onEvent,
-                    onCreateGameEvent = createNewGameToolsViewModel::onEvent
-                )
-            }
+        GamesHubAnimatedContentScope(
+            animatedContentScope = this@composable
+        ) {
+            CardsStartScreen(
+                modifier = Modifier
+                    .fillMaxSize(),
+                cardsStartState = cardsStartState,
+                ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
+                createNewGameToolsState = createNewGameToolsState,
+                onStartClick = {
+                    createNewGameToolsViewModel.setupNewGameOnStartClick { gameId ->
+                        onStartClick(gameId)
+                    }
+                },
+                onResumeClick = onResumeClick,
+                onProfileClick = onProfileClick,
+                onGameClick = onGameClick,
+                onEvent = cardsStartViewModel::onEvent,
+                onCreateGameEvent = createNewGameToolsViewModel::onEvent
+            )
         }
+
     }
 }
 
@@ -97,6 +102,7 @@ fun NavGraphBuilder.cardsStartScreenComposable(
 fun CardsStartScreen(
     modifier: Modifier = Modifier,
     cardsStartState: CardsStartState,
+    ongoingGamesOrCreateNewGameState: OngoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.Loading,
     createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
     onStartClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
@@ -147,7 +153,7 @@ fun CardsStartScreen(
                     .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues),
                 completedGamesState = cardsStartState.completedGamesState,
-                ongoingGamesOrNewGameState = cardsStartState.ongoingGamesOrNewGameState,
+                ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
                 createNewGameToolsState = createNewGameToolsState,
                 onStartClick = onStartClick,
                 onResumeClick = onResumeClick,
@@ -183,7 +189,7 @@ fun CardsStartLoadingScreen(
 @Composable
 fun CardsStartDataScreen(
     modifier: Modifier,
-    ongoingGamesOrNewGameState: OngoingGamesOrNewGameState,
+    ongoingGamesOrCreateNewGameState: OngoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.Loading,
     completedGamesState: CompletedGamesState,
     createNewGameToolsState: CreateNewGameToolsState,
     onStartClick: () -> Unit = {},
@@ -194,52 +200,30 @@ fun CardsStartDataScreen(
 ) {
 
     Box(
-        modifier = Modifier
-            .background(MaterialTheme.colorScheme.background)
-            .fillMaxSize()
+        modifier = modifier
     ) {
-        Column(modifier) {
+        Column(Modifier) {
 
             CompletedGamesSection(
+                modifier = Modifier.fillMaxWidth(),
                 completedGamesState = completedGamesState,
                 onGameClick = onGameClick
             )
 
-            HorizontalDivider()
-
-            when (ongoingGamesOrNewGameState) {
-                OngoingGamesOrNewGameState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-
-                OngoingGamesOrNewGameState.NewGameState -> {
-                    CreateGameSection(
+            LazyColumn {
+                item {
+                    OngoingGamesOrCreateNewGameToolsSection(
                         modifier = Modifier.fillMaxWidth(),
-                        onStartClick = onStartClick,
+                        ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
                         createNewGameToolsState = createNewGameToolsState,
-                        onEvent = onEvent
-
-                    )
-                }
-
-                is OngoingGamesOrNewGameState.OngoingGamesState -> {
-                    Heading(
-                        text = "Ongoing games",
-                        modifier = Modifier.padding(16.dp),
-                        textColor = MaterialTheme.colorScheme.onBackground
-                    )
-
-                    OngoingGamesSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        ongoingGamesState = ongoingGamesOrNewGameState,
+                        onStartGame = onStartClick,
                         onResumeClick = onResumeClick,
-                        onDeleteGame = onDeleteGame
-
+                        onDeleteGame = onDeleteGame,
+                        onCreateEvent = onEvent,
                     )
                 }
             }
+
         }
 
     }

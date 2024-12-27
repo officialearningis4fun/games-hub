@@ -2,9 +2,7 @@ package com.learningis4fun.gameshub.presentation.play_crusade_cards
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.AnimationConstants
 import androidx.compose.animation.core.AnimationEndReason
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -278,15 +276,6 @@ fun PlayCardsDataRoot(
 
     val animatingCard: UserCard? = playCardsState.animatingCard
 
-    val playedCards = when (playCardsState.animatingCardStages) {
-        AnimatingCardStages.NOT_STARTED -> playCardsState.playedCards
-        AnimatingCardStages.INITIATED -> {
-            playCardsState.playedCards.filterNot { it.gameCardId == animatingCard?.gameCardId }
-        }
-
-        AnimatingCardStages.ANIMATING -> playCardsState.playedCards.filterNot { it.gameCardId == animatingCard?.gameCardId }
-    }
-
     var userCardReversible by remember {
         mutableStateOf<UserCard?>(null)
     }
@@ -422,7 +411,10 @@ fun PlayCardsDataRoot(
 
             UserCardsSection(
                 modifier = Modifier.fillMaxWidth(),
-                cards = playCardsState.userUnPlayedCards.userCardsWithAnimation(animatingCard),
+                cards = playCardsState.userUnPlayedCards.userCardsWithAnimation(
+                    animatingCard = animatingCard,
+                    animatingCardStages = playCardsState.animatingCardStages
+                ),
                 error = playCardsState.playCardsErrorState,
                 onClick = {
                     onEvent(PlayCardsEvent.PlayCard(it))

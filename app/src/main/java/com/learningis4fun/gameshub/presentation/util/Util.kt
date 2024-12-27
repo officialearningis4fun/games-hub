@@ -64,6 +64,8 @@ fun GamesHubAnimatedContentScope(
 
 fun sharedImageElementKey(playerId: String, gameId: String): String = "image${gameId}${playerId}"
 
+val sharedElementKeyOfOngoingGameSection: String = "ongoingGameKey"
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun GamesHubAppThemePrev(
