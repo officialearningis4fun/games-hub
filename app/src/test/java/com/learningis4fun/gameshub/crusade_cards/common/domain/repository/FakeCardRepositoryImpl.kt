@@ -1,32 +1,32 @@
 package com.learningis4fun.gameshub.crusade_cards.common.domain.repository
 
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.CardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
+import com.learningis4fun.gameshub.commons.domain.model.Card
+import com.learningis4fun.gameshub.commons.domain.repository.CardRepository
+import com.learningis4fun.gameshub.commons.domain.util.Response
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 class FakeCardRepositoryImpl(
-): CardRepository {
+) : CardRepository {
 
-    private val _cards:MutableList<Card> = ArrayList()
+    private val _cards: MutableList<Card> = ArrayList()
     private var _currentCardType = ""
     private var _currentCardName = ""
 
-    override suspend fun insertCard(card: Card): Response<String> {
+    override suspend fun insertCard(card: Card): Response<Unit> {
         return try {
             _cards.add(card)
-            Response.Success("", "Successfully updated")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
-    override suspend fun updateCard(card: Card): Response<String> {
+    override suspend fun updateCard(card: Card): Response<Unit> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteCard(card: Card): Response<String> {
+    override suspend fun deleteCard(card: Card): Response<Unit> {
         TODO("Not yet implemented")
     }
 
@@ -42,7 +42,7 @@ class FakeCardRepositoryImpl(
         return _currentCardType
     }
 
-    fun updateCardType(type: String){
+    fun updateCardType(type: String) {
         _currentCardType = type
     }
 

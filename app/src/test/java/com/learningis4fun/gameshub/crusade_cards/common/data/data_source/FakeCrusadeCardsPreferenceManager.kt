@@ -1,17 +1,25 @@
 package com.learningis4fun.gameshub.crusade_cards.common.data.data_source
 
 import com.learningis4fun.gameshub.app.MainViewModel
-import com.learningis4fun.gameshub.crusade_cards.commons.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Player
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.CardStates
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.toCardState
+import com.learningis4fun.gameshub.commons.domain.model.Player
+import com.learningis4fun.gameshub.commons.domain.util.CardStates
+import com.learningis4fun.gameshub.commons.domain.util.Response
+import com.learningis4fun.gameshub.commons.domain.util.toCardState
+import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
 @ExperimentalCoroutinesApi
-class FakeCrusadeCardsPreferenceManager : CrusadeCardsPreferencesManager {
+class FakeCrusadeCardsPreferenceManager(
+    override val device2: Flow<Player>,
+    override val device3: Flow<Player>,
+    override val geminiAI: Flow<Player>,
+    override val numberOfCardsPerPlayer: Flow<Int>,
+    override val numberOfParticipantsInCrusadeGame: Flow<Int>,
+    override val eliminationCountLimitForCrusade: Flow<Int>,
+    override val prePlayersIds: Flow<List<String>>
+) : CrusadeCardsPreferencesManager {
 
     var _recentCardType = ""
     var _recentGameId = ""
@@ -36,21 +44,25 @@ class FakeCrusadeCardsPreferenceManager : CrusadeCardsPreferencesManager {
     override val device1: Flow<Player>
         get() = flowOf(_androidUser)
 
-    override suspend fun updatePlayer(player: Player): Response<String> {
+    override suspend fun savePrevPlayersIds(playerIds: List<String>): Response<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updatePlayer(player: Player): Response<Unit> {
         return try {
             _user = player
-            Response.Success(data = "", message = "Success")
+            Response.Success(data = Unit)
         } catch (exception: Exception) {
-            Response.Error(data = "", message = exception.localizedMessage.toString())
+            Response.Error(message = exception.localizedMessage.toString())
         }
     }
 
-    override suspend fun updateAndroidPlayer(player: Player): Response<String> {
+    suspend fun updateAndroidPlayer(player: Player): Response<String> {
         return try {
             _androidUser = player
-            Response.Success(data = "", message = "Success")
+            Response.Success(data = "")
         } catch (exception: Exception) {
-            Response.Error(data = "", message = exception.localizedMessage.toString())
+            Response.Error(message = exception.localizedMessage.toString())
         }
     }
 
@@ -59,16 +71,16 @@ class FakeCrusadeCardsPreferenceManager : CrusadeCardsPreferencesManager {
         _recentCardState = state
     }
 
-    override suspend fun updateUserId(playerId: String): Response<String> {
+    override suspend fun updateUserId(playerId: String): Response<Unit> {
         return try {
             _user = _user.copy(uniqueId = playerId)
-            Response.Success(data = "", message = "Success")
+            Response.Success(data = Unit)
         } catch (exception: Exception) {
-            Response.Error(data = "", message = exception.localizedMessage.toString())
+            Response.Error(message = exception.localizedMessage.toString())
         }
     }
 
-    override suspend fun updateUserCardsSortBy(sortBy: String): Response<String> {
+    override suspend fun updateUserCardsSortBy(sortBy: String): Response<Unit> {
         return try {
             _userCardsSortBy = when (sortBy) {
                 MainViewModel.UserCardsSortBy.CardName.name -> MainViewModel.UserCardsSortBy.CardName
@@ -76,27 +88,47 @@ class FakeCrusadeCardsPreferenceManager : CrusadeCardsPreferencesManager {
                 else -> MainViewModel.UserCardsSortBy.CardType
             }
 
-            Response.Success(data = "", message = "Success")
+            Response.Success(data = Unit)
         } catch (exception: Exception) {
-            Response.Error(data = "", message = exception.localizedMessage.toString())
+            Response.Error(message = exception.localizedMessage.toString())
         }
     }
 
-    override suspend fun updateRecentCardType(recentType: String): Response<String> {
+    override suspend fun updateRecentCardType(recentType: String): Response<Unit> {
         return try {
             _recentCardType = recentType
-            Response.Success(data = "", message = "Success")
+            Response.Success(data = Unit)
         } catch (exception: Exception) {
-            Response.Error(data = "", message = exception.localizedMessage.toString())
+            Response.Error(message = exception.localizedMessage.toString())
         }
     }
 
-    override suspend fun updateRecentGameId(gameId: String): Response<String> {
+    override suspend fun updateRecentGameId(gameId: String): Response<Unit> {
         return try {
             _recentGameId = gameId
-            Response.Success(data = "", message = "Success")
+            Response.Success(data = Unit)
         } catch (exception: Exception) {
-            Response.Error(data = "", message = exception.localizedMessage.toString())
+            Response.Error(message = exception.localizedMessage.toString())
         }
+    }
+
+    override suspend fun updateNumberOfCardsPerPlayer(numOfCards: Int): Response<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateEliminationCountLimitForCrusade(count: Int): Response<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun decreaseNumberOfCardsPerPlayer(): Response<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun increaseNumberOfCardsPerPlayer(): Response<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateNumberOfParticipantsInCrusadeGame(numOfParticipants: Int): Response<Unit> {
+        TODO("Not yet implemented")
     }
 }

@@ -105,6 +105,13 @@ class CrusadeLoggedUserCardsController @Inject constructor(
 
         return if (cardState is CardStates.Error) {
             Response.Error(cardState.message)
+        } else if (cardState is CardStates.Hit) {
+            if (cardState.playerId == playerId) {
+                // error
+                Response.Error(cardState.message)
+            } else {
+                Response.Success(Unit)
+            }
         } else Response.Success(Unit)
     }
 

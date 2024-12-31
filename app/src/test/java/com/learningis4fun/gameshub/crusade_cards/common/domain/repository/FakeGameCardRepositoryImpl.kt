@@ -1,11 +1,12 @@
 package com.learningis4fun.gameshub.crusade_cards.common.domain.repository
 
 import com.learningis4fun.gameshub.app.MainViewModel
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.GameCardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
+import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
+import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.data.data_source.relations.GameCardWithCard
-import com.learningis4fun.gameshub.crusade_cards.domain.model.GameCard
-import com.learningis4fun.gameshub.crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.domain.model.GameCard
+import com.learningis4fun.gameshub.domain.model.UserCard
+
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -18,12 +19,12 @@ class FakeGameCardRepositoryImpl(
 
     private val _gameCards: MutableList<GameCard> = ArrayList()
 
-    override suspend fun insertGameCard(gameCard: GameCard): Response<String> {
+    override suspend fun insertGameCard(gameCard: GameCard): Response<Unit> {
         return try {
             _gameCards.add(gameCard)
-            Response.Success("", "Successfully updated")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
@@ -51,10 +52,9 @@ class FakeGameCardRepositoryImpl(
                 playTime = 0L
             )
 
-            Response.Success(true, "Successfully updated")
+            Response.Success(true)
         } catch (exception: Exception) {
             Response.Error(
-                data = true,
                 message = exception.localizedMessage
                     ?: "Unknown error occurred while updating gamecard"
             )
@@ -64,49 +64,58 @@ class FakeGameCardRepositoryImpl(
     override suspend fun playGameCard(gameCard: GameCard): Response<Boolean> {
         val prevGameCard = _gameCards
             .find { it.id == gameCard.id } ?: return Response.Error(
-            false,
             "Was unable to find the card to update"
         )
         val prevGameCardIndex = _gameCards.indexOf(prevGameCard)
         val card = cardsRepositoryImpl.getCards().find {
             it.id == gameCard.cardId
-        } ?: return Response.Error(false, "The card does not have a card created before")
+        } ?: return Response.Error("The card does not have a card created before")
 
         val playTime = System.currentTimeMillis()
         _gameCards[prevGameCardIndex] = gameCard.copy(playTime = playTime, isPlayed = true)
 
         cardsRepositoryImpl.updateCardType(card.type)
 
-        return Response.Success(true, "Successfully played")
+        return Response.Success(true)
     }
 
-    override suspend fun deleteGameCard(gameCard: GameCard): Response<String> {
+    override suspend fun deleteGameCard(gameCard: GameCard): Response<Unit> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteAllGameCards(): Response<String> {
+    override suspend fun deleteAllGameCards(): Response<Unit> {
         return try {
             _gameCards.clear()
-            Response.Success("", message = "Success")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                "",
                 exception.localizedMessage ?: "Unknown error occurred while deleting all cards"
             )
         }
     }
 
-    override fun getNumOfCurrentGameCards(gameId: String): Flow<Int> {
+    override suspend fun deleteAllGameCardsWithoutPlayer(
+        gameId: String,
+        stageNumber: Int
+    ): Response<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getNumOfCurrentGameCards(gameId: String, stageNumber: Int): Flow<Int> {
         return flowOf(
             _gameCards.size
         )
     }
 
-    override suspend fun getGameCards(gameId: String): List<GameCard> {
+    override suspend fun getGameCards(gameId: String, stageNumber: Int): List<GameCard> {
         return _gameCards
     }
 
-    override fun numOfUnPlayedCardsForPlayer(gameId: String, playerId: String): Flow<Int> {
+    override fun numOfUnPlayedCardsForPlayer(
+        gameId: String,
+        playerId: String,
+        stageNumber: Int
+    ): Flow<Int> {
         return flowOf(
             _gameCards
                 .filter {
@@ -116,7 +125,11 @@ class FakeGameCardRepositoryImpl(
         )
     }
 
-    override fun numOfUnPlayedCardsForPlayers(gameId: String, playerIds: List<String>): Flow<Int> {
+    override fun numOfUnPlayedCardsForPlayers(
+        gameId: String,
+        playerIds: List<String>,
+        stageNumber: Int
+    ): Flow<Int> {
         return flowOf(
             _gameCards
                 .filter {
@@ -128,19 +141,23 @@ class FakeGameCardRepositoryImpl(
 
     override fun getThreeTopPlayedCards(
         gameId: String,
-        playerIds: List<String>
+        playerIds: List<String>, stageNumber: Int
     ): Flow<List<UserCard>> {
         TODO("Not yet implemented")
     }
 
     override fun getTopPlayedCard(
         gameId: String,
-        playerIds: List<String>
+        playerIds: List<String>, stageNumber: Int
     ): Flow<GameCardWithCard?> {
         TODO("Not yet implemented")
     }
 
-    override fun getUnPlayedCardsForPlayer(gameId: String, playerId: String): Flow<List<UserCard>> =
+    override fun getUnPlayedCardsForPlayer(
+        gameId: String,
+        playerId: String,
+        stageNumber: Int
+    ): Flow<List<UserCard>> =
         flow {
             if (gameId.isEmpty() || playerId.isEmpty()) {
                 emit(emptyList())
@@ -158,7 +175,7 @@ class FakeGameCardRepositoryImpl(
     override suspend fun pickCardsFromLibrary(
         playerId: String,
         gameId: String,
-        numOfCardsToPick: Int
+        numOfCardsToPick: Int, stageNumber: Int
     ): Response<Int> {
         return try {
             val availableCards = _gameCards.count {
@@ -174,9 +191,9 @@ class FakeGameCardRepositoryImpl(
                     updateGameCard(it)
                 }
             }
-            Response.Success(numOfCardsToPick, "Successfully picked")
+            Response.Success(numOfCardsToPick)
         } catch (exception: Exception) {
-            Response.Error(0, exception.localizedMessage.toString())
+            Response.Error(exception.message.toString())
         }
     }
 
@@ -193,27 +210,29 @@ class FakeGameCardRepositoryImpl(
                 gameCard = gameCard
             ).toUserCard()
 
-            Response.Success(data = userCard, message = "Successful")
+            Response.Success(data = userCard)
         } catch (exception: Exception) {
-            Response.Error(data = UserCard(), message = exception.localizedMessage.toString())
+            Response.Error(message = exception.message.toString())
         }
     }
 
     override suspend fun requestCardsFromSceneToBePicked(
         gameId: String,
+        stageNumber: Int,
         numOfCardsToPick: Int,
         numOfCardsAlreadyAvailableToPick: Int
     ): Response<Int> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun numOfCardsAvailableToPick(gameId: String): Int {
+    override suspend fun numOfCardsAvailableToPick(gameId: String, stageNumber: Int): Int {
         TODO("Not yet implemented")
     }
 
     override fun getUnPlayedCardsForPlayerSorted(
         gameId: String,
         playerId: String,
+        stageNumber: Int,
         sortBy: MainViewModel.UserCardsSortBy
     ): Flow<List<UserCard>> {
         TODO("Not yet implemented")

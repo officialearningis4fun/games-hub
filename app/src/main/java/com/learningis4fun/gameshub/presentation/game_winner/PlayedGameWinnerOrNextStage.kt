@@ -6,7 +6,6 @@ import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
-import com.learningis4fun.gameshub.presentation.start.OngoingGamesOrNewGameState
 
 sealed interface PlayedGameWinnerOrNextStage {
     data object Loading : PlayedGameWinnerOrNextStage

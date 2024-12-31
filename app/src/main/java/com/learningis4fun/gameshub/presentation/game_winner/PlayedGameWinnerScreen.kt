@@ -49,19 +49,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.domain.model.Card
-import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateGameSetupToolsSection
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
-import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
 import com.learningis4fun.gameshub.presentation.play_crusade_cards.CardItem
-import com.learningis4fun.gameshub.presentation.start.OnGoingGame
-import com.learningis4fun.gameshub.presentation.start.OngoingGamesOrNewGameState
 import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 import com.learningis4fun.gameshub.presentation.util.LocalAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.LocalCustomSharedTransitionScope
@@ -379,34 +375,3 @@ private fun PlayedGameWinnerDarkPrev() {
         )
     }
 }
-
-val ongoingGamesState = OngoingGamesOrNewGameState.OngoingGamesState(
-    listOf(
-        OnGoingGame(
-            threeCards = Constants
-                .Cards
-                .cards
-                .take(3).mapIndexed { index, card ->
-                    card.copy(
-                        id = "$index"
-                    )
-                },
-            gameWithPlayers = GameWithPlayers(
-                game = Game(),
-                players = listOf(
-                    Player(
-                        uniqueId = "id1",
-                        profileName = "Dev1",
-                        imageUrl = R.drawable.avatar_boy2.toString()
-                    ),
-                    Player(
-                        uniqueId = "id2",
-                        profileName = "You",
-                        imageUrl = R.drawable.ai_platform.toString()
-                    )
-                )
-            )
-        )
-    )
-)
-

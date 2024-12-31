@@ -167,7 +167,7 @@ fun PlayedGameScreen(
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(paddingValues),
@@ -186,7 +186,9 @@ fun PlayedGameScreen(
             item {
                 when (playedGameWinnerOrNextStage) {
                     is PlayedGameWinnerOrNextStage.Loading -> {
-                        CircularProgressIndicator()
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
 
                     is PlayedGameWinnerOrNextStage.PlayedGameNextStageState -> {
@@ -216,7 +218,6 @@ fun PlayedGameScreen(
                     }
                 )
             }
-
 
         }
     }

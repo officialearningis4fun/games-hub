@@ -323,6 +323,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
         }
 
+    // when the last card is played; after animating, the user still has played card
     private suspend fun playCardsGameWhenOnCardStateChange() {
         try {
             val gameId = currentGameId
@@ -922,7 +923,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                         )
                         when (response) {
                             is Response.Error -> {
-                                Log.d(
+                                Log.e(
                                     GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
                                     response.message.toString()
                                 )
@@ -936,6 +937,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                             }
 
                             is Response.Success -> {
+                                Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "card requested to hit approved")
                                 playCardsStateFlow.update {
                                     it.copy(
                                         animatingCard = userCard,

@@ -5,14 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.learningis4fun.gameshub.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.commons.domain.repository.UserRepository
-import com.learningis4fun.gameshub.domain.use_cases.GetOngoingGamesUseCase
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,7 +21,6 @@ class CardsStartViewModel @Inject constructor(
     val repository: DefaultCardRepository,
     private val gameRepository: GameRepository,
     private val userRepository: UserRepository,
-    private val getOngoingGamesUseCase: GetOngoingGamesUseCase
 ) : ViewModel() {
 
     private val completedGamesStateFlow = MutableStateFlow(CompletedGamesState())
@@ -50,29 +47,14 @@ class CardsStartViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            combine(
-                getOngoingGamesUseCase(),
-                completedGamesStateFlow
-            ) { ongoing, completed -> Pair(ongoing, completed) }
-                .collectLatest { (ongoing, completed) ->
+            completedGamesStateFlow
+                .collectLatest { completed ->
                     val userId = userRepository.getUserId()
-
-                    val showOngoing = ongoing.games.isNotEmpty()
-
-                    val ongoingGamesOrNewGameState = if (showOngoing) {
-                        OngoingGamesOrNewGameState.OngoingGamesState(
-                            games = ongoing.games,
-                            isLoading = ongoing.isLoading
-                        )
-                    } else {
-                        OngoingGamesOrNewGameState.NewGameState
-                    }
 
                     cardsStartStateFlow.update {
                         it.copy(
                             completedGamesState = completed.copy(userId = userId),
-                            ongoingGamesOrNewGameState = ongoingGamesOrNewGameState,
-                            isLoading = completed.isLoading || ongoing.isLoading
+                            isLoading = completed.isLoading
                         )
                     }
                 }

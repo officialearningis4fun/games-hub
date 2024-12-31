@@ -325,7 +325,7 @@ private fun OnGoingGamesSectionLightPrev() {
         OngoingGamesSection(
             modifier = Modifier
                 .fillMaxWidth(),
-            games = ongoingGamesState.games
+            games = ongoingGamesState
         )
     }
 }
@@ -338,12 +338,12 @@ private fun OnGoingGamesSectionDarkPrev() {
         OngoingGamesSection(
             modifier = Modifier
                 .fillMaxWidth(),
-            games = ongoingGamesState.games
+            games = ongoingGamesState
         )
     }
 }
 
-val ongoingGamesState = OngoingGamesOrNewGameState.OngoingGamesState(
+val ongoingGamesState =
     listOf(
         OnGoingGame(
             threeCards = Constants
@@ -371,4 +371,3 @@ val ongoingGamesState = OngoingGamesOrNewGameState.OngoingGamesState(
             )
         )
     )
-)

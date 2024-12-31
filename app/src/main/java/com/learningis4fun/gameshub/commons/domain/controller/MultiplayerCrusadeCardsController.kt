@@ -671,11 +671,11 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     ): CardStates {
 
         if (cardName.isEmpty()) {
-            return CardStates.Error("Error while hitting, card name should not empty")
+            return CardStates.Error("Error while hitting, card name should not be empty")
         }
 
         if (playerId.isEmpty()) {
-            return CardStates.Error("Error while hitting, playerId should not empty")
+            return CardStates.Error("Error while hitting, playerId should not be empty")
         }
 
         if (cardName != Constants.CardNames.TWO && cardName != Constants.CardNames.JOKER) {

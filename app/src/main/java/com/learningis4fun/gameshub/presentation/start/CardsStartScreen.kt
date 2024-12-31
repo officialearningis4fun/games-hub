@@ -2,7 +2,6 @@ package com.learningis4fun.gameshub.presentation.start
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -35,7 +34,6 @@ import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
-import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
@@ -43,9 +41,8 @@ import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_g
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameToolsSection
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameViewModel
 import com.learningis4fun.gameshub.commons.ui.routes.StartScreenRoute
-import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
-import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
 import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
+import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
@@ -149,7 +146,7 @@ fun CardsStartScreen(
         } else {
             CardsStartDataScreen(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
                     .padding(paddingValues),
                 completedGamesState = cardsStartState.completedGamesState,
@@ -198,54 +195,40 @@ fun CardsStartDataScreen(
     onDeleteGame: (String) -> Unit = {},
     onEvent: (CreateNewGameToolsEvents) -> Unit = {}
 ) {
+    LazyColumn(modifier) {
 
-    Box(
-        modifier = modifier
-    ) {
-        Column(Modifier) {
-
+        item {
             CompletedGamesSection(
                 modifier = Modifier.fillMaxWidth(),
                 completedGamesState = completedGamesState,
                 onGameClick = onGameClick
             )
-
-            LazyColumn {
-                item {
-                    OngoingGamesOrCreateNewGameToolsSection(
-                        modifier = Modifier.fillMaxWidth(),
-                        ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
-                        createNewGameToolsState = createNewGameToolsState,
-                        onStartGame = onStartClick,
-                        onResumeClick = onResumeClick,
-                        onDeleteGame = onDeleteGame,
-                        onCreateEvent = onEvent,
-                    )
-                }
-            }
-
         }
 
+        item {
+            OngoingGamesOrCreateNewGameToolsSection(
+                modifier = Modifier.fillMaxWidth(),
+                ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
+                createNewGameToolsState = createNewGameToolsState,
+                onStartGame = onStartClick,
+                onResumeClick = onResumeClick,
+                onDeleteGame = onDeleteGame,
+                onCreateEvent = onEvent,
+            )
+        }
     }
 
-}
-
-@Composable
-private fun PrevRootLayout(
-    content: @Composable () -> Unit
-) {
-    GamesHubAppTheme {
-        content()
-    }
 }
 
 @Preview
 @Composable
 private fun CardsStartScreenLightPrev() {
-    PrevRootLayout {
+    GamesHubAppThemePrev {
         CardsStartScreen(
             modifier = Modifier
                 .fillMaxSize(),
+            ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
+            createNewGameToolsState = CreateNewGameToolsState(),
             cardsStartState = cardsStartState.copy(isLoading = false)
         )
     }
@@ -254,7 +237,7 @@ private fun CardsStartScreenLightPrev() {
 @Preview
 @Composable
 private fun CardsStartScreenWithOngoingGameLightPrev() {
-    PrevRootLayout {
+    GamesHubAppThemePrev {
         CardsStartScreen(
             modifier = Modifier
                 .fillMaxSize(),
@@ -266,38 +249,9 @@ private fun CardsStartScreenWithOngoingGameLightPrev() {
 val cardsStartState = CardsStartState(
     isLoading = false,
     completedGamesState = CompletedGamesState(),
-    ongoingGamesOrNewGameState = OngoingGamesOrNewGameState.NewGameState
 )
 
 val cardsStartStateWithOngoingGame = CardsStartState(
     isLoading = false,
-    completedGamesState = CompletedGamesState(),
-    ongoingGamesOrNewGameState = OngoingGamesOrNewGameState.OngoingGamesState(
-        games = listOf(
-            OnGoingGame(
-                threeCards = Constants
-                    .Cards
-                    .cards
-                    .take(3).mapIndexed { index, card ->
-                        card.copy(
-                            id = "$index"
-                        )
-                    },
-                gameWithPlayers = GameWithPlayers(
-                    game = Game(),
-                    players = listOf(
-                        Player(
-                            uniqueId = "id1",
-                            profileName = "Android"
-                        ),
-                        Player(
-                            uniqueId = "id2",
-                            profileName = "Hlompho"
-                        )
-                    )
-                )
-            )
-
-        )
-    )
+    completedGamesState = CompletedGamesState()
 )
