@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.commons.domain.util.playerName
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import kotlinx.serialization.Serializable
 
@@ -26,7 +27,15 @@ data class Player(
     fun toPlayerScreenInfo(): PlayerScreenInfo = PlayerScreenInfo(
         playerId = uniqueId,
         playerName = profileName,
-        imageUrl = imageUrl,
+        imageUrl = imageUrl.ifEmpty { null },
+        defaultAvatar = R.drawable.avatar_man1,
+        numOfCardsLeft = ""
+    )
+
+    fun toPlayerScreenInfo(userId: String): PlayerScreenInfo = PlayerScreenInfo(
+        playerId = uniqueId,
+        playerName = this.playerName(userId),
+        imageUrl = imageUrl.ifEmpty { null },
         defaultAvatar = R.drawable.avatar_man1,
         numOfCardsLeft = ""
     )

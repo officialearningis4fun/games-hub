@@ -74,6 +74,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
@@ -89,6 +90,8 @@ import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
 import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
+import com.learningis4fun.gameshub.util.ScaleTransitionDirection
+import com.learningis4fun.gameshub.util.scaleIntoContainer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
@@ -99,12 +102,21 @@ fun NavGraphBuilder.playCardsScreenComposable(
     onBackClick: () -> Unit,
     navigateToWinner: (WinnerScreenRoute) -> Unit
 ) {
-    composable<PlayCardsScreenRoute>() {
+    composable<PlayCardsScreenRoute>(
+        enterTransition = {
+            scaleIntoContainer()
+        },
+        popEnterTransition = {
+            scaleIntoContainer(direction = ScaleTransitionDirection.INWARDS)
+        }
+    ) {
 
         val playCardsViewModel: PlayCardsViewModel = hiltViewModel()
 
         val playCardsState by playCardsViewModel.playCardsState.collectAsState()
-        val gameDuration by playCardsViewModel.gameDuration.collectAsState()
+        val gameDuration by playCardsViewModel.gameDuration.collectAsStateWithLifecycle()
+
+        val animatingCardAndStage by playCardsViewModel.animatingCardAndStage.collectAsStateWithLifecycle()
 
         BackHandler(
             onBack = {
@@ -114,14 +126,26 @@ fun NavGraphBuilder.playCardsScreenComposable(
             }
         )
 
-
         GamesHubAnimatedContentScope(
             animatedContentScope = this@composable
         ) {
             PlayCardsScreen(
                 playCardsState = playCardsState,
-                gameDuration = gameDuration,
+                animatingCardAndStage = animatingCardAndStage,
                 onEvent = playCardsViewModel::onEvent,
+                timerSectionContent = {
+                    TimerSection(
+                        textColor = Color.Black,
+                        duration = gameDuration,
+                        direction = playCardsState.playingDirection
+                    )
+                },
+                headingTimerContent = {
+                    Heading(
+                        text = gameDuration,
+                        textColor = Color.Black
+                    )
+                },
                 winner = { (player, wonGameId) ->
                     navigateToWinner(
                         WinnerScreenRoute(
@@ -139,14 +163,14 @@ fun NavGraphBuilder.playCardsScreenComposable(
                 onProfileClick = {
                     onProfileClick()
                 },
-                onResumeGame = {
-                    playCardsViewModel.onAppResumed()
-                },
                 onPauseGame = {
                     playCardsViewModel.onAppPaused()
+                },
+                onResumeGame = {
+                    playCardsViewModel.onAppResumed()
                 }
-
             )
+
         }
     }
 }
@@ -157,10 +181,12 @@ fun NavGraphBuilder.playCardsScreenComposable(
 fun PlayCardsScreen(
     modifier: Modifier = Modifier,
     playCardsState: PlayCardsState,
-    gameDuration: String,
+    animatingCardAndStage: AnimatingCardAndStage = AnimatingCardAndStage(),
     testing: Boolean = false,
     onEvent: (PlayCardsEvent) -> Unit = {},
     winner: (Pair<Player, String>) -> Unit = {},
+    headingTimerContent: @Composable () -> Unit = {},
+    timerSectionContent: @Composable () -> Unit = {},
     onClose: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onPauseGame: () -> Unit = {},
@@ -168,7 +194,7 @@ fun PlayCardsScreen(
 ) {
 
     LaunchedEffect(key1 = playCardsState.wonGame) {
-        if (playCardsState.wonGame.gameId.isNotEmpty()) {
+        if (playCardsState.wonGame.hasWinner()) {
             winner(Pair(playCardsState.wonGame.winner, playCardsState.wonGame.gameId))
             println("has winner called")
         }
@@ -209,11 +235,7 @@ fun PlayCardsScreen(
                 title = {
                     if (playCardsState.isLoading.not()) {
                         if (playCardsState.playersScreenInfo.size > 2) {
-                            TimerSection(
-                                duration = gameDuration,
-                                textColor = Color.Black,
-                                direction = playCardsState.playingDirection
-                            )
+                            timerSectionContent()
                         } else {
                             Text(
                                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -256,9 +278,12 @@ fun PlayCardsScreen(
                     .fillMaxSize()
                     .padding(paddingValues),
                 playCardsState = playCardsState,
-                gameDuration = gameDuration,
+                animatingCardAndStage = animatingCardAndStage,
                 testing = testing,
-                onEvent = onEvent
+                onEvent = onEvent,
+                headingTimerContent = {
+                    headingTimerContent()
+                }
             )
         }
     }
@@ -269,16 +294,13 @@ fun PlayCardsScreen(
 fun PlayCardsDataRoot(
     modifier: Modifier = Modifier,
     playCardsState: PlayCardsState,
-    gameDuration: String,
+    animatingCardAndStage: AnimatingCardAndStage,
     testing: Boolean = false,
     onEvent: (PlayCardsEvent) -> Unit = {},
+    headingTimerContent: @Composable () -> Unit = {},
 ) {
 
-    val animatingCard: UserCard? = playCardsState.animatingCard
-
-    var userCardReversible by remember {
-        mutableStateOf<UserCard?>(null)
-    }
+    val animatingCard: UserCard? = animatingCardAndStage.animatingCard
 
     var playCardAnimDim by remember {
         mutableStateOf(PlayCardAnimDim())
@@ -300,9 +322,9 @@ fun PlayCardsDataRoot(
         androidx.compose.animation.core.Animatable(0f)
     }
 
-    LaunchedEffect(key1 = playCardsState.animatingCardStages) {
+    LaunchedEffect(key1 = animatingCardAndStage.animatingStages) {
         Log.d("PlayCardsScreen", "animating card: ${animatingCard.toString()}")
-        if (animatingCard != null && playCardAnimDim != PlayCardAnimDim() && playCardsState.animatingCardStages == AnimatingCardStages.ANIMATING) {
+        if (animatingCard != null && playCardAnimDim != PlayCardAnimDim() && animatingCardAndStage.isAnimating()) {
 
             animatedOffsetX.snapTo(playCardAnimDim.startOffsetX)
             animatedOffsetY.snapTo(playCardAnimDim.startOffsetY)
@@ -375,13 +397,14 @@ fun PlayCardsDataRoot(
                     playersScreenInfo = playCardsState.playersScreenInfo,
                 )
             } else {
-
                 PlayersSectionScreen(
                     modifier = Modifier
                         .fillMaxWidth(),
                     textColor = Color.Black,
                     playersScreenInfo = playCardsState.playersScreenInfo,
-                    duration = gameDuration
+                    headingTimerContent = {
+                        headingTimerContent()
+                    }
                 )
             }
 
@@ -413,7 +436,7 @@ fun PlayCardsDataRoot(
                 modifier = Modifier.fillMaxWidth(),
                 cards = playCardsState.userUnPlayedCards.userCardsWithAnimation(
                     animatingCard = animatingCard,
-                    animatingCardStages = playCardsState.animatingCardStages
+                    animatingCardStages = animatingCardAndStage.animatingStages
                 ),
                 error = playCardsState.playCardsErrorState,
                 onClick = {
@@ -1031,8 +1054,8 @@ fun Heading(
 @Composable
 fun TimerSection(
     modifier: Modifier = Modifier,
-    duration: String,
     textColor: Color,
+    duration: String,
     direction: String = ""
 ) {
 
@@ -1071,7 +1094,6 @@ fun PlayCardsDefaultScreenLightPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
                 error = "Not enough cards to be picked",
@@ -1092,7 +1114,6 @@ fun PlayCardsDefaultScreenDarkPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
                 error = null
@@ -1108,7 +1129,6 @@ fun PlayCardsDefaultScreenWithMultiPlayerLightPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
                 error = null,
@@ -1126,7 +1146,6 @@ fun PlayCardsDefaultScreenWithMultiPlayerDarkPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 isLoading = false,
                 error = null,
@@ -1144,7 +1163,6 @@ fun PlayCardsChangeJokerActionScreenDarkPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 showDefineJokerActions = true,
             )
@@ -1160,7 +1178,6 @@ fun PlayCardsChangeJokerActionScreenLightPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 showDefineJokerActions = true,
             )
@@ -1175,7 +1192,6 @@ fun PlayCardsChangeCardTypeScreenLightPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 showChooseCardTypeScreen = true
             )
@@ -1190,7 +1206,6 @@ fun PlayCardsChangeCardTypeScreenDarkPrev() {
         PlayCardsScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            gameDuration = "00:01",
             playCardsState = DefaultPlayCardsState.copy(
                 showChooseCardTypeScreen = true
             )

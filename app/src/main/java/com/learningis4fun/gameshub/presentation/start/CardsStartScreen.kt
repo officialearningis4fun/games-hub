@@ -43,6 +43,8 @@ import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_g
 import com.learningis4fun.gameshub.commons.ui.routes.StartScreenRoute
 import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
+import com.learningis4fun.gameshub.util.ScaleTransitionDirection
+import com.learningis4fun.gameshub.util.scaleIntoContainer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
@@ -53,7 +55,11 @@ fun NavGraphBuilder.cardsStartScreenComposable(
     onProfileClick: () -> Unit,
     onGameClick: (Pair<Game, Player>) -> Unit = {},
 ) {
-    composable<StartScreenRoute> { backStackEntry ->
+    composable<StartScreenRoute>(
+        popEnterTransition = {
+            scaleIntoContainer(direction = ScaleTransitionDirection.INWARDS)
+        }
+    ) { backStackEntry ->
         backStackEntry.destination.parent
 
         val cardsStartViewModel: CardsStartViewModel = hiltViewModel()

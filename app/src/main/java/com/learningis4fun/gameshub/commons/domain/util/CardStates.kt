@@ -146,7 +146,14 @@ data class CardStateAndContent(
 object CardStatesDefaultMsg {
     const val Play = "Requested to play"
     const val Played = "Successfully played"
+
+    /**
+     * Requested to play or allow others play
+     */
     const val PlayOnly = "Requested to play or allow others play"
+    /**
+     * Requested to play or pick
+     */
     const val PlayOrPick = "Requested to play or pick"
     const val Pick = "Requested to pick"
     const val Picked = "Successfully picked"

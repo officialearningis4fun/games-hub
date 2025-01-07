@@ -71,7 +71,11 @@ class CrusadeLoggedUserCardsController @Inject constructor(
             }
 
             is CardStates.Play -> {
-                Response.Error(CardStatesDefaultMsg.PlayError)
+                if (cardState.message == CardStatesDefaultMsg.PlayError) {
+                    Response.Error(CardStatesDefaultMsg.PlayError)
+                } else {
+                    Response.Success(Unit)
+                }
             }
 
             else -> Response.Success(Unit)

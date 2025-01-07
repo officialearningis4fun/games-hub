@@ -59,7 +59,7 @@ fun NavGraphBuilder.profileScreenComposable(
             scaleIntoContainer()
         },
         popEnterTransition = {
-            scaleIntoContainer(direction = ScaleTransitionDirection.OUTWARDS)
+            scaleIntoContainer(direction = ScaleTransitionDirection.INWARDS)
         }
     ) {
 

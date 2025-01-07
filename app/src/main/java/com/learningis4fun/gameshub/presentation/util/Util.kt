@@ -21,6 +21,22 @@ val LocalAnimatedContentScope = compositionLocalOf<AnimatedContentScope> {
     error("Animated content scope not provided")
 }
 
+val LocalGameDurationProvider = compositionLocalOf<String> {
+    error("GameId not provided")
+}
+
+@Composable
+fun GameDurationProvider(
+    gameDuration: String,
+    content: @Composable () -> Unit
+) {
+    CompositionLocalProvider(
+        LocalGameDurationProvider provides gameDuration
+    ) {
+        content()
+    }
+}
+
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun GamesHubTransitionScopeAndAnimatedContentScope(
@@ -80,7 +96,9 @@ fun GamesHubAppThemePrev(
                     transitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this
                 ) {
-                    content()
+                    GameDurationProvider(gameDuration = "00:20") {
+                        content()
+                    }
                 }
             }
         }

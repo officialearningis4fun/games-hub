@@ -10,8 +10,7 @@ import com.learningis4fun.gameshub.domain.model.UserCard
 data class PlayCardsState(
     val playersScreenInfo: List<PlayerScreenInfo> = emptyList(),
     val playedCards: List<UserCard> = emptyList(),
-    val animatingCard: UserCard? = null,
-    val animatingCardStages: AnimatingCardStages = AnimatingCardStages.NOT_STARTED,
+    val currPlaying: CurrentlyPlayingAnim = CurrentlyPlayingAnim(),
     val dustbin: List<GameCard> = emptyList(),
     val userUnPlayedCards: Pair<List<UserCard>, UserCard?> = Pair(emptyList(), null),
     val message: String = "",
@@ -57,6 +56,11 @@ enum class AnimatingCardStages {
     ANIMATING,
 }
 
+data class CurrentlyPlayingAnim(
+    val currPlaying: PlayerScreenInfo? = null,
+    val animatingStages: AnimatingCardStages = AnimatingCardStages.NOT_STARTED
+)
+
 fun Pair<List<UserCard>, UserCard?>.userCardsWithAnimation(
     animatingCard: UserCard?,
     animatingCardStages: AnimatingCardStages
@@ -73,7 +77,15 @@ fun Pair<List<UserCard>, UserCard?>.userCardsWithAnimation(
 data class WonGame(
     val winner: Player = Player(),
     val gameId: String = ""
-)
+) {
+    fun hasWinner(): Boolean {
+        return winner != Player() && gameId.isNotEmpty()
+    }
+
+    fun hasWonGameId(): Boolean {
+        return gameId.isNotEmpty()
+    }
+}
 
 data class PlayCardsErrorState(
     val errorMessage: String,
@@ -88,3 +100,18 @@ sealed interface PlayCardsErrorAction {
     data object RetryCardState : PlayCardsErrorAction
     data object RetryResumeGame : PlayCardsErrorAction
 }
+
+
+fun AnimatingCardAndStage.isAnimating(): Boolean {
+    return AnimatingCardStages.ANIMATING == this.animatingStages
+}
+
+fun AnimatingCardAndStage.isNotAnimating(): Boolean {
+    return AnimatingCardStages.ANIMATING != this.animatingStages
+}
+
+data class AnimatingCardAndStage(
+    val animatingCard: UserCard? = null,
+    val animatingStages: AnimatingCardStages = AnimatingCardStages.NOT_STARTED
+)
+

@@ -12,9 +12,11 @@ fun <T> Response<T>.getDataOrThrowException(): T {
 }
 
 object GamesHubLogTags {
+    const val UTIL = "util"
     const val MULTIPLAYER_CRUSADE_CARDS_CONTROLLER = "MultiplayerController"
     const val GAME_REPOSITORY = "gameRepository"
     const val GAME_CARD_REPOSITORY = "gameCardRepository"
+    const val HANDLE_CARD_STATE_USE_CASE = "handleCardStateUseCase"
     const val PLAY_CARDS_VIEW_MODEL = "playCardsViewModel"
     const val GET_LATEST_UN_PLAYED_CARDS = "getLatestUnPlayedCards"
     const val GET_LATEST_GAME_STAGE_PLAYER = "latestGameStagePlayer"

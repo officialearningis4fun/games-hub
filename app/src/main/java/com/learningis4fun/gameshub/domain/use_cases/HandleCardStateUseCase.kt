@@ -93,6 +93,7 @@ class HandleCardStateUseCase @Inject constructor(
 
         var cardState: CardStates? = null
         var playCardState: GamePlayerActions? = null
+
         when (state) {
             is CardStates.Chance -> {
                 // can play
@@ -382,11 +383,13 @@ class HandleCardStateUseCase @Inject constructor(
                 println("There is an error while playing...")
             }
         }
+
         cardState?.let {
             yield()
             saveCardStateToPreferences(it)
         }
 
+        // update playCardState
         when (state) {
             is CardStates.ChangeType, is CardStates.Play, is CardStates.Hit, is CardStates.DefineCardAction -> Unit
 
@@ -492,9 +495,5 @@ class HandleCardStateUseCase @Inject constructor(
             }
         }
         preferenceManager.updateRecentCardState(stateEntity)
-    }
-
-    private fun promptUserHitBackOrPickMessage(cardsToPick: Int): String {
-        return "${CardStatesDefaultMsg.HitBackOrPick} $cardsToPick cards"
     }
 }

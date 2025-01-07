@@ -172,14 +172,15 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 }
                 // save chosen players
                 // update number of participants
-                val prePlayersIds =
-                    createNewGameToolsStateFlow.value.availablePlayers.map { it.player.uniqueId }
-                preferences.savePrevPlayersIds(prePlayersIds).getDataOrThrowException()
 
                 val players = createNewGameToolsStateFlow
                     .value
                     .availablePlayers
                     .map { it.player }
+
+                val prePlayersIds =
+                    players.map { it.uniqueId }
+                preferences.savePrevPlayersIds(prePlayersIds).getDataOrThrowException()
 
                 // create a game with the selected participants
                 val gameId = setupGameUseCase(
@@ -203,7 +204,7 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 preferences.device1.first(),
                 preferences.device2.first(),
                 preferences.device3.first(),
-                preferences.geminiAI.first()
+                // preferences.geminiAI.first()
             ).mapIndexed { index, player ->
                 PlayerInfo(
                     player = player.copy(

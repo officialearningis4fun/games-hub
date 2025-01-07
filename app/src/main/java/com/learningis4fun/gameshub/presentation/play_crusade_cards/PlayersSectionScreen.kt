@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -42,8 +42,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.domain.model.Card
-import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
+import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 import com.learningis4fun.gameshub.presentation.util.LocalAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.LocalCustomSharedTransitionScope
 import com.learningis4fun.gameshub.presentation.util.sharedImageElementKey
@@ -76,7 +76,7 @@ fun MultiplePlayersSectionScreen(
         verticalAlignment = Alignment.CenterVertically,
         contentPadding = PaddingValues(horizontal = 16.dp)
     ) {
-        itemsIndexed(playersScreenInfo) { _, player ->
+        items(playersScreenInfo, key = { it.playerId }) { player ->
             PlayerItem(
                 modifier = Modifier,
                 textColor = textColor,
@@ -92,8 +92,8 @@ fun MultiplePlayersSectionScreen(
 fun PlayersSectionScreen(
     modifier: Modifier = Modifier,
     playersScreenInfo: List<PlayerScreenInfo>,
-    duration: String,
-    textColor: Color = MaterialTheme.colorScheme.onPrimary
+    textColor: Color = MaterialTheme.colorScheme.onPrimary,
+    headingTimerContent: @Composable () -> Unit = {}
 ) {
 
     val playerImgHeight = 64.dp
@@ -123,7 +123,7 @@ fun PlayersSectionScreen(
                     playerScreenInfo = player1
                 )
 
-                Heading(text = duration, textColor = textColor)
+                headingTimerContent()
 
                 PlayerItem(
                     modifier = Modifier,
@@ -167,10 +167,13 @@ fun PlayerItem(
 
                 val animatedContentScope = LocalAnimatedContentScope.current
                 val sharedImageKey = remember {
-                    sharedImageElementKey(playerId = playerScreenInfo.playerId, gameId = playerScreenInfo.gameId)
+                    sharedImageElementKey(
+                        playerId = playerScreenInfo.playerId,
+                        gameId = playerScreenInfo.gameId
+                    )
                 }
 
-                with(LocalCustomSharedTransitionScope.current){
+                with(LocalCustomSharedTransitionScope.current) {
                     Image(
                         modifier = Modifier
                             .sharedElement(
@@ -292,7 +295,7 @@ fun CardItem(
 @Preview
 @Composable
 private fun PlayerItemLightPrev() {
-    GamesHubAppTheme {
+    GamesHubAppThemePrev {
         PlayerItem(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primary),
@@ -304,11 +307,11 @@ private fun PlayerItemLightPrev() {
 @Preview
 @Composable
 private fun PlayersSectionLightPrev() {
-    GamesHubAppTheme {
+    GamesHubAppThemePrev {
         PlayersSectionScreen(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primary),
-            playersScreenInfo = playersScreenInfo.take(2), duration = "00:20"
+            playersScreenInfo = playersScreenInfo.take(2)
         )
     }
 }
@@ -316,11 +319,11 @@ private fun PlayersSectionLightPrev() {
 @Preview
 @Composable
 private fun PlayersSectionDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
+    GamesHubAppThemePrev(darkTheme = true) {
         PlayersSectionScreen(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primary),
-            playersScreenInfo = playersScreenInfo.take(2), duration = "00:20"
+            playersScreenInfo = playersScreenInfo.take(2)
         )
     }
 }
@@ -328,7 +331,7 @@ private fun PlayersSectionDarkPrev() {
 @Preview
 @Composable
 private fun MultiPlayersSectionLightPrev() {
-    GamesHubAppTheme {
+    GamesHubAppThemePrev {
         MultiplePlayersSectionScreen(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primary),
@@ -340,7 +343,7 @@ private fun MultiPlayersSectionLightPrev() {
 @Preview
 @Composable
 private fun MultiPlayersSectionDarkPrev() {
-    GamesHubAppTheme(darkTheme = true) {
+    GamesHubAppThemePrev(darkTheme = true) {
         MultiplePlayersSectionScreen(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.primary),

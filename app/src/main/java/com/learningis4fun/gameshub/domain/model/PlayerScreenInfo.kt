@@ -11,3 +11,4 @@ data class PlayerScreenInfo(
     val isCurrentlyPlaying: Boolean = false,
     val gameId: String = ""
 )
+
