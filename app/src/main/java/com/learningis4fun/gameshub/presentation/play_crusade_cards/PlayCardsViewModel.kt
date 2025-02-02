@@ -55,6 +55,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -243,6 +244,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
         return if (gameWithPlayers == null) {
             flowOf(null)
         } else {
+
             combine(
                 lastThreePlayedCards(),
                 getUserCards(),

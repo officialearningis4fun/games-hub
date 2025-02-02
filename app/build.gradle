@@ -2,25 +2,24 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
     id 'kotlin-parcelize'
-    id 'kotlin-kapt'
     id 'androidx.navigation.safeargs'
     id 'dagger.hilt.android.plugin'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.google.gms.google-services'
+    id 'com.google.devtools.ksp'
 }
 
 android {
 
     namespace 'com.learningis4fun.gameshub'
 
-    compileSdkVersion 34
-
     defaultConfig {
         applicationId "com.learningis4fun.gameshub"
         minSdkVersion 21
+        compileSdk 34
         targetSdkVersion 34
         multiDexEnabled true
-        versionCode 11
+        versionCode 12
         versionName "1.0.0-beta10"
 
         buildConfigField("String", "GEMINI_API_KEY", "${GEMINI_API_KEY}")
@@ -32,6 +31,14 @@ android {
                         "room.schemaLocation"  : "$projectDir/schemas".toString(),
                         "room.incremental"     : "true",
                         "room.expandProjection": "true"]
+            }
+        }
+
+        defaultConfig {
+            ksp {
+                arg("room.schemaLocation", "$projectDir/schemas")
+                arg("room.incremental", "true")
+                arg("room.expandProjection", "true")
             }
         }
 
@@ -82,169 +89,149 @@ android {
         compose true
         buildConfig true
     }
-    kapt {
-        javacOptions {
-            option("-Adagger.fastInit=ENABLED")
-            option("-Adagger.hilt.android.internal.disableAndroidSuperclassValidation=true")
-        }
-    }
-
 
 }
 
 dependencies {
 
-    def lifecycle_version = "2.8.6"
-    def room_version = "2.6.1"
-    def datastore_version = "1.1.1"
-    def navigation_version = "2.8.5"
-    def coroutines_version = "1.8.0"
-    def retrofit_version = "2.9.0"
-    def koin_version = "3.5.3"
-    def ktor_version = "1.6.3"
-    def compose_ui_version = "1.7.6"
-
     // gemini api
-    implementation "com.google.ai.client.generativeai:generativeai:0.9.0"
+    implementation libs.generativeai
 
     // ui
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation libs.appcompat
+    implementation libs.material
+    implementation libs.constraintlayout
 
-    implementation 'androidx.compose.ui:ui-text-google-fonts:1.7.3'
+    implementation libs.ui.text.google.fonts
     // util
-    implementation 'androidx.preference:preference-ktx:1.2.1'
-    implementation 'com.google.code.gson:gson:2.9.1'
+    implementation libs.preference.ktx
+    implementation libs.gson
 
-    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation libs.multidex
 
     // kotlin
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation libs.kotlin.stdlib
+    implementation libs.core.ktx
 
     //firebase
-    implementation 'com.google.firebase:firebase-auth-ktx:21.0.3'
-    implementation 'com.google.android.gms:play-services-auth:20.1.0'
-    implementation 'com.google.firebase:firebase-analytics-ktx:20.1.2'
+    implementation libs.firebase.auth.ktx
+    implementation libs.play.services.auth
+    implementation libs.firebase.analytics.ktx
 
-    implementation 'com.google.android.gms:play-services-ads:23.4.0'
+    implementation libs.play.services.ads
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.8.0'
+    implementation libs.kotlinx.coroutines.play.services
 
     //viewModel
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
+    implementation libs.lifecycle.viewmodel.ktx
+    implementation libs.androidx.lifecycle.viewmodel.compose
     // liveData
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
-
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
-
+    implementation libs.lifecycle.livedata.ktx
+    implementation libs.androidx.lifecycle.runtime.ktx
     // lifecycle
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.8.6'
+    implementation libs.lifecycle.extensions
+    implementation libs.lifecycle.common.java8
 
     // room
-    implementation "androidx.room:room-ktx:$room_version"
-    implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
+    implementation libs.room.ktx
+    implementation libs.room.runtime
+    ksp libs.androidx.room.compiler
 
     //hilt
-    implementation "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
-    kapt 'androidx.hilt:hilt-compiler:1.2.0'
-    implementation 'androidx.activity:activity-ktx:1.9.2'
+    implementation libs.hilt.android
+    ksp libs.hilt.android.compiler
+    ksp libs.hilt.compiler
+    implementation libs.activity.ktx
 
     // retrofit
-    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
+    implementation libs.retrofit
+    implementation libs.converter.gson
 
     //glide
-    implementation "io.coil-kt:coil:2.5.0"
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation libs.coil
+    implementation(libs.coil.compose)
 
     //navigation
-    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
-    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
-    implementation "androidx.navigation:navigation-compose:$navigation_version"
+    implementation libs.navigation.fragment.ktx
+    implementation libs.navigation.ui.ktx
+    implementation libs.navigation.compose
 
-    implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
+    implementation libs.hilt.navigation.compose
 
     //coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
+    implementation libs.kotlinx.coroutines.core
+    implementation libs.kotlinx.coroutines.android
 
     // dataStore
-    implementation "androidx.datastore:datastore:$datastore_version"
-    implementation "androidx.datastore:datastore-preferences:$datastore_version"
+    implementation libs.androidx.datastore
+    implementation libs.androidx.datastore.preferences
 
     // ktor client
     // Ktor
-    implementation "io.ktor:ktor-client-core:$ktor_version"
-    implementation "io.ktor:ktor-client-cio:$ktor_version"
-    implementation "io.ktor:ktor-client-serialization:$ktor_version"
-    implementation "io.ktor:ktor-client-websockets:$ktor_version"
-    implementation "io.ktor:ktor-client-logging:$ktor_version"
+    implementation libs.ktor.client.core
+    implementation libs.ktor.client.cio
+    implementation libs.ktor.client.serialization
+    implementation libs.ktor.client.websockets
+    implementation libs.ktor.client.logging
     //noinspection GradleDependency Clashes with google gemini sdk on higher versions
-    implementation "ch.qos.logback:logback-classic:1.2.11"
+    implementation libs.logback.classic
 
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3"
+    implementation libs.kotlinx.serialization.json
 
     // Compose
-    implementation "androidx.compose.runtime:runtime:1.7.6"
-    implementation "androidx.compose.ui:ui:1.7.6"
-    implementation "androidx.compose.ui:ui-viewbinding:1.7.6"
-    implementation "androidx.compose.foundation:foundation:1.7.6"
-    implementation "androidx.compose.foundation:foundation-layout:$compose_version"
-    implementation "androidx.compose.material3:material3:1.3.1"
-    implementation "androidx.compose.animation:animation:1.7.6"
-    implementation "androidx.compose.material3:material3-window-size-class:1.3.1"
-    implementation "androidx.compose.ui:ui-tooling:$compose_version"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0"
+    implementation libs.runtime
+    implementation libs.androidx.ui
+    implementation libs.androidx.ui.viewbinding
+    implementation libs.androidx.foundation
+    implementation libs.androidx.foundation.layout
+    implementation libs.androidx.material3
+    implementation libs.androidx.animation
+    //"androidx.compose.material3:material3-window-size-class:1.3.1"
+    implementation libs.androidx.material3.window.size
+    implementation libs.androidx.ui.tooling
+    implementation libs.androidx.constraintlayout.compose
 
-    implementation 'androidx.activity:activity-compose:1.9.3'
-    implementation "androidx.compose.ui:ui-text:$compose_version"
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
+    implementation libs.androidx.activity.compose
+    implementation libs.androidx.ui.text
+    implementation libs.androidx.ui.tooling.preview
 
     // unit test
-    testImplementation 'junit:junit:4.13.2'
-    testImplementation "com.google.truth:truth:1.1.3"
-    testImplementation "org.hamcrest:hamcrest-all:1.3"
-    testImplementation "androidx.arch.core:core-testing:2.2.0"
-    testImplementation "org.robolectric:robolectric:4.5.1"
-    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
-    testImplementation "org.mockito:mockito-core:5.7.0"
+    testImplementation libs.junit
+    testImplementation libs.google.truth
+    testImplementation libs.hamcrest.all
+    testImplementation libs.core.testing
+    testImplementation libs.robolectric
+    testImplementation libs.jetbrains.kotlinx.coroutines.test
+    testImplementation libs.mockito.mockito.core
 
     // instrumentation
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test:runner:1.6.2'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
-    androidTestImplementation('androidx.test.espresso:espresso-contrib:3.6.1') {
+    androidTestImplementation libs.androidx.junit
+    androidTestImplementation libs.androidx.runner
+    androidTestImplementation libs.androidx.espresso.core
+    androidTestImplementation(libs.androidx.espresso.contrib) {
         exclude group: 'org.checkerframework', module: 'checker'
     }
 
 
-    androidTestImplementation "org.mockito:mockito-core:5.7.0"
-    androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
-    androidTestImplementation "androidx.arch.core:core-testing:2.2.0"
-    androidTestImplementation "com.google.truth:truth:1.1.3"
+    androidTestImplementation libs.mockito.mockito.core
+    androidTestImplementation libs.jetbrains.kotlinx.coroutines.test
+    androidTestImplementation libs.core.testing
+    androidTestImplementation libs.google.truth
     // room
-    androidTestImplementation "androidx.room:room-testing:$room_version"
-    androidTestImplementation "androidx.navigation:navigation-testing:$navigation_version"
+    androidTestImplementation libs.androidx.room.testing
+    androidTestImplementation libs.androidx.navigation.testing
 
     // For Robolectric tests.
-    testImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    testImplementation libs.google.hilt.android.testing
     // ...with Kotlin.
-    kaptTest "com.google.dagger:hilt-android-compiler:$hilt_version"
+    kspTest libs.hilt.android.compiler
 
     // For instrumented tests.
-    androidTestImplementation "com.google.dagger:hilt-android-testing:$hilt_version"
+    androidTestImplementation libs.google.hilt.android.testing
     // ...with Kotlin.
-    kaptAndroidTest "com.google.dagger:hilt-android-compiler:$hilt_version"
-
-    debugImplementation "androidx.fragment:fragment-testing:1.8.3"
-
-    testImplementation "io.insert-koin:koin-test:$koin_version"
-    testImplementation "io.insert-koin:koin-test-junit4:$koin_version"
+    kspAndroidTest libs.hilt.android.compiler
+    debugImplementation libs.androidx.fragment.testing
+    testImplementation libs.koin.test
+    testImplementation libs.koin.test.junit4
 
 }
