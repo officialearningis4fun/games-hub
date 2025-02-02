@@ -1,12 +1,13 @@
 package com.learningis4fun.gameshub.crusade_cards.commons.domain.controller
 
 import com.google.common.truth.Truth.assertThat
+import com.learningis4fun.gameshub.commons.domain.controller.CrusadeComputerCardsControllerImpl
+import com.learningis4fun.gameshub.commons.domain.util.Constants
+import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.*
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
 import com.learningis4fun.gameshub.data.data_source.relations.GameCardWithCard
-import com.learningis4fun.gameshub.crusade_cards.domain.model.GameCard
-import com.learningis4fun.gameshub.crusade_cards.domain.use_cases.CreateGameUseCase
+import com.learningis4fun.gameshub.domain.model.GameCard
+import com.learningis4fun.gameshub.domain.use_cases.CreateGameUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runBlockingTest
@@ -39,21 +40,23 @@ class CrusadeComputerCardsControllerImplTest {
         computerCardsController = CrusadeComputerCardsControllerImpl(
             gameRepository = fakeGameRepositoryImpl,
             cardRepository = fakeCardRepositoryImpl,
-            gameCardRepository = fakeGameCardRepositoryImpl
+            gameCardRepository = fakeGameCardRepositoryImpl,
+            gameStageRepository =
         )
 
         createGameUseCase = CreateGameUseCase(
             repository = fakeDefaultRepositoryImpl,
             gameRepository = fakeGameRepositoryImpl,
             cardRepository = fakeCardRepositoryImpl,
-            gameCardRepository = fakeGameCardRepositoryImpl
+            gameCardRepository = fakeGameCardRepositoryImpl,
+            gameStageRepository =
         )
     }
 
     @Test
     fun `play card with no restrictions, returns valid card`() = runBlockingTest {
 
-        Constants.Cards.cards.forEachIndexed {index, card ->
+        Constants.Cards.cards.forEachIndexed { index, card ->
             fakeCardRepositoryImpl.insertCard(card.copy(id = index.toString()))
         }
         fakeUserRepositoryImpl.insertDefaultPlayers()
@@ -63,7 +66,8 @@ class CrusadeComputerCardsControllerImplTest {
         val gameId = createGameUseCase(gameName = "game", participants = participants)
         val card = fakeCardRepositoryImpl.getCards()
             .first {
-                it.name == Constants.CardNames.THREE }
+                it.name == Constants.CardNames.THREE
+            }
 
         val gameCard = GameCard(
             id = "game_card",
@@ -81,7 +85,8 @@ class CrusadeComputerCardsControllerImplTest {
 
         val actual = computerCardsController.playCardWithNoRestrictions(
             gameId = gameId,
-            playerId = playerId)
+            playerId = playerId
+        )
         val expect = Response.Success(userCard, message = "")
         assertThat(actual).isInstanceOf(expect.javaClass)
         assertThat(actual.data).isEqualTo(expect.data)

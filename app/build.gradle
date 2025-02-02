@@ -7,6 +7,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.google.gms.google-services'
     id 'com.google.devtools.ksp'
+    id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 android {
@@ -70,19 +71,12 @@ android {
             languageVersion.set(JavaLanguageVersion.of(18))
         }
     }
-
     packagingOptions {
-        exclude 'META-INF/AL2.0'
-        exclude 'META-INF/LGPL2.1'
-        exclude 'META-INF/licenses/ASM'
-        exclude 'win32-x86/attach_hotspot_windows.dll'
-        exclude 'win32-x86-64/attach_hotspot_windows.dll'
-        exclude 'META-INF/INDEX.LIST'
+        resources {
+            excludes += ['META-INF/AL2.0', 'META-INF/LGPL2.1', 'META-INF/licenses/ASM', 'win32-x86/attach_hotspot_windows.dll', 'win32-x86-64/attach_hotspot_windows.dll', 'META-INF/INDEX.LIST']
+        }
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion '1.5.15'
-    }
 
     buildFeatures {
         viewBinding true
@@ -90,6 +84,10 @@ android {
         buildConfig true
     }
 
+}
+
+composeCompiler {
+    enableStrongSkippingMode = true
 }
 
 dependencies {

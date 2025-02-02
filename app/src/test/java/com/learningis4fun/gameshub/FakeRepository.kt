@@ -1,20 +1,24 @@
 package com.learningis4fun.gameshub
 
+import com.learningis4fun.gameshub.commons.domain.model.Card
+import com.learningis4fun.gameshub.commons.domain.model.Game
+import com.learningis4fun.gameshub.commons.domain.model.GameUserCrossRef
+import com.learningis4fun.gameshub.commons.domain.model.User
+import com.learningis4fun.gameshub.commons.domain.repository.DefaultCardRepository
+import com.learningis4fun.gameshub.commons.domain.util.CardStates
+import com.learningis4fun.gameshub.commons.domain.util.Constants
+import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.FakeCardRepositoryImpl
 import com.learningis4fun.gameshub.crusade_cards.common.domain.repository.FakeGameCardRepositoryImpl
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Card
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.Game
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.User
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.*
 import com.learningis4fun.gameshub.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.data.data_source.relations.GamesOfPlayer
-import com.learningis4fun.gameshub.crusade_cards.domain.model.GameCard
-import com.learningis4fun.gameshub.crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.domain.model.GameCard
+import com.learningis4fun.gameshub.domain.model.UserCard
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class FakeRepository(
     private val gameCardRepositoryImpl: FakeGameCardRepositoryImpl,
     private val cardRepositoryImpl: FakeCardRepositoryImpl
@@ -123,12 +127,12 @@ class FakeRepository(
         return true
     }
 
-    override suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<String> {
+    override suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit> {
         return try {
             _gamesUserCrossRef.add(crossRef)
-            Response.Success("", "Successfully updated")
+            Response.Success(Unit)
         } catch (e: Exception) {
-            Response.Error("", e.localizedMessage ?: "Unknown error occurred")
+            Response.Error(e.localizedMessage ?: "Unknown error occurred")
         }
     }
 
@@ -136,7 +140,7 @@ class FakeRepository(
         TODO("Not yet implemented")
     }
 
-    override fun getCardsInDustbin(gameId: String): Flow<List<GameCardWithCard>> {
+    fun getCardsInDustbin(gameId: String): Flow<List<GameCardWithCard>> {
         val gameCards = _gameCards.filter { it.gameId == gameId }
         val gameCardsWithCards = gameCards.map { gameCard ->
             val card = _cards.find { it.id == gameCard.cardId }
@@ -150,13 +154,12 @@ class FakeRepository(
         return flowOf(gameCardsWithCards.filterNotNull())
     }
 
-    override suspend fun deleteGameUserCrossRef(crossRef: GameUserCrossRef): Response<String> {
+    override suspend fun deleteGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit> {
         return try {
             _gamesUserCrossRef.remove(crossRef)
-            Response.Success("", "Successfully deleted")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                "",
                 exception.localizedMessage
                     ?: "Unknown error occurred while removing playrts from game"
             )
@@ -172,10 +175,10 @@ class FakeRepository(
         TODO("Not Yet Implemented")
     }
 
-    override suspend fun changeCurrentCardType(type: String): Response<String> {
+    override suspend fun changeCurrentCardType(type: String): Response<Unit> {
         _currentCardType = type
 
-        return Response.Success(type, "Successfully changed type")
+        return Response.Success(Unit)
     }
 
     override suspend fun pickCardsFromLibrary(
@@ -189,7 +192,6 @@ class FakeRepository(
 
         if (cardsAvailableForPick.size < numOfCardsToPick) {
             return Response.Error(
-                data = cardsAvailableForPick.size,
                 message = "Not enough cards in the dustbin, wanted to pick $numOfCardsToPick but found ${cardsAvailableForPick.size}"
             )
         }
@@ -210,11 +212,10 @@ class FakeRepository(
         return if (updateResults.any { false }) {
             val updatedResults = updateResults.count { it.data == true }
             Response.Error(
-                data = 0,
                 message = "Did not update all gameCards collected, updated $updatedResults of ${updateResults.size}"
             )
         } else {
-            Response.Success(data = pickedCards.size, message = "Successfully picked cards")
+            Response.Success(data = pickedCards.size)
         }
     }
 
@@ -325,5 +326,5 @@ class FakeRepository(
     ): List<UserCard> {
         TODO("Not yet implemented")
     }
-    
+
 }

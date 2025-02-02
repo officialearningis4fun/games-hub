@@ -1,13 +1,13 @@
 package com.learningis4fun.gameshub.crusade_cards.common.domain.repository
 
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.repository.DefaultCardRepository
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.model.GameUserCrossRef
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Constants
-import com.learningis4fun.gameshub.crusade_cards.commons.domain.util.Response
+import com.learningis4fun.gameshub.commons.domain.model.GameUserCrossRef
+import com.learningis4fun.gameshub.commons.domain.repository.DefaultCardRepository
+import com.learningis4fun.gameshub.commons.domain.util.Constants
+import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.data.data_source.relations.GameCardWithCard
 import com.learningis4fun.gameshub.data.data_source.relations.GamesOfPlayer
-import com.learningis4fun.gameshub.crusade_cards.domain.model.GameCard
-import com.learningis4fun.gameshub.crusade_cards.domain.model.UserCard
+import com.learningis4fun.gameshub.domain.model.GameCard
+import com.learningis4fun.gameshub.domain.model.UserCard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 
@@ -18,13 +18,12 @@ class FakeDefaultRepositoryImpl(
     val _gameUserCrossRefs: MutableList<GameUserCrossRef> = ArrayList()
     var _curreneCardType = ""
 
-    override suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<String> {
+    override suspend fun insertGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit> {
         return try {
             _gameUserCrossRefs.add(crossRef)
-            Response.Success("", message = "Successfully added")
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                "",
                 exception.localizedMessage
                     ?: "Unknown error occurred while adding game and player id"
             )
@@ -35,7 +34,7 @@ class FakeDefaultRepositoryImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun deleteGameUserCrossRef(crossRef: GameUserCrossRef): Response<String> {
+    override suspend fun deleteGameUserCrossRef(crossRef: GameUserCrossRef): Response<Unit> {
         TODO("Not yet implemented")
     }
 
@@ -47,7 +46,7 @@ class FakeDefaultRepositoryImpl(
         TODO("Not yet implemented")
     }
 
-    override fun getCardsInDustbin(gameId: String): Flow<List<GameCardWithCard>> {
+    fun getCardsInDustbin(gameId: String): Flow<List<GameCardWithCard>> {
         TODO("Not yet implemented")
     }
 
@@ -59,13 +58,12 @@ class FakeDefaultRepositoryImpl(
         TODO("Not yet implemented")
     }
 
-    override suspend fun changeCurrentCardType(type: String): Response<String> {
+    override suspend fun changeCurrentCardType(type: String): Response<Unit> {
         return try {
             _curreneCardType = type
-            Response.Success("", type)
+            Response.Success(Unit)
         } catch (exception: Exception) {
             Response.Error(
-                "",
                 exception.localizedMessage ?: "unknown error occurred while changimg card type"
             )
         }
