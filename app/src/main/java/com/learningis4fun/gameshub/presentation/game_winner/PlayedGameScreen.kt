@@ -29,6 +29,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -46,6 +47,7 @@ import com.learningis4fun.gameshub.commons.domain.util.toUIDuration
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
+import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.NewGameWithAIState
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameState
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameToolsSection
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameViewModel
@@ -114,6 +116,13 @@ fun NavGraphBuilder.playedGameWinnerComposable(
                         }
                     )
                 },
+                onStartAIGame = {
+                    createNewGameToolsViewModel.setupNewGameWithAIOnStartClick(
+                        onGameCreated = { gameId ->
+                            onStartGame(gameId)
+                        }
+                    )
+                },
                 onResumeClick = onResumeClick,
                 onStartNextStage = { onStartNextStage(wonGameId) },
                 onCloseClick = onCloseClick,
@@ -131,12 +140,13 @@ fun PlayedGameScreen(
     modifier: Modifier = Modifier,
     playedGameWinnerOrNextStage: PlayedGameWinnerOrNextStage,
     ongoingGamesOrCreateNewGameState: OngoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.Loading,
-    createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
+    createNewGameToolsState: CreateNewGameToolsState,
     winnerImageRes: Int = R.drawable.avatar_boy1,
     wonGameId: String = "",
     playerId: String = "",
     onCloseClick: () -> Unit = {},
     onStartGame: () -> Unit = {},
+    onStartAIGame: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onStartNextStage: () -> Unit = {},
     onEvent: (PlayedGameWinnerEvents) -> Unit = {},
@@ -212,6 +222,7 @@ fun PlayedGameScreen(
                     createNewGameToolsState = createNewGameToolsState,
                     onCreateEvent = onCreateEvent,
                     onStartGame = onStartGame,
+                    onStartAIGame = onStartAIGame,
                     onResumeClick = onResumeClick,
                     onDeleteGame = { gameId ->
                         onEvent(PlayedGameWinnerEvents.DeleteGame(gameId))
@@ -247,7 +258,8 @@ private fun PlayedGameWinnerSection(
                     animatedVisibilityScope = animatedContentScope
                 )
                 .size(128.dp)
-                .clip(CircleShape),
+                .clip(CircleShape)
+                .background(Color.DarkGray),
             contentScale = ContentScale.Crop,
             painter = painterResource(id = imageRes),
             contentDescription = null
@@ -296,7 +308,14 @@ private fun PlayedGameWinnerPrev() {
                 .fillMaxSize(),
             ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
             playedGameWinnerOrNextStage = playedGameWinnerState,
-            createNewGameToolsState = CreateNewGameToolsState()
+            createNewGameToolsState = CreateNewGameToolsState(
+                newGameWithAIState = NewGameWithAIState(
+                    players = listOf(
+                        Constants.Players.USER,
+                        Constants.Players.DEVICE1
+                    )
+                )
+            )
         )
 
     }

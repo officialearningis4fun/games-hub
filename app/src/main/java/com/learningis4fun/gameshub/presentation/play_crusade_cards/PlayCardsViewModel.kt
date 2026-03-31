@@ -55,7 +55,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -515,6 +514,20 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             // when there are no cards from the dustbin; we should end the game and start again!
             is CardStates.Error -> {
+                if(state.playerId.isNotEmpty()){
+                    // request retry
+                    playCardsStateFlow.update {
+                        it.copy(
+                            playCardsErrorState = PlayCardsErrorState(
+                                errorMessage = state.message,
+                                dismissible = false,
+                                errorButtonText = "Reset game",
+                                errorAction = PlayCardsErrorAction.ResetGame
+                            )
+                        )
+                    }
+                    pauseGameAndReleaseResources()
+                }
                 if (state.message == CardsErrorMessages.NOT_ENOUGH_CARDS_TO_BE_PICKED) {
                     playCardsStateFlow.update {
                         it.copy(
@@ -853,6 +866,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 ).first()
                     .toString()
             } else {
+                Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "not user turn: $playerScreenInfo")
                 playerScreenInfo.numOfCardsLeft
             }
         } else {

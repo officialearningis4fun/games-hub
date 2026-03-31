@@ -70,7 +70,8 @@ fun OngoingGamesSection(
 
     with(sharedTransitionScope) {
         Column(
-            modifier = modifier.sharedElement(
+            modifier = modifier
+                .sharedElement(
                 state = rememberSharedContentState(key = sharedElementKeyOfOngoingGameSection),
                 animatedVisibilityScope = animatedContentScope
             )
@@ -258,6 +259,7 @@ private fun PlayerItem(
                     modifier = Modifier
                         .size(sizeOfPhoto)
                         .clip(CircleShape)
+                        .background(Color.DarkGray)
                         .border(
                             width = 3.dp,
                             shape = CircleShape,
@@ -362,11 +364,7 @@ val ongoingGamesState =
                         profileName = "Android",
                         imageUrl = R.drawable.avatar_boy2.toString()
                     ),
-                    Player(
-                        uniqueId = "id2",
-                        profileName = "Hlompho",
-                        imageUrl = R.drawable.ai_platform.toString()
-                    )
+                   Constants.Players.OPENAI
                 )
             )
         )

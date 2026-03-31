@@ -43,7 +43,6 @@ navigationSafeArgsGradlePlugin = "2.8.1"
 playServicesAds = "23.4.0"
 playServicesAuth = "20.1.0"
 preferenceKtx = "1.2.1"
-retrofit = "2.9.0"
 robolectric = "4.5.1"
 roomKtx = "2.6.1"
 runner = "1.6.2"
@@ -82,7 +81,6 @@ appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat"
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTestingVersion" }
 firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version.ref = "firebaseAnalyticsKtx" }
@@ -129,7 +127,6 @@ navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preferenceKtx" }
-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomKtx" }

@@ -182,6 +182,7 @@ fun PlayerItem(
                             )
                             .size(sizeOfPhoto)
                             .clip(CircleShape)
+                            .background(Color.DarkGray)
                             .border(
                                 width = 3.dp,
                                 shape = CircleShape,
@@ -365,12 +366,12 @@ private val playersScreenInfo = listOf(
         "id2",
         "Dev1",
         "",
-        R.drawable.game_test_profile,
+        R.drawable.openai_white_monoblossom,
         "4",
         true,
     ),
     PlayerScreenInfo(
-        "id2",
+        "id3",
         "Dev2",
         "",
         R.drawable.game_test_profile,
@@ -378,7 +379,7 @@ private val playersScreenInfo = listOf(
         true,
     ),
     PlayerScreenInfo(
-        "id3",
+        "id4",
         "Dev3",
         "",
         R.drawable.game_test_profile,
@@ -386,7 +387,7 @@ private val playersScreenInfo = listOf(
         true,
     ),
     PlayerScreenInfo(
-        "id4",
+        "id5",
         "Dev4",
         "",
         R.drawable.game_test_profile,

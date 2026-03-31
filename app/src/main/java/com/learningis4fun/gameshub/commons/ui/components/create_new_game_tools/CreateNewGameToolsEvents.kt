@@ -9,4 +9,5 @@ sealed interface CreateNewGameToolsEvents {
     data object AddParticipant : CreateNewGameToolsEvents
     data object IncreaseEliminationLimitForCrusade : CreateNewGameToolsEvents
     data object DecreaseEliminationLimitForCrusade : CreateNewGameToolsEvents
+    data class SwitchMode(val mode: OnlineOfflineMode) : CreateNewGameToolsEvents
 }

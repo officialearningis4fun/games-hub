@@ -39,5 +39,11 @@
 -dontwarn io.ktor.util.Lock
 -dontwarn io.ktor.utils.io.NativeUtilsJvmKt
 -dontwarn javax.servlet.ServletContainerInitializer
+-dontwarn io.ktor.client.plugins.HttpTimeout$HttpTimeoutCapabilityConfiguration
+-dontwarn io.ktor.client.plugins.HttpTimeout$Plugin
+-dontwarn io.ktor.client.plugins.HttpTimeout
+-dontwarn io.ktor.client.plugins.contentnegotiation.ContentNegotiation$Config
+-dontwarn io.ktor.client.plugins.contentnegotiation.ContentNegotiation$Plugin
+-dontwarn io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 
 -keepclassmembers class  com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.** {<fields>; <methods>;}

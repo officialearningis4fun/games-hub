@@ -11,33 +11,30 @@ import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.commons.domain.repository.UserRepository
-import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.data.data_source.GeminiCrusadeCardsControllerImpl
+import com.learningis4fun.gameshub.data.data_source.OpenAICrusadeCardsControllerImpl
 import com.learningis4fun.gameshub.data.data_source.local.CrusadeCardsPreferencesManagerImpl
 import com.learningis4fun.gameshub.data.data_source.local.GamesDatabase
-import com.learningis4fun.gameshub.data.data_source.remote.GamesHubAPI
 import com.learningis4fun.gameshub.data.repository.CardRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.DefaultCardRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.GameCardRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.GameRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.GameStageRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.UserRepositoryImpl
-import com.learningis4fun.gameshub.domain.use_cases.GetAllCards
-import com.learningis4fun.gameshub.domain.use_cases.GetAllCardsImpl
 import com.learningis4fun.gameshub.domain.use_cases.GetLatestStageNumber
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -46,13 +43,14 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object CrusadeCardsDataModule {
 
-    @Singleton
     @Provides
-    fun providesGamesHubAPI(): GamesHubAPI = Retrofit.Builder()
-        .addConverterFactory(GsonConverterFactory.create())
-        .baseUrl(Constants.TEST_BASE_URL)
-        .build()
-        .create(GamesHubAPI::class.java)
+    @Singleton
+    fun provideHttpClient(
+    ): HttpClient {
+        return HttpClient(CIO) {
+            install(HttpTimeout)
+        }
+    }
 
     @Singleton
     @Provides
@@ -94,30 +92,25 @@ object CrusadeCardsDataModule {
         gameStageRepository = gameStageRepository,
     ) as CrusadeComputerCardsController
 
-    @GeminiCrusadeCardController
+    @OpenAICrusadeCardController
     @Singleton
     @Provides
-    fun provideGeminiCardController(
+    fun provideOpenAICardController(
         gameRepository: GameRepository,
         cardRepository: CardRepository,
         gameCardRepository: GameCardRepository,
         gameStageRepository: GameStageRepository,
-        getLatestStageNumber: GetLatestStageNumber
-    ) = GeminiCrusadeCardsControllerImpl(
+        getLatestStageNumber: GetLatestStageNumber,
+        crusadeCardsPreferencesManager: CrusadeCardsPreferencesManager
+    ) = OpenAICrusadeCardsControllerImpl(
         gameRepository = gameRepository,
         cardRepository = cardRepository,
         gameCardRepository = gameCardRepository,
         gameStageRepository = gameStageRepository,
-        getLatestStageNumber = getLatestStageNumber
+        getLatestStageNumber = getLatestStageNumber,
+        preferencesManager = crusadeCardsPreferencesManager
     ) as CrusadeComputerCardsController
 
-    @Singleton
-    @Provides
-    fun provideGetAllCards(
-        gamesHubAPI: GamesHubAPI
-    ) = GetAllCardsImpl(
-        gamesHubAPI = gamesHubAPI
-    ) as GetAllCards
 
     @ExperimentalStdlibApi
     @Singleton
@@ -181,12 +174,11 @@ object CrusadeCardsDataModule {
 
     @Qualifier
     @Retention(AnnotationRetention.BINARY)
-    annotation class GeminiCrusadeCardController
+    annotation class OpenAICrusadeCardController
 
     @Qualifier
     @Retention(AnnotationRetention.BINARY)
     annotation class LocalCrusadeCardController
-
 
     @Retention(AnnotationRetention.RUNTIME)
     @Qualifier

@@ -3,10 +3,14 @@ package com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.ktx.logEvent
+import com.google.firebase.ktx.Firebase
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.playerName
 import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.domain.use_cases.SetupGameUseCase
+import com.learningis4fun.gameshub.util.FirebaseLog
 import com.learningis4fun.gameshub.util.GamesHubLogTags
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +18,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -30,49 +35,64 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
     private val createNewGameToolsStateFlow = MutableStateFlow(CreateNewGameToolsState())
     val createNewGameToolsState = createNewGameToolsStateFlow.asStateFlow()
 
+    private val analytics = Firebase.analytics
+
     init {
 
         viewModelScope.launch {
-            preferences.numberOfCardsPerPlayer.collectLatest { numberOfCards ->
-                createNewGameToolsStateFlow.update {
-                    it.copy(numberOfCardsPerPlayer = numberOfCards)
-                }
-            }
-        }
-
-        viewModelScope.launch {
-
-            preferences.eliminationCountLimitForCrusade.collectLatest { eliminationLimit ->
+            combine(
+                preferences.onlineOfflineMode,
+                preferences.numberOfCardsPerPlayer,
+                preferences.eliminationCountLimitForCrusade
+            ) { mode, numOfCardsPerPlayer, eliminationLimit ->
+                Triple(
+                    mode,
+                    numOfCardsPerPlayer,
+                    eliminationLimit
+                )
+            }.collectLatest { (mode, numOfCardsPerPlayer, eliminationLimit) ->
+                Log.d(GamesHubLogTags.CREATE_NEW_GAME_VIEWMODEL, "mode in V: $mode")
                 createNewGameToolsStateFlow.update {
                     it.copy(
+                        mode = mode,
+                        numberOfCardsPerPlayer = numOfCardsPerPlayer,
                         eliminationLimitForCrusade = eliminationLimit
                     )
                 }
             }
         }
 
-
         viewModelScope.launch {
             try {
-                val loggedInUserId = preferences.user.first().uniqueId
+                val loggedInUser = preferences.user.first()
+
+                val openAi = preferences.openAI.first()
+
+                val loggedInUserId = loggedInUser.uniqueId
+
+                val playersWithAI = listOf(
+                    loggedInUser.copy(
+                        profileName = loggedInUser.playerName(loggedInUserId)
+                    ),
+                    openAi.copy(
+                        profileName = openAi.playerName(loggedInUserId)
+                    )
+                )
 
                 val playersInfo = getPlayers(
                     userId = loggedInUserId
                 )
-                println("players: $playersInfo")
+
                 createNewGameToolsStateFlow.update {
                     it.copy(
+                        newGameWithAIState = it.newGameWithAIState.copy(
+                            players = playersWithAI
+                        ),
                         playersInfo = playersInfo
-                    ).updateNumberOfParticipants()
+                    )
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-            }
-        }
-
-        viewModelScope.launch {
-            createNewGameToolsStateFlow.collectLatest {
-                Log.d(GamesHubLogTags.CREATE_NEW_GAME_VIEWMODEL, "state: $it")
             }
         }
     }
@@ -132,15 +152,8 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                                 playerInfo
                             }
                         }
-
-                        val requiredUseOfInternet = playerInfos
-                            .filter { playerInfo -> playerInfo.includeInList }
-                            .find { playerInfo -> playerInfo.player.uniqueId == preferences.geminiAI.first().uniqueId }
-                            ?.let { true } ?: false
-
                         it.copy(
                             playersInfo = playerInfos,
-                            requiredUseOfInternet = requiredUseOfInternet
                         ).updateNumberOfParticipants()
                     }
                 }
@@ -161,12 +174,25 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                     ).updateNumberOfParticipants()
                 }
             }
+
+            is CreateNewGameToolsEvents.SwitchMode -> {
+                viewModelScope.launch {
+                    preferences.saveOnlineOfflineMode(event.mode)
+                }
+            }
         }
     }
 
     fun setupNewGameOnStartClick(onGameCreated: (String) -> Unit = {}) {
         viewModelScope.launch {
             try {
+
+                val sessionID = preferences.getGameSessionId()
+
+                analytics.logEvent(FirebaseLog.LogName.NEW_OFFLINE_GAME_CREATED) {
+                    param(FirebaseLog.LogTag.SESSION_ID, sessionID)
+                }
+
                 createNewGameToolsStateFlow.update {
                     it.copy(createGameLoading = true)
                 }
@@ -181,6 +207,41 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 val prePlayersIds =
                     players.map { it.uniqueId }
                 preferences.savePrevPlayersIds(prePlayersIds).getDataOrThrowException()
+
+                // create a game with the selected participants
+                val gameId = setupGameUseCase(
+                    players = players
+                ).getDataOrThrowException()
+                onGameCreated(gameId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                createNewGameToolsStateFlow.update {
+                    it.copy(createGameLoading = false)
+                }
+            }
+        }
+    }
+
+    fun setupNewGameWithAIOnStartClick(onGameCreated: (String) -> Unit = {}) {
+        viewModelScope.launch {
+            try {
+                val sessionID = preferences.getGameSessionId()
+
+                analytics.logEvent(FirebaseLog.LogName.NEW_GAME_WITH_OPENAI_CREATED) {
+                    param(FirebaseLog.LogTag.SESSION_ID, sessionID)
+                }
+
+                createNewGameToolsStateFlow.update {
+                    it.copy(createGameLoading = true)
+                }
+                // save chosen players
+                // update number of participants
+
+                val players = createNewGameToolsStateFlow
+                    .value
+                    .newGameWithAIState
+                    .players
 
                 // create a game with the selected participants
                 val gameId = setupGameUseCase(

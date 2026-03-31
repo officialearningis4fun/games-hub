@@ -9,7 +9,8 @@ data class CreateNewGameToolsState(
     val playersInfo: List<PlayerInfo> = emptyList(),
     val createGameLoading: Boolean = false,
     val enableCreateGameButton: Boolean = false,
-    val requiredUseOfInternet: Boolean = false
+    val newGameWithAIState: NewGameWithAIState = NewGameWithAIState(),
+    val mode: OnlineOfflineMode = OnlineOfflineMode.ONLINE
 ) {
 
     val maxNumberOfParticipants: Int = playersInfo.size
@@ -22,7 +23,9 @@ data class CreateNewGameToolsState(
             numberOfCardsPerPlayer = numberOfCardsPerPlayer,
             numberOfParticipants = availablePlayers.size,
             eliminationLimitForCrusade = eliminationLimitForCrusade,
-            playersInfo = playersInfo
+            playersInfo = playersInfo,
+            newGameWithAIState = newGameWithAIState,
+            mode = mode
         )
     }
 }

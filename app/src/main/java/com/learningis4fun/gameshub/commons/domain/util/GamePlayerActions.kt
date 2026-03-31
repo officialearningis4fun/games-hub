@@ -28,6 +28,11 @@ sealed class GamePlayerActions(val name: String) {
         val playerId: String,
         val message: String = CardStatesDefaultMsg.ChangeType
     ) : GamePlayerActions("change-card-type")
+
+    data class Error(
+        val playerId: String,
+        val message: String
+    ): GamePlayerActions("error")
 }
 
 fun GamePlayerActions.toDebugMsg(): String {
@@ -38,6 +43,7 @@ fun GamePlayerActions.toDebugMsg(): String {
         is GamePlayerActions.PromptPlayerDefineJokerCardAction -> "${action.name}: ${action.message}"
         is GamePlayerActions.PromptPlayerHitBackOrPick -> "${action.name}: ${action.message}"
         is GamePlayerActions.PromptPlayerPlayOrPick -> "${action.name}: ${action.message}"
+        is GamePlayerActions.Error -> "${action.name}: ${action.message}"
     }
 }
 

@@ -46,7 +46,10 @@ class CrusadeLoggedUserCardsController @Inject constructor(
                     }
 
                     is Response.Error -> {
-                        CardStates.Error("${userCardResponse.message}, gameCardId: $gameCardId")
+                        CardStates.Error(
+                            playerId = playerId,
+                            message = "${userCardResponse.message}, gameCardId: $gameCardId"
+                        )
                     }
                 }
 

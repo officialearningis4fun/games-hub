@@ -355,6 +355,7 @@ private fun CompletedGameItem(
                             )
                             .size(64.dp)
                             .clip(CircleShape)
+                            .background(Color.DarkGray)
                             .border(
                                 width = 1.dp,
                                 color = MaterialTheme.colorScheme.surface,
@@ -385,6 +386,7 @@ private fun CompletedGameItem(
                             modifier = Modifier
                                 .size(28.dp)
                                 .clip(CircleShape)
+                                .background(Color.DarkGray)
                                 .border(
                                     width = 1.dp,
                                     color = MaterialTheme.colorScheme.surface,

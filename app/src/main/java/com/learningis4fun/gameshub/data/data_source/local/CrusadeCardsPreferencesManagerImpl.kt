@@ -1,6 +1,7 @@
 package com.learningis4fun.gameshub.data.data_source.local
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -8,14 +9,16 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.commons.domain.util.toCardState
+import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.OnlineOfflineMode
 import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
+import com.learningis4fun.gameshub.util.GamesHubLogTags
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +27,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @ExperimentalCoroutinesApi
 class CrusadeCardsPreferencesManagerImpl @Inject constructor(
@@ -38,6 +43,59 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
 
     override val recentGameId: Flow<String> = context.dataStore.data.map {
         it[PreferencesKeys.RECENT_GAME_ID] ?: ""
+    }
+
+
+    override val onlineOfflineMode: Flow<OnlineOfflineMode> = context.dataStore.data.map {
+        val mode = it[PreferencesKeys.ONLINE_OFFLINE_MODE] ?: ""
+
+        try {
+            Log.d(GamesHubLogTags.CRUSADE_PREFERENCES, "mode in DB: $mode")
+            OnlineOfflineMode.valueOf(mode)
+        } catch (e: IllegalArgumentException) {
+            e.printStackTrace()
+            OnlineOfflineMode.OFFLINE
+        } catch (e: Exception) {
+            e.printStackTrace()
+            OnlineOfflineMode.OFFLINE
+        }
+
+    }
+
+    override suspend fun saveOnlineOfflineMode(mode: OnlineOfflineMode): Response<Unit> {
+        return try {
+            val value = mode.name
+            Log.d(GamesHubLogTags.CRUSADE_PREFERENCES, "mode: $value")
+            context.dataStore.edit {
+                it[PreferencesKeys.ONLINE_OFFLINE_MODE] = value
+            }
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Response.Error(e.message.toString())
+        }
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun getGameSessionId(): String {
+        val newSessionID = Uuid.random().toString()
+
+        return try {
+            val sessionId =
+                context.dataStore.data.map { it[PreferencesKeys.OPENAI_SESSION_ID] }.first()
+
+            if (sessionId.isNullOrBlank()) {
+
+                context.dataStore.edit { it[PreferencesKeys.OPENAI_SESSION_ID] = newSessionID }
+                newSessionID
+            } else {
+                sessionId
+            }
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+            newSessionID
+        }
     }
 
     override val recentCardState: Flow<CardStates> = context.dataStore.data.map {
@@ -118,6 +176,16 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
             phone = "",
             imageUrl = R.drawable.google_bard.toString(),
             profileName = "Bard"
+        )
+    }
+
+    override val openAI: Flow<Player> = context.dataStore.data.map {
+        Player(
+            uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3openAI",
+            email = "",
+            phone = "",
+            imageUrl = R.drawable.openai_white_monoblossom.toString(),
+            profileName = "AI"
         )
     }
 
@@ -349,6 +417,8 @@ class CrusadeCardsPreferencesManagerImpl @Inject constructor(
     }
 
     object PreferencesKeys {
+        val ONLINE_OFFLINE_MODE = stringPreferencesKey("online-offline-mode")
+        val OPENAI_SESSION_ID = stringPreferencesKey("openai-session-id")
         val RECENT_GAME_ID = stringPreferencesKey("curr-game-id")
         val RECENT_CARD_TYPE = stringPreferencesKey("recent-card-type")
 

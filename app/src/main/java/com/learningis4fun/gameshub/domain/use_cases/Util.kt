@@ -16,7 +16,6 @@ fun CardStates.toGamePlayerAction(userId: String): GamePlayerActions? {
             CardStates.Start -> GamePlayerActions.ActionMessages("Hitting up the scene")
             is CardStates.ChangedType,
             is CardStates.Chance,
-            is CardStates.Error,
             is CardStates.NoAvailableCard,
             is CardStates.Played,
             is CardStates.Picked,
@@ -56,6 +55,10 @@ fun CardStates.toGamePlayerAction(userId: String): GamePlayerActions? {
                 GamePlayerActions.PromptPlayerPlayOrPick(
                     playerId = state.playerId, canPick = state.canPick, message = msg
                 )
+            }
+
+            is CardStates.Error -> {
+                GamePlayerActions.Error(playerId = state.playerId, message = state.message)
             }
 
         }

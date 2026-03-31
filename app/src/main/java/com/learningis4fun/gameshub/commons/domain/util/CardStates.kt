@@ -1,7 +1,5 @@
 package com.learningis4fun.gameshub.commons.domain.util
 
-import com.learningis4fun.gameshub.domain.model.CardStateEntity
-
 sealed class CardStates(val name: String) {
 
     /**
@@ -66,60 +64,66 @@ sealed class CardStates(val name: String) {
     ) :
         CardStates("no-available-card")
 
-    data class Error(val message: String) : CardStates("error")
+    data class Error(
+        val playerId: String,
+        val canPick: Boolean = false,
+        val message: String
+    ) :
+        CardStates("error")
 
 
 }
 
-fun toCardState(state: com.learningis4fun.gameshub.domain.model.CardStateEntity): CardStates = when (state.cardStateName) {
-    CardStates.Start.name -> CardStates.Start
-    "play" -> CardStates.Play(
-        playerId = state.playerId,
-        canPick = state.canPick,
-        message = state.message
-    )
+fun toCardState(state: com.learningis4fun.gameshub.domain.model.CardStateEntity): CardStates =
+    when (state.cardStateName) {
+        CardStates.Start.name -> CardStates.Start
+        "play" -> CardStates.Play(
+            playerId = state.playerId,
+            canPick = state.canPick,
+            message = state.message
+        )
 
-    "played" -> CardStates.Played(
-        playerId = state.playerId, message = state.message
-    )
+        "played" -> CardStates.Played(
+            playerId = state.playerId, message = state.message
+        )
 
-    "pick" -> CardStates.Pick(
-        playerId = state.playerId,
-        numOfCardsToPick = state.cardsToPick,
-        canPlay = state.canPlay,
-        message = state.message
-    )
+        "pick" -> CardStates.Pick(
+            playerId = state.playerId,
+            numOfCardsToPick = state.cardsToPick,
+            canPlay = state.canPlay,
+            message = state.message
+        )
 
-    "picked" -> CardStates.Picked(
-        playerId = state.playerId,
-        canPlay = state.canPlay,
-        cardsPicked = state.cardsPicked,
-        message = state.message
-    )
+        "picked" -> CardStates.Picked(
+            playerId = state.playerId,
+            canPlay = state.canPlay,
+            cardsPicked = state.cardsPicked,
+            message = state.message
+        )
 
-    "hit" -> CardStates.Hit(
-        playerId = state.playerId,
-        cardsToPick = state.cardsToPick,
-        message = state.message
-    )
+        "hit" -> CardStates.Hit(
+            playerId = state.playerId,
+            cardsToPick = state.cardsToPick,
+            message = state.message
+        )
 
-    "change-type" -> CardStates.ChangeType(playerId = state.playerId, message = state.message)
-    "changed-type" -> CardStates.ChangedType(playerId = state.playerId, message = state.message)
-    "define-card-action" -> CardStates.DefineCardAction(
-        playerId = state.playerId,
-        gameCardId = state.gameCardId,
-        message = state.message
-    )
+        "change-type" -> CardStates.ChangeType(playerId = state.playerId, message = state.message)
+        "changed-type" -> CardStates.ChangedType(playerId = state.playerId, message = state.message)
+        "define-card-action" -> CardStates.DefineCardAction(
+            playerId = state.playerId,
+            gameCardId = state.gameCardId,
+            message = state.message
+        )
 
-    "chance" -> CardStates.Chance(playerId = state.playerId, message = state.message)
-    "no-available-card" -> CardStates.NoAvailableCard(
-        playerId = state.playerId,
-        message = state.message
-    )
+        "chance" -> CardStates.Chance(playerId = state.playerId, message = state.message)
+        "no-available-card" -> CardStates.NoAvailableCard(
+            playerId = state.playerId,
+            message = state.message
+        )
 
-    "error" -> CardStates.Error(message = state.message)
-    else -> CardStates.Start
-}
+        "error" -> CardStates.Error(message = state.message, playerId = state.playerId)
+        else -> CardStates.Start
+    }
 
 fun CardStates.getPlayerId(): String? {
     return when (this) {
@@ -151,6 +155,7 @@ object CardStatesDefaultMsg {
      * Requested to play or allow others play
      */
     const val PlayOnly = "Requested to play or allow others play"
+
     /**
      * Requested to play or pick
      */
@@ -168,7 +173,7 @@ object CardStatesDefaultMsg {
     const val NoAvailableCard = "Have no card to play"
 }
 
-object CardsErrorMessages{
+object CardsErrorMessages {
     const val NOT_ENOUGH_CARDS_TO_BE_PICKED = "Not enough cards to be picked"
 }
 

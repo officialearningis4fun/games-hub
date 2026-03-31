@@ -2,30 +2,9 @@
 
 package com.learningis4fun.gameshub.data.data_source
 
-import android.util.Log
-import com.google.ai.client.generativeai.GenerativeModel
-import com.google.ai.client.generativeai.type.generationConfig
-import com.google.firebase.analytics.ktx.analytics
-import com.google.firebase.analytics.ktx.logEvent
-import com.google.firebase.ktx.Firebase
-import com.learningis4fun.gameshub.BuildConfig
-import com.learningis4fun.gameshub.commons.domain.controller.CrusadeComputerCardsController
-import com.learningis4fun.gameshub.commons.domain.repository.CardRepository
-import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
-import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
-import com.learningis4fun.gameshub.commons.domain.repository.GameStageRepository
-import com.learningis4fun.gameshub.commons.domain.util.Constants
-import com.learningis4fun.gameshub.commons.domain.util.Response
-import com.learningis4fun.gameshub.data.data_source.remote.RULES
-import com.learningis4fun.gameshub.domain.model.UserCard
-import com.learningis4fun.gameshub.domain.use_cases.GetLatestStageNumber
-import com.learningis4fun.gameshub.util.GamesHubLogTags
-import com.learningis4fun.gameshub.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.first
-import javax.inject.Inject
 
-class GeminiCrusadeCardsControllerImpl @Inject constructor(
+class GeminiCrusadeCardsControllerImpl /*@Inject constructor(
     private val gameRepository: GameRepository,
     private val cardRepository: CardRepository,
     private val gameCardRepository: GameCardRepository,
@@ -33,24 +12,19 @@ class GeminiCrusadeCardsControllerImpl @Inject constructor(
     private val getLatestStageNumber: GetLatestStageNumber
 ) : CrusadeComputerCardsController {
 
-    val analytics = Firebase.analytics
+    private val analytics = Firebase.analytics
 
-    val model = GenerativeModel(
-        modelName = "gemini-2.0-flash-exp",
-        apiKey = BuildConfig.GEMINI_API_KEY,
-        generationConfig = generationConfig {
-            temperature = 1f
-            topK = 40
-            topP = 0.95f
-            maxOutputTokens = 8192
-            responseMimeType = "text/plain"
-        }
-    )
+
 
     private suspend fun modelTextResponse(requestGeminiPlayCardMsg: String): String? {
         return try {
             Log.d(GamesHubLogTags.GEMINI_CARDS_CONTROLLER, "generating text")
-            model.generateContent(requestGeminiPlayCardMsg).text?.trim()
+            val text = model.generateContent(requestGeminiPlayCardMsg).text?.trim()
+            Log.d(GamesHubLogTags.GEMINI_CARDS_CONTROLLER, "generated text: $text")
+            analytics.logEvent("send_gemini_prompt") {
+                param("generated text", text.toString())
+            }
+            text
         } catch (e: Exception) {
             analytics.logEvent("send_gemini_prompt") {
                 param("error", e.message.toString())
@@ -415,4 +389,4 @@ class GeminiCrusadeCardsControllerImpl @Inject constructor(
         return chosenCard
     }
 
-}
+}*/

@@ -1231,6 +1231,14 @@ private val DefaultPlayCardsState = PlayCardsState(
             R.drawable.game_test_profile,
             "4",
             true,
+        ),
+        PlayerScreenInfo(
+            "id3",
+            "OpenAI",
+            "",
+            R.drawable.openai_white_monoblossom,
+            "4",
+            true,
         )
     ),
     showCurrentCardType = Pair(true, Constants.CardTypes.DIAMOND),

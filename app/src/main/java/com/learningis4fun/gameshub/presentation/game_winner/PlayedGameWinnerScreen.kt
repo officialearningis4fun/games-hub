@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalSharedTransitionApi::class)
-
 package com.learningis4fun.gameshub.presentation.game_winner
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -26,7 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -52,16 +49,10 @@ import com.learningis4fun.gameshub.commons.domain.model.Card
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.toUIDuration
-import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateGameSetupToolsSection
-import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
-import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
 import com.learningis4fun.gameshub.presentation.play_crusade_cards.CardItem
 import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
-import com.learningis4fun.gameshub.presentation.util.LocalAnimatedContentScope
-import com.learningis4fun.gameshub.presentation.util.LocalCustomSharedTransitionScope
-import com.learningis4fun.gameshub.presentation.util.sharedElementKeyOfOngoingGameSection
 
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -224,6 +215,7 @@ fun PlayerItemWithPopup(
                         modifier = Modifier
                             .size(sizeOfPhoto)
                             .clip(CircleShape)
+                            .background(Color.DarkGray)
                             .border(
                                 width = 3.dp,
                                 shape = CircleShape,
@@ -271,40 +263,6 @@ fun PlayerItemWithPopup(
         }
     }
 
-}
-
-
-@Composable
-fun CreateNewGameSection(
-    modifier: Modifier = Modifier,
-    createNewGameToolsState: CreateNewGameToolsState,
-    onCreateEvent: (CreateNewGameToolsEvents) -> Unit,
-    onStartGame: () -> Unit
-) {
-    val sharedTransitionScope = LocalCustomSharedTransitionScope.current
-    val animatedContentScope = LocalAnimatedContentScope.current
-
-    with(sharedTransitionScope) {
-        Column(
-            modifier = modifier
-                .sharedElement(
-                    state = rememberSharedContentState(key = sharedElementKeyOfOngoingGameSection),
-                    animatedVisibilityScope = animatedContentScope
-                )
-        ) {
-            HorizontalDivider()
-
-            CreateGameSetupToolsSection(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                createGameButtonText = "Play another game",
-                createNewGameToolsState = createNewGameToolsState,
-                onStartGame = onStartGame,
-                onEvent = onCreateEvent
-            )
-
-        }
-    }
 }
 
 @Preview
@@ -363,11 +321,7 @@ private fun PlayedGameWinnerDarkPrev() {
                         profileName = "Hlompho",
                         imageUrl = R.drawable.avatar_boy1.toString()
                     ),
-                    Player(
-                        "id2",
-                        profileName = "Android",
-                        imageUrl = R.drawable.ai_platform.toString()
-                    ),
+                    Constants.Players.OPENAI,
                 ),
                 winnerNames = "Hlompho",
                 winnerImageUrl = R.drawable.avatar_boy1.toString(),

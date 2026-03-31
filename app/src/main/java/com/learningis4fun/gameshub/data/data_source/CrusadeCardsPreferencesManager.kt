@@ -4,6 +4,7 @@ import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.commons.domain.util.Response
+import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.OnlineOfflineMode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 
@@ -27,6 +28,14 @@ interface CrusadeCardsPreferencesManager {
     val device3: Flow<Player>
 
     val geminiAI: Flow<Player>
+
+    val openAI: Flow<Player>
+
+    suspend fun getGameSessionId(): String
+
+    val onlineOfflineMode: Flow<OnlineOfflineMode>
+
+    suspend fun saveOnlineOfflineMode(mode: OnlineOfflineMode): Response<Unit>
 
     val numberOfCardsPerPlayer: Flow<Int>
 

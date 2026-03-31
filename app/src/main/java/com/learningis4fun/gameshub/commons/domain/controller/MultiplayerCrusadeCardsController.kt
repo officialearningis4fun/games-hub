@@ -62,7 +62,11 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     ): CardStates {
 
         return when (val result = allowChangeType(playerId = playerId, type = type)) {
-            is Response.Error -> CardStates.Error(message = result.message.toString())
+            is Response.Error -> CardStates.Error(
+                playerId = playerId,
+                message = result.message.toString()
+            )
+
             is Response.Success -> CardStates.ChangedType(
                 playerId = playerId
             )
@@ -116,15 +120,24 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     ): CardStates {
 
         if (playerId.isEmpty()) {
-            return CardStates.Error("Make sure, the playerId, gameId or card is not empty")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Make sure, the playerId, gameId or card is not empty"
+            )
         }
 
         if (gameId.isEmpty()) {
-            return CardStates.Error("Make sure, the gameId is not empty")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Make sure, the gameId is not empty"
+            )
         }
 
         if (userCard == UserCard()) {
-            return CardStates.Error("Make sure, the card is not empty")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Make sure, the card is not empty"
+            )
         }
 
         return when {
@@ -224,7 +237,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
                         when (val response = repository.changeCurrentCardType(newCardType)) {
                             is Response.Error -> {
-                                CardStates.Error("${response.message} while hitting back")
+                                CardStates.Error(
+                                    playerId = id,
+                                    message = "${response.message} while hitting back"
+                                )
                             }
 
                             is Response.Success -> {
@@ -234,7 +250,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                     }
 
                     is Response.Error -> {
-                        CardStates.Error(updateResult.message.toString())
+                        CardStates.Error(playerId = id, message = updateResult.message.toString())
                     }
                 }
 
@@ -380,7 +396,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                         )
                         when (updateResult) {
                             is Response.Error -> {
-                                CardStates.Error("${updateResult.message}, while hitting...")
+                                CardStates.Error(
+                                    playerId = userCard.playerId,
+                                    message = "${updateResult.message}, while hitting..."
+                                )
                             }
 
                             is Response.Success -> {
@@ -389,7 +408,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
                                 when (response) {
                                     is Response.Error -> {
-                                        CardStates.Error("${response.message}, while hitting...")
+                                        CardStates.Error(
+                                            playerId = userCard.playerId,
+                                            message = "${response.message}, while hitting..."
+                                        )
                                     }
 
                                     is Response.Success -> {
@@ -420,7 +442,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                     }
 
                     is Response.Error -> {
-                        CardStates.Error("${updateResult.message} while playing eight")
+                        CardStates.Error(
+                            playerId = userCard.playerId,
+                            message = "${updateResult.message} while playing eight"
+                        )
                     }
                 }
             }
@@ -437,7 +462,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                         when (val response = repository.changeCurrentCardType("")) {
                             is Response.Error -> {
 
-                                CardStates.Error("${response.message} while asked to define card action...")
+                                CardStates.Error(
+                                    playerId = userCard.playerId,
+                                    message = "${response.message} while asked to define card action..."
+                                )
                             }
 
                             is Response.Success -> {
@@ -450,7 +478,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                     }
 
                     is Response.Error -> {
-                        CardStates.Error("${updateResult.message} while asked to define card action...")
+                        CardStates.Error(
+                            playerId = userCard.playerId,
+                            message = "${updateResult.message} while asked to define card action..."
+                        )
                     }
                 }
             }
@@ -464,7 +495,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
                         when (val response = repository.changeCurrentCardType(userCard.type)) {
                             is Response.Error -> {
-                                CardStates.Error("${response.message} while being given a chance to play another card...")
+                                CardStates.Error(
+                                    playerId = userCard.playerId,
+                                    message = "${response.message} while being given a chance to play another card..."
+                                )
                             }
 
                             is Response.Success -> {
@@ -487,7 +521,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                     }
 
                     is Response.Error -> {
-                        CardStates.Error("${updateResult.message} while being given a chance to play another card...")
+                        CardStates.Error(
+                            playerId = userCard.playerId,
+                            message = "${updateResult.message} while being given a chance to play another card..."
+                        )
                     }
                 }
             }
@@ -502,7 +539,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
                         when (val response = repository.changeCurrentCardType(userCard.type)) {
                             is Response.Error -> {
-                                CardStates.Error("${response.message} while being given a chance to play another card...")
+                                CardStates.Error(
+                                    playerId = userCard.playerId,
+                                    message = "${response.message} while being given a chance to play another card..."
+                                )
                             }
 
                             is Response.Success -> {
@@ -515,6 +555,7 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                                         currPlayerId = userCard.playerId,
                                         gameId = userCard.gameId
                                     ) ?: return CardStates.Error(
+                                        playerId = userCard.playerId,
                                         message = "Couldn't find the other player that should play after playing Jack"
                                     )
                                 Log.d(
@@ -536,7 +577,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                     }
 
                     is Response.Error -> {
-                        CardStates.Error("${updateResult.message} while being given a chance to play another card...")
+                        CardStates.Error(
+                            playerId = userCard.playerId,
+                            message = "${updateResult.message} while being given a chance to play another card..."
+                        )
                     }
                 }
             }
@@ -551,7 +595,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
 
                         when (val response = repository.changeCurrentCardType(userCard.type)) {
                             is Response.Error -> {
-                                CardStates.Error("${response.message} Error while playing a card...")
+                                CardStates.Error(
+                                    playerId = userCard.playerId,
+                                    message = "${response.message} Error while playing a card..."
+                                )
                             }
 
                             is Response.Success -> {
@@ -562,7 +609,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
                         }
                     }
 
-                    is Response.Error -> CardStates.Error("Error while playing a card...")
+                    is Response.Error -> CardStates.Error(
+                        playerId = userCard.playerId,
+                        message = "Error while playing a card..."
+                    )
                 }
             }
         }
@@ -606,15 +656,24 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     ): CardStates {
 
         if (playerId.isEmpty()) {
-            return CardStates.Error("Error while picking cards, make sure the playerId is not empty")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Error while picking cards, make sure the playerId is not empty"
+            )
         }
 
         if (numOfCardsToPick == 0) {
-            return CardStates.Error("Error while picking cards, cannot pick 0 cards")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Error while picking cards, cannot pick 0 cards"
+            )
         }
 
         if (gameId.isEmpty()) {
-            return CardStates.Error("Error while picking cards, gameId is must not be empty")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Error while picking cards, gameId is must not be empty"
+            )
         }
 
         val pickedCardsResponse = gameCardRepository.pickCardsFromLibrary(
@@ -635,7 +694,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
             }
 
             is Response.Error -> {
-                CardStates.Error(pickedCardsResponse.message.toString())
+                CardStates.Error(
+                    playerId = playerId,
+                    message = pickedCardsResponse.message.toString()
+                )
             }
         }
 
@@ -671,15 +733,22 @@ class MultiplayerCrusadeCardsController @Inject constructor(
     ): CardStates {
 
         if (cardName.isEmpty()) {
-            return CardStates.Error("Error while hitting, card name should not be empty")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Error while hitting, card name should not be empty"
+            )
         }
 
         if (playerId.isEmpty()) {
-            return CardStates.Error("Error while hitting, playerId should not be empty")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Error while hitting, playerId should not be empty"
+            )
         }
 
         if (cardName != Constants.CardNames.TWO && cardName != Constants.CardNames.JOKER) {
             return CardStates.Error(
+                playerId = playerId,
                 message = "Error while hitting, card name should be two or joker"
             )
         }
@@ -690,7 +759,10 @@ class MultiplayerCrusadeCardsController @Inject constructor(
         )
 
         if (idOfOtherPlayer.isEmpty()) {
-            return CardStates.Error("Error while hitting, couldn't find the other player to hit")
+            return CardStates.Error(
+                playerId = playerId,
+                message = "Error while hitting, couldn't find the other player to hit"
+            )
         }
 
         val totalCardsToPick = when (cardName) {

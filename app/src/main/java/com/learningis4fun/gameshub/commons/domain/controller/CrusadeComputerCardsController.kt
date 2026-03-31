@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.commons.domain.controller
 
+import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.domain.model.UserCard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
@@ -31,6 +32,6 @@ interface CrusadeComputerCardsController {
     suspend fun playCardForComputer(
         playerId: String,
         gameId: String
-    ): UserCard?
+    ): Response<UserCard?>
 
 }

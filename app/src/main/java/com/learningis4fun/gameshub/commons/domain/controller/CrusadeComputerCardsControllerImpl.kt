@@ -8,6 +8,7 @@ import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.domain.model.UserCard
 import com.learningis4fun.gameshub.util.getDataOrThrowException
+import com.learningis4fun.gameshub.util.getNullableDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -127,24 +128,29 @@ class CrusadeComputerCardsControllerImpl @Inject constructor(
 
     override suspend fun playCardForComputer(
         playerId: String, gameId: String
-    ): UserCard? {
+    ): Response<UserCard?> {
 
-        val currentCardType = getCurrentCardType()
-        val currentCardName = getCurrentCardName()
+        return try {
+            val currentCardType = getCurrentCardType()
+            val currentCardName = getCurrentCardName()
 
-        return if (currentCardType.isEmpty()) {
-            playCardWithNoRestrictions(gameId, playerId).data
-        } else {
-
-            if (currentCardName.isEmpty()) {
-                playCardWithCardTypeRestrictions(gameId, playerId, currentCardType)
+            val card = if (currentCardType.isEmpty()) {
+                playCardWithNoRestrictions(gameId, playerId).getNullableDataOrThrowException()
             } else {
-                playCardWithCardTypeAndNameRestrictions(
-                    gameId, playerId, currentCardType, currentCardName
-                )
-            }
+                if (currentCardName.isEmpty()) {
+                    playCardWithCardTypeRestrictions(gameId, playerId, currentCardType)
+                } else {
+                    playCardWithCardTypeAndNameRestrictions(
+                        gameId, playerId, currentCardType, currentCardName
+                    )
+                }
 
+            }
+            Response.Success(card)
+        } catch (e: Exception) {
+            Response.Error(e.message.toString())
         }
+
 
     }
 

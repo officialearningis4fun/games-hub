@@ -34,9 +34,14 @@ import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
+import com.learningis4fun.gameshub.commons.domain.util.Constants
+import com.learningis4fun.gameshub.commons.domain.util.playerName
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
+import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.NewGameWithAIState
+import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.OnlineOfflineMode
+import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.PlayerInfo
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameState
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameToolsSection
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameViewModel
@@ -88,6 +93,11 @@ fun NavGraphBuilder.cardsStartScreenComposable(
                         onStartClick(gameId)
                     }
                 },
+                onStartWithAIClick = {
+                    createNewGameToolsViewModel.setupNewGameWithAIOnStartClick { gameId ->
+                        onStartClick(gameId)
+                    }
+                },
                 onResumeClick = onResumeClick,
                 onProfileClick = onProfileClick,
                 onGameClick = onGameClick,
@@ -108,6 +118,7 @@ fun CardsStartScreen(
     ongoingGamesOrCreateNewGameState: OngoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.Loading,
     createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
     onStartClick: () -> Unit = {},
+    onStartWithAIClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onProfileClick: () -> Unit = {},
     onGameClick: (Pair<Game, Player>) -> Unit = {},
@@ -159,6 +170,7 @@ fun CardsStartScreen(
                 ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
                 createNewGameToolsState = createNewGameToolsState,
                 onStartClick = onStartClick,
+                onStartWithAIClick = onStartWithAIClick,
                 onResumeClick = onResumeClick,
                 onGameClick = onGameClick,
                 onEvent = onCreateGameEvent,
@@ -196,6 +208,7 @@ fun CardsStartDataScreen(
     completedGamesState: CompletedGamesState,
     createNewGameToolsState: CreateNewGameToolsState,
     onStartClick: () -> Unit = {},
+    onStartWithAIClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onGameClick: (Pair<Game, Player>) -> Unit = {},
     onDeleteGame: (String) -> Unit = {},
@@ -217,11 +230,13 @@ fun CardsStartDataScreen(
                 ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
                 createNewGameToolsState = createNewGameToolsState,
                 onStartGame = onStartClick,
+                onStartAIGame = onStartWithAIClick,
                 onResumeClick = onResumeClick,
                 onDeleteGame = onDeleteGame,
-                onCreateEvent = onEvent,
+                onCreateEvent = onEvent
             )
         }
+
     }
 
 }
@@ -234,7 +249,28 @@ private fun CardsStartScreenLightPrev() {
             modifier = Modifier
                 .fillMaxSize(),
             ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
-            createNewGameToolsState = CreateNewGameToolsState(),
+            createNewGameToolsState = CreateNewGameToolsState(
+                newGameWithAIState = NewGameWithAIState(
+                    players = listOf(
+                        Constants.Players.USER,
+                        Constants.Players.OPENAI
+                    )
+                ),
+                playersInfo = listOf(
+                    Constants.Players.USER,
+                    Constants.Players.DEVICE1,
+                    Constants.Players.DEVICE2,
+                ).map {
+                    PlayerInfo(
+                        player = it.copy(
+                            profileName = it.playerName(Constants.Players.USER.uniqueId)
+                        ),
+                        canRemove = it.uniqueId != Constants.Players.USER.uniqueId,
+                        includeInList = true
+                    )
+                },
+                numberOfParticipants = 3
+            ),
             cardsStartState = cardsStartState.copy(isLoading = false)
         )
     }

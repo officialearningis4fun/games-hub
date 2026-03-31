@@ -66,6 +66,14 @@ object Constants {
             profileName = "user"
         )
 
+        val OPENAI = Player(
+            uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3openAI",
+            email = "",
+            phone = "",
+            imageUrl = R.drawable.openai_white_monoblossom.toString(),
+            profileName = "OpenAi"
+        )
+
         val DEVICE1 = Player(
             uniqueId = "7iooVf8Vu9T8NR2JcwgqLbgr0OC3dev1",
             email = "",
