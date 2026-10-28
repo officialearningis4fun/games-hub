@@ -7,14 +7,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.app.nav.BottonNavRoute
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.ui.routes.ViewProfile
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
@@ -52,9 +57,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @OptIn(ExperimentalCoroutinesApi::class)
 fun NavGraphBuilder.profileScreenComposable(
     onBackClick: () -> Unit,
-    onEditProfile: () -> Unit
+    onEditProfile: () -> Unit,
+    signInRequest: () -> Unit,
 ) {
-    composable<ViewProfile>(
+    composable<BottonNavRoute.AccountScreenRoute>(
         enterTransition = {
             scaleIntoContainer()
         },
@@ -69,7 +75,12 @@ fun NavGraphBuilder.profileScreenComposable(
         ProfileScreen(
             onBackClick = onBackClick,
             onEditProfile = onEditProfile,
-            profileState = userProfileInfo
+            profileState = userProfileInfo,
+            onSignInButtonClick = {
+                profileViewModel.onSignInButtonClick {
+                    signInRequest()
+                }
+            }
         )
     }
 }
@@ -80,6 +91,7 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     onBackClick: () -> Unit = {},
     onEditProfile: () -> Unit = {},
+    onSignInButtonClick: () -> Unit = {},
     profileState: ProfileState
 ) {
 
@@ -123,68 +135,171 @@ fun ProfileScreen(
                 .padding(paddingValues),
             contentAlignment = Alignment.CenterEnd
         ) {
-            Column(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Row(
-                    modifier = Modifier
-                        .clickable { onEditProfile() }
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp, horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Image(
+                item {
+                    Row(
                         modifier = Modifier
-                            .size(54.dp)
-                            .clip(CircleShape)
-                            .aspectRatio(1f),
-                        contentScale = ContentScale.Crop,
-                        painter = painterResource(id = userImage),
-                        contentDescription = null
-                    )
-
-                    Column(
-                        modifier = Modifier,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                            .clickable { onEditProfile() }
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp, horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Text(
-                            modifier = Modifier,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            text = userProfileInfo.profileName,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodyLarge
+                        Image(
+                            modifier = Modifier
+                                .size(54.dp)
+                                .clip(CircleShape)
+                                .aspectRatio(1f),
+                            contentScale = ContentScale.Crop,
+                            painter = painterResource(id = userImage),
+                            contentDescription = null
                         )
 
-                        Text(
+                        Column(
                             modifier = Modifier,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            text = userProfileInfo.email,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                modifier = Modifier,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                text = userProfileInfo.profileName,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            Text(
+                                modifier = Modifier,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                text = userProfileInfo.email,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
                     }
-
                 }
 
-                HorizontalDivider()
+                item {
+                    HorizontalDivider()
+                }
 
-                Text(
-                    modifier = Modifier
-                        .padding(vertical = 8.dp),
-                    text = "The name and profile image will identify you to others",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.labelSmall
-                )
+                item {
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 8.dp),
+                        text = "The name and profile image will identify you to others",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
 
+                item {
+                    Column {
+                        SectionSubtitle(
+                            text = "We use your Google account email to identify you and keep track of your progress. Records of pdfs you've created"
+                        )
+
+                        SectionTitle(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = "Google Account"
+                        )
+                        when (val signedIn = profileState.signedIn) {
+                            SignedIn.Anonymously,
+                            SignedIn.NotSignedIn -> {
+                                SectionSubtitle(text = "Email not available")
+                                SignInOutButton(
+                                    isLoading = profileState.isLoading,
+                                    text = "Sign In",
+                                    onSignInButtonClick = {
+                                        onSignInButtonClick()
+                                    }
+                                )
+
+                            }
+
+                            is SignedIn.WithEmail -> {
+                                SectionSubtitle(text = signedIn.email)
+                                SignInOutButton(
+                                    isLoading = profileState.isLoading,
+                                    text = "Sign Out",
+                                    onSignInButtonClick = {
+                                        onSignInButtonClick()
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
             }
 
         }
     }
+}
+
+@Composable
+fun SignInOutButton(
+    isLoading: Boolean,
+    text: String,
+    onSignInButtonClick: () -> Unit
+) {
+    androidx.compose.material3.Button(
+        enabled = !isLoading,
+        modifier = Modifier.padding(horizontal = 16.dp),
+        onClick = {
+            onSignInButtonClick()
+        }) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                Modifier.size(16.dp),
+                strokeWidth = 2.dp,
+                trackColor = MaterialTheme.colorScheme.onPrimary
+            )
+            Spacer(Modifier.width(8.dp))
+        }
+        Text(text = text)
+    }
+}
+
+@Composable
+private fun SectionTitle(
+    modifier: Modifier = Modifier,
+    text: String
+) {
+
+    Box(
+        modifier = modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 8.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+    }
+
+}
+
+@Composable
+private fun SectionSubtitle(
+    modifier: Modifier = Modifier,
+    text: String
+) {
+
+    Box(
+        modifier = modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
+    }
+
 }
 
 @Preview

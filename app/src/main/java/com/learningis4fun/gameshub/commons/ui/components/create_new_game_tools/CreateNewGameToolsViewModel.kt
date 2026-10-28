@@ -6,10 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.ktx.logEvent
 import com.google.firebase.ktx.Firebase
+import com.learningis4fun.gameshub.api.CrusadeGameService
+import com.learningis4fun.gameshub.api.use_cases.SetupGameUseCase
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.playerName
 import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
-import com.learningis4fun.gameshub.domain.use_cases.SetupGameUseCase
 import com.learningis4fun.gameshub.util.FirebaseLog
 import com.learningis4fun.gameshub.util.GamesHubLogTags
 import com.learningis4fun.gameshub.util.getDataOrThrowException
@@ -29,7 +30,8 @@ import javax.inject.Inject
 class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
 @Inject constructor(
     private val preferences: CrusadeCardsPreferencesManager,
-    private val setupGameUseCase: SetupGameUseCase
+    private val setupGameUseCase: SetupGameUseCase,
+    private val crusadeGameService: CrusadeGameService
 ) : ViewModel() {
 
     private val createNewGameToolsStateFlow = MutableStateFlow(CreateNewGameToolsState())
@@ -54,7 +56,6 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 Log.d(GamesHubLogTags.CREATE_NEW_GAME_VIEWMODEL, "mode in V: $mode")
                 createNewGameToolsStateFlow.update {
                     it.copy(
-                        mode = mode,
                         numberOfCardsPerPlayer = numOfCardsPerPlayer,
                         eliminationLimitForCrusade = eliminationLimit
                     )
@@ -66,30 +67,14 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
             try {
                 val loggedInUser = preferences.user.first()
 
-                val openAi = preferences.openAI.first()
-
                 val loggedInUserId = loggedInUser.uniqueId
-
-                val playersWithAI = listOf(
-                    loggedInUser.copy(
-                        profileName = loggedInUser.playerName(loggedInUserId)
-                    ),
-                    openAi.copy(
-                        profileName = openAi.playerName(loggedInUserId)
-                    )
-                )
 
                 val playersInfo = getPlayers(
                     userId = loggedInUserId
                 )
 
                 createNewGameToolsStateFlow.update {
-                    it.copy(
-                        newGameWithAIState = it.newGameWithAIState.copy(
-                            players = playersWithAI
-                        ),
-                        playersInfo = playersInfo
-                    )
+                    it.copy(playersInfo = playersInfo)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -226,7 +211,8 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
     fun setupNewGameWithAIOnStartClick(onGameCreated: (String) -> Unit = {}) {
         viewModelScope.launch {
             try {
-                val sessionID = preferences.getGameSessionId()
+                crusadeGameService.createGame().getDataOrThrowException()
+                /*val sessionID = preferences.getGameSessionId()
 
                 analytics.logEvent(FirebaseLog.LogName.NEW_GAME_WITH_OPENAI_CREATED) {
                     param(FirebaseLog.LogTag.SESSION_ID, sessionID)
@@ -247,7 +233,7 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 val gameId = setupGameUseCase(
                     players = players
                 ).getDataOrThrowException()
-                onGameCreated(gameId)
+                onGameCreated(gameId)*/
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {

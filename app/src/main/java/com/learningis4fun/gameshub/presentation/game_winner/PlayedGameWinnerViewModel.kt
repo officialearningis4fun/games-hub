@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.learningis4fun.gameshub.api.use_cases.GetLatestUnPlayedCards
 import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
@@ -15,13 +16,13 @@ import com.learningis4fun.gameshub.commons.domain.util.toWinnerNames
 import com.learningis4fun.gameshub.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
-import com.learningis4fun.gameshub.domain.use_cases.GetLatestUnPlayedCards
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -68,6 +69,12 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
             }
         }
 
+        viewModelScope.launch {
+            playedGameStateFlow.collectLatest {
+                println("playedGameStateFlow: $it")
+            }
+        }
+
     }
 
     fun onEvent(event: PlayedGameWinnerEvents) {
@@ -111,7 +118,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 // completed
                 val gameWithPlayers = gameRepository
                     .getGameWithPlayers(gameId = gameId)
-                    .first()
+                    .first() ?: return
 
                 val completedState = loadWinnerInfo(
                     gameWithPlayers = gameWithPlayers
@@ -141,8 +148,7 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                 // load next stage
                 val gameWithPlayers = gameRepository
                     .getGameWithPlayers(gameId = gameId)
-                    .first()
-
+                    .first() ?: return
 
                 val nextStagePlayers = gameRepository
                     .getGameWithLatestStagePlayers(gameId = gameId)
@@ -154,7 +160,8 @@ class PlayedGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                         .players
                         .filterNot { player: Player -> player in nextStagePlayers }
 
-                val winner = gameWithPlayers.players.firstOrNull { it.uniqueId == game.winnerId }
+                val winner = gameWithPlayers
+                    .players.firstOrNull { it.uniqueId == game.winnerId }
 
                 val loggedInUser = userRepository.getUserId()
 

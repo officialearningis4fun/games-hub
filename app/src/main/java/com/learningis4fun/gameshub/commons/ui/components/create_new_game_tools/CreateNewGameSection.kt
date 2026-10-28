@@ -123,29 +123,13 @@ fun CreateNewGameSection(
                         )
                 ) {
 
-                    OnlineAndOfflineModeSwitcher(
-                        mode = createNewGameToolsState.mode,
-                        onModeSwitch = {
-                            onCreateEvent(CreateNewGameToolsEvents.SwitchMode(it))
-                        },
-                        onlineContent = {
-                            CreateAIGameSetupToolsSection(
-                                newGameWithAIState = createNewGameToolsState.newGameWithAIState,
-                                onStartGame = {
-                                    onStartAIGame()
-                                }
-                            )
-                        },
-                        offlineContent = {
-                            CreateGameSetupToolsSection(
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                createGameButtonText = "Play another game",
-                                createNewGameToolsState = createNewGameToolsState,
-                                onStartGame = onStartGame,
-                                onEvent = onCreateEvent
-                            )
-                        }
+                    CreateGameSetupToolsSection(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        createGameButtonText = "Play another game",
+                        createNewGameToolsState = createNewGameToolsState,
+                        onStartGame = onStartGame,
+                        onEvent = onCreateEvent
                     )
 
                 }
@@ -157,7 +141,6 @@ fun CreateNewGameSection(
 
 
 val createNewGameToolsState = CreateNewGameToolsState(
-    mode = OnlineOfflineMode.OFFLINE,
     numberOfParticipants = 3,
     playersInfo = listOf(
         Constants.Players.USER,
@@ -172,12 +155,6 @@ val createNewGameToolsState = CreateNewGameToolsState(
             includeInList = true
         )
     },
-    newGameWithAIState = NewGameWithAIState(
-        players = listOf(
-            Constants.Players.USER,
-            Constants.Players.OPENAI
-        )
-    )
 )
 
 @Preview
@@ -185,9 +162,7 @@ val createNewGameToolsState = CreateNewGameToolsState(
 fun CreateNewGameSectionPrev() {
     GamesHubAppThemePrev {
         CreateNewGameSection(
-            createNewGameToolsState = createNewGameToolsState.copy(
-                mode = OnlineOfflineMode.ONLINE
-            ),
+            createNewGameToolsState = createNewGameToolsState,
             onCreateEvent = {},
             onStartGame = { /*TODO*/ },
             onStartAIGame = {})
@@ -199,9 +174,7 @@ fun CreateNewGameSectionPrev() {
 fun CreateNewGameSectionPrevDark() {
     GamesHubAppThemePrev(darkTheme = true) {
         CreateNewGameSection(
-            createNewGameToolsState = createNewGameToolsState.copy(
-                mode = OnlineOfflineMode.ONLINE
-            ),
+            createNewGameToolsState = createNewGameToolsState,
             onCreateEvent = {},
             onStartGame = { /*TODO*/ },
             onStartAIGame = {})

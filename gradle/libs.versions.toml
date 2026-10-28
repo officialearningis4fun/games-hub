@@ -1,50 +1,53 @@
 [versions]
-activityCompose = "1.9.3"
+agp = "9.3.0"
+activityCompose = "1.10.1"
 activityKtx = "1.9.2"
 animation = "1.7.6"
 appcompat = "1.7.0"
 coil = "2.5.0"
+coilCompose = "3.0.4"
 constraintlayout = "2.1.4"
 constraintlayoutCompose = "1.1.0"
 coreKtx = "1.13.1"
 coreTestingVersion = "2.2.0"
 coroutinesVersion = "1.8.0"
+credentials = "1.3.0"
 datastore = "1.1.1"
+googleid = "1.1.1"
 espressoContrib = "3.6.1"
-firebaseAnalyticsKtx = "20.1.2"
-firebaseAuthKtx = "21.0.3"
+firebaseBom = "32.8.1"
 composeVersion = "1.7.6"
 fragmentTesting = "1.8.3"
 generativeai = "0.9.0"
-googleServices = "4.4.2"
-gradle = "8.5.0"
+openaiClient = "4.0.1"
+googleServices = "4.5.0"
 gson = "2.9.1"
 hamcrestAll = "1.3"
-hiltAndroid = "2.49"
-hiltCompiler = "1.2.0"
+daggerHilt = "2.60.1"
+hiltAndroid = "2.57.1"
+hiltCompiler = "2.57.1"
+hiltNavigationCompose = "1.2.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 koinVersion = "3.5.3"
-kotlinStdlib = "2.0.0"
-kotlinxCoroutinesPlayServices = "1.8.0"
-kotlinxCoroutinesTestVersion = "1.7.3"
+kotlinStdlib = "2.4.10"
+kotlinxCoroutines = "1.11.0"
 kotlinxSerializationJson = "1.6.3"
-ktorVersion = "1.6.3"
-kspVersion = "2.0.0-1.0.24"
+ktorVersion = "3.5.1"
+kspVersion = "2.3.6"
 lifecycleExtensions = "2.2.0"
 lifecycleVersion = "2.8.6"
 logbackClassic = "1.2.11"
 material = "1.12.0"
 material3 = "1.3.1"
 mockitoCoreVersion = "5.7.0"
-multidex = "2.0.1"
-navigationFragmentKtx = "2.8.5"
+navigationFragmentKtx = "2.8.9"
 navigationSafeArgsGradlePlugin = "2.8.1"
 playServicesAds = "23.4.0"
 playServicesAuth = "20.1.0"
 preferenceKtx = "1.2.1"
 robolectric = "4.5.1"
-roomKtx = "2.6.1"
+roomKtx = "2.7.0-rc01"
 runner = "1.6.2"
 runtime = "1.7.6"
 truthVersion = "1.1.3"
@@ -57,7 +60,8 @@ androidx-animation = { module = "androidx.compose.animation:animation", version.
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
-androidx-espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "espressoContrib" }
+androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoContrib" }
 androidx-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "composeVersion" }
 androidx-foundation-layout = { module = "androidx.compose.foundation:foundation-layout", version.ref = "composeVersion" }
@@ -67,7 +71,6 @@ androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtim
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleVersion" }
 androidx-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 androidx-material3-window-size = { module = "androidx.compose.material3:material3-window-size-class", version.ref = "material3" }
-androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigationSafeArgsGradlePlugin" }
 androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "navigationFragmentKtx" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomKtx" }
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomKtx" }
@@ -80,33 +83,39 @@ androidx-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding", versi
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 coil = { module = "io.coil-kt:coil", version.ref = "coil" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTestingVersion" }
-firebase-analytics-ktx = { module = "com.google.firebase:firebase-analytics-ktx", version.ref = "firebaseAnalyticsKtx" }
-firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
+firebase-database = { module = "com.google.firebase:firebase-database" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-auth = { module = "com.google.firebase:firebase-auth" }
+firebase-config = { module = "com.google.firebase:firebase-config" }
+firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
+firebase-functions = {module = "com.google.firebase:firebase-functions"}
+firebase-perf = { module = "com.google.firebase:firebase-perf" }
+firebase-storage = { module = "com.google.firebase:firebase-storage" }
 generativeai = { module = "com.google.ai.client.generativeai:generativeai", version.ref = "generativeai" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp" }
+openai-client = { module = "com.aallam.openai:openai-client" }
+openai-client-bom = {module = "com.aallam.openai:openai-client-bom", version.ref = "openaiClient"}
 google-hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hiltAndroid" }
-google-services = { module = "com.google.gms:google-services", version.ref = "googleServices" }
 google-truth = { module = "com.google.truth:truth", version.ref = "truthVersion" }
-gradle = { module = "com.android.tools.build:gradle", version.ref = "gradle" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hamcrest-all = { module = "org.hamcrest:hamcrest-all", version.ref = "hamcrestAll" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
-hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hiltAndroid" }
-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltCompiler" }
-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltCompiler" }
-jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTestVersion" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 junit = { module = "junit:junit", version.ref = "junit" }
 koin-test = { module = "io.insert-koin:koin-test", version.ref = "koinVersion" }
 koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4", version.ref = "koinVersion" }
-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlinStdlib" }
-kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlinStdlib" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinStdlib" }
-kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesPlayServices" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
-kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktorVersion" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVersion" }
@@ -120,7 +129,6 @@ lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logbackClassic" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 mockito-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCoreVersion" }
-multidex = { module = "androidx.multidex:multidex", version.ref = "multidex" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationFragmentKtx" }
 navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
 navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationFragmentKtx" }
@@ -136,3 +144,10 @@ ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", ve
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlinStdlib" }
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+android-test = { id = "com.android.test", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlinStdlib" }
+jetbrains-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlinStdlib" }
+hilt-android-gradle = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt" }
+google-services = {id = "com.google.gms.google-services", version.ref = "googleServices" }
+androidx-navigation-safe-args = { id = "androidx.navigation:navigation-safe-args-gradle-plugin", version.ref = "navigationSafeArgsGradlePlugin" }

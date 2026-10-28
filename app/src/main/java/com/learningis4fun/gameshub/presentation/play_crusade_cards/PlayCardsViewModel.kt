@@ -5,6 +5,13 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.learningis4fun.gameshub.api.use_cases.EndGameUseCase
+import com.learningis4fun.gameshub.api.use_cases.GetLatestStageNumber
+import com.learningis4fun.gameshub.api.use_cases.HandleCardStateUseCase
+import com.learningis4fun.gameshub.api.use_cases.PauseGameUseCase
+import com.learningis4fun.gameshub.api.use_cases.ResetGameUseCase
+import com.learningis4fun.gameshub.api.use_cases.ResumeGameUseCase
+import com.learningis4fun.gameshub.api.use_cases.toGamePlayerAction
 import com.learningis4fun.gameshub.app.MainViewModel
 import com.learningis4fun.gameshub.commons.domain.controller.CrusadeLoggedUserCardsController
 import com.learningis4fun.gameshub.commons.domain.model.Player
@@ -29,16 +36,10 @@ import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
 import com.learningis4fun.gameshub.di.CrusadeCardsDataModule
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
-import com.learningis4fun.gameshub.domain.use_cases.EndGameUseCase
-import com.learningis4fun.gameshub.domain.use_cases.GetLatestStageNumber
-import com.learningis4fun.gameshub.domain.use_cases.HandleCardStateUseCase
-import com.learningis4fun.gameshub.domain.use_cases.PauseGameUseCase
-import com.learningis4fun.gameshub.domain.use_cases.ResetGameUseCase
-import com.learningis4fun.gameshub.domain.use_cases.ResumeGameUseCase
-import com.learningis4fun.gameshub.domain.use_cases.toGamePlayerAction
 import com.learningis4fun.gameshub.util.GamesHubLogTags
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -58,6 +59,7 @@ import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 @ExperimentalStdlibApi
 @ExperimentalCoroutinesApi
@@ -127,7 +129,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 if (recentGame?.gameState == GameState.Started.name) {
                     adjustGameTimer()
                 }
-                delay(Constants.GAME_DURATION_INTERVAL)
+                delay(Constants.GAME_DURATION_INTERVAL.milliseconds)
             }
         }
 
@@ -162,6 +164,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     val isGameComplete = try {
                         gameWithPlayers.game.gameState == GameState.Completed.name
                     } catch (e: Exception) {
+                        if (e is CancellationException) throw e
+                        e.printStackTrace()
                         false
                     }
 
@@ -295,6 +299,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                         }
                     }
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     null
                 }
             }
@@ -349,6 +354,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             )
             winner
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            e.printStackTrace()
             null
         }
 
@@ -436,6 +443,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 }
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             e.printStackTrace()
         }
 
@@ -459,6 +467,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 )
             }
         } catch (e: Exception) {
+            if (e is CancellationException) throw e
             e.printStackTrace()
         }
     }
@@ -514,7 +523,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             // when there are no cards from the dustbin; we should end the game and start again!
             is CardStates.Error -> {
-                if(state.playerId.isNotEmpty()){
+                if (state.playerId.isNotEmpty()) {
                     // request retry
                     playCardsStateFlow.update {
                         it.copy(
@@ -769,6 +778,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             type
         } catch (exception: Exception) {
+            if (exception is CancellationException) throw exception
             exception.printStackTrace()
             type
         }
@@ -845,6 +855,8 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
             }
 
         } catch (exception: Exception) {
+            if (exception is CancellationException) throw exception
+            exception.printStackTrace()
             emptyList()
         }
     }

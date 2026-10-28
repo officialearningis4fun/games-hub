@@ -3,8 +3,11 @@ package com.learningis4fun.gameshub.presentation.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.learningis4fun.gameshub.commons.domain.model.Player
+import com.learningis4fun.gameshub.commons.domain.model.User
 import com.learningis4fun.gameshub.commons.domain.repository.UserRepository
 import com.learningis4fun.gameshub.commons.domain.util.isProfileNameCountLimitReached
+import com.learningis4fun.gameshub.data.data_source.remote.GoogleAuthStages
+import com.learningis4fun.gameshub.data.data_source.remote.GoogleAuthUiClient
 import com.learningis4fun.gameshub.presentation.play_crusade_cards.ProfileEvents
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +22,8 @@ import javax.inject.Inject
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val googleAuthUiClient: GoogleAuthUiClient
 ) : ViewModel() {
 
     private val userProfileFlow = MutableStateFlow(Player())
@@ -37,7 +41,57 @@ class ProfileViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            googleAuthUiClient.signedInUser.collectLatest { user ->
+                onInit(
+                    signedInUser = user
+                )
+            }
+        }
+        viewModelScope.launch {
+            googleAuthUiClient.googleAuthStages.collectLatest { stage ->
+                when (stage) {
+                    GoogleAuthStages.Complete,
+                    GoogleAuthStages.NotStarted -> {
+                        profileStateFlow.value = profileStateFlow.value.copy(
+                            isLoading = false
+                        )
+                    }
 
+                    GoogleAuthStages.Started -> {
+                        profileStateFlow.value = profileStateFlow.value.copy(
+                            isLoading = true
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+
+    fun onInit(
+        signedInUser: User? = null
+    ) {
+        viewModelScope.launch {
+
+            val isSignedIn = signedInUser != null
+            val email = signedInUser?.email
+
+            val signedIn = if (email.isNullOrEmpty()) {
+                if (isSignedIn) {
+                    SignedIn.Anonymously
+                } else {
+                    SignedIn.NotSignedIn
+                }
+            } else {
+                SignedIn.WithEmail(email = email)
+            }
+            profileStateFlow.value = profileStateFlow.value.copy(
+                signedIn = signedIn,
+                isLoading = false,
+                signInError = null
+            )
+        }
     }
 
     fun onEvent(event: ProfileEvents) {
@@ -69,6 +123,28 @@ class ProfileViewModel @Inject constructor(
                             isProfileNameCountLimitReached = false
                         ).enableSaveButton(profileStateFlow.value.user)
                     }
+                }
+            }
+        }
+    }
+
+    fun onSignInButtonClick(
+        onSignIn: () -> Unit
+    ) {
+        when (profileStateFlow.value.signedIn) {
+            SignedIn.Anonymously -> onSignIn()
+            SignedIn.NotSignedIn -> onSignIn()
+            is SignedIn.WithEmail -> {
+                viewModelScope.launch {
+                    profileStateFlow.value = profileStateFlow.value.copy(
+                        isLoading = true
+                    )
+                    googleAuthUiClient.signOut()
+                    profileStateFlow.value = profileStateFlow.value.copy(
+                        signedIn = SignedIn.Anonymously,
+                        isLoading = false,
+                        signInError = null
+                    )
                 }
             }
         }

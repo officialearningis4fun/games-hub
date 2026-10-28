@@ -59,7 +59,7 @@ class CardRepositoryImpl @Inject constructor(
             .stageNumber
 
         val playersOfGameIds =
-            db.gameDao().getGameWithPlayers(gameId = gameId).first().players.map { it.uniqueId }
+            db.gameDao().getGameWithPlayers(gameId = gameId).first()?.players?.map { it.uniqueId } ?: emptyList()
         val topPlayedCard = db.gameCardDao().getTopPlayedCard(
             gameId = gameId,
             playerIds = playersOfGameIds,

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.learningis4fun.gameshub">
 
-    <uses-feature android:name="android.hardware.screen.portrait" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:name=".app.GamesHubApp"
@@ -27,6 +27,10 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-3940256099942544~3347511713" />
+        <property
+            android:name="android.adservices.AD_SERVICES_CONFIG"
+            android:resource="@xml/gma_ad_services_config"
+            tools:replace="android:resource" />
     </application>
 
 </manifest>

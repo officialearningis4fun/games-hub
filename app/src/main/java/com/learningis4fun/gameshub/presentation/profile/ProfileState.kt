@@ -10,7 +10,10 @@ data class ProfileState(
     val isEnableSaveButton: Boolean = false,
     val isProfileNameCountLimitReached: Boolean = false,
     val profileNameCountLimit: String = Constants.PROFILE_NAME_COUNT_LIMIT.toString(),
-    val error: String? = null
+    val error: String? = null,
+    val isLoading: Boolean = true,
+    val signedIn: SignedIn = SignedIn.NotSignedIn,
+    val signInError: String? = null,
 ) {
 
     fun enableSaveButton(newUser: Player): ProfileState {
@@ -20,6 +23,13 @@ data class ProfileState(
         )
     }
 }
+
+sealed interface SignedIn{
+    object Anonymously: SignedIn
+    data class WithEmail(val email: String): SignedIn
+    object NotSignedIn: SignedIn
+}
+
 
 val defaultAvatars = listOf(
     R.drawable.avatar_boy1,

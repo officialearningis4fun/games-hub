@@ -43,7 +43,8 @@ abstract class GamesDatabase : RoomDatabase() {
     abstract fun playerDao(): PlayerDao
     abstract fun gameStageDao(): GameStageDao
 
-    class InsertCardsCallback @ExperimentalCoroutinesApi
+    @ExperimentalCoroutinesApi
+    class InsertCardsCallback
     @Inject constructor(
         private val database: Provider<GamesDatabase>,
         @CrusadeCardsDataModule.ApplicationScope private val scope: CoroutineScope

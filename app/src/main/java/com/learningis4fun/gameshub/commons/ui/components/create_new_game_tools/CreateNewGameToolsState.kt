@@ -7,10 +7,9 @@ data class CreateNewGameToolsState(
     val numberOfParticipants: Int = Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME,
     val eliminationLimitForCrusade: Int = Constants.DEFAULT_CRUSADE_ELIMINATION_LIMIT,
     val playersInfo: List<PlayerInfo> = emptyList(),
+    val userInfo: PlayerInfo? = null,
     val createGameLoading: Boolean = false,
-    val enableCreateGameButton: Boolean = false,
-    val newGameWithAIState: NewGameWithAIState = NewGameWithAIState(),
-    val mode: OnlineOfflineMode = OnlineOfflineMode.ONLINE
+    val enableCreateGameButton: Boolean = false
 ) {
 
     val maxNumberOfParticipants: Int = playersInfo.size
@@ -24,8 +23,6 @@ data class CreateNewGameToolsState(
             numberOfParticipants = availablePlayers.size,
             eliminationLimitForCrusade = eliminationLimitForCrusade,
             playersInfo = playersInfo,
-            newGameWithAIState = newGameWithAIState,
-            mode = mode
         )
     }
 }

@@ -45,7 +45,8 @@ class GameRepositoryImpl @Inject constructor(
 
     override suspend fun deleteGame(gameId: String): Response<Unit> {
         return try {
-            val game = db.gameDao().getGameWithPlayers(gameId = gameId).first()
+            val game = db.gameDao().getGameWithPlayers(gameId = gameId).first() ?: return Response.Error("Game not found")
+
             val playersOfGame = game.players
 
             db.withTransaction {
@@ -96,27 +97,28 @@ class GameRepositoryImpl @Inject constructor(
     override fun getGameWithLatestStagePlayers(
         gameId: String
     ): Flow<GameWithPlayers> {
-        return db.gameDao().getGameWithPlayers(gameId).mapLatest { gameWithPlayers ->
-            getGameWithSortedPlayers(gameWithPlayers = gameWithPlayers)
-
+        val gameWithPlayers = db.gameDao().getGameWithPlayers(gameId)
+       return gameWithPlayers.mapLatest {
+            getGameWithSortedPlayers(gameWithPlayers = it) ?: throw Exception("Game not found")
         }
     }
 
     override fun getGameWithLatestStagePlayersSorted(
         gameId: String
     ): Flow<GameWithPlayers> {
-        return db.gameDao().getGameWithPlayers(gameId).mapLatest { gameWithPlayers ->
-            getGameWithSortedPlayers(gameWithPlayers = gameWithPlayers, sorted = true)
+        val gameWithPlayers = db.gameDao().getGameWithPlayers(gameId)
+        return gameWithPlayers.mapLatest { gameWithPlayers ->
+            getGameWithSortedPlayers(gameWithPlayers = gameWithPlayers, sorted = true) ?: throw Exception("Game not found")
         }
     }
 
     private suspend fun getGameWithSortedPlayers(
-        gameWithPlayers: GameWithPlayers,
+        gameWithPlayers: GameWithPlayers?,
         sorted: Boolean = false
-    ): GameWithPlayers {
+    ): GameWithPlayers? {
         return try {
 
-            val gameId = gameWithPlayers.game.id
+            val gameId = gameWithPlayers?.game?.id ?: throw Exception("Game not found")
 
             val gameStages = db.gameStageDao()
                 .getGameStages(gameId = gameId)
@@ -167,13 +169,12 @@ class GameRepositoryImpl @Inject constructor(
                 players = sortedPlayers
             )
         } catch (e: Exception) {
-            e.printStackTrace()
             Log.d(GamesHubLogTags.GAME_REPOSITORY, "unfiltered: should show players error:$e")
             gameWithPlayers
         }
     }
 
-    override fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers> {
+    override fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers?> {
         return db.gameDao().getGameWithPlayers(gameId)
     }
 

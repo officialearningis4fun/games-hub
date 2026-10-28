@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.app.nav.BottonNavRoute
 import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.Constants
@@ -60,7 +61,7 @@ fun NavGraphBuilder.cardsStartScreenComposable(
     onProfileClick: () -> Unit,
     onGameClick: (Pair<Game, Player>) -> Unit = {},
 ) {
-    composable<StartScreenRoute>(
+    composable<BottonNavRoute.HomeScreenRoute>(
         popEnterTransition = {
             scaleIntoContainer(direction = ScaleTransitionDirection.INWARDS)
         }
@@ -250,12 +251,6 @@ private fun CardsStartScreenLightPrev() {
                 .fillMaxSize(),
             ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
             createNewGameToolsState = CreateNewGameToolsState(
-                newGameWithAIState = NewGameWithAIState(
-                    players = listOf(
-                        Constants.Players.USER,
-                        Constants.Players.OPENAI
-                    )
-                ),
                 playersInfo = listOf(
                     Constants.Players.USER,
                     Constants.Players.DEVICE1,

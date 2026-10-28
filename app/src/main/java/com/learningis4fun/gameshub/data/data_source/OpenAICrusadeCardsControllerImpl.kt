@@ -16,6 +16,7 @@ import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.analytics.ktx.logEvent
 import com.google.firebase.ktx.Firebase
 import com.learningis4fun.gameshub.BuildConfig
+import com.learningis4fun.gameshub.api.use_cases.GetLatestStageNumber
 import com.learningis4fun.gameshub.commons.domain.controller.CrusadeComputerCardsController
 import com.learningis4fun.gameshub.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
@@ -24,7 +25,6 @@ import com.learningis4fun.gameshub.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.domain.model.UserCard
-import com.learningis4fun.gameshub.domain.use_cases.GetLatestStageNumber
 import com.learningis4fun.gameshub.util.GamesHubLogTags
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import com.learningis4fun.gameshub.util.getNullableDataOrThrowException
@@ -33,7 +33,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
-import kotlin.uuid.ExperimentalUuidApi
 
 class OpenAICrusadeCardsControllerImpl @Inject constructor(
     private val gameRepository: GameRepository,
@@ -175,9 +174,10 @@ class OpenAICrusadeCardsControllerImpl @Inject constructor(
         playerId: String
     ): String {
         // You in a game with
-        val otherPlayersNames = gameRepository
+        val gameWithPlayers = gameRepository
             .getGameWithPlayers(gameId = gameId)
-            .first()
+            .first() ?: return "Game not found"
+        val otherPlayersNames = gameWithPlayers
             .players
             .filterNot { it.uniqueId == playerId }
             .map { it.uniqueId }
@@ -189,11 +189,11 @@ class OpenAICrusadeCardsControllerImpl @Inject constructor(
         gameId: String,
         playerId: String
     ): String {
-
+        val gameWithPlayers = gameRepository
+            .getGameWithPlayers(gameId)
+            .first() ?: return "Game not found"
         return buildString {
-            gameRepository
-                .getGameWithPlayers(gameId)
-                .first()
+            gameWithPlayers
                 .players
                 .filterNot { it.uniqueId == playerId }
                 .forEach { player ->

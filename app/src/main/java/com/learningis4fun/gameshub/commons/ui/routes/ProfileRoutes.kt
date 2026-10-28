@@ -10,3 +10,6 @@ data object ViewProfile
 
 @Serializable
 data object EditProfileRoute
+
+@Serializable
+data object AddParticipantsRoute

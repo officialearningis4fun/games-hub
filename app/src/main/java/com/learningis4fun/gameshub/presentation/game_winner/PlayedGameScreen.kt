@@ -308,14 +308,7 @@ private fun PlayedGameWinnerPrev() {
                 .fillMaxSize(),
             ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
             playedGameWinnerOrNextStage = playedGameWinnerState,
-            createNewGameToolsState = CreateNewGameToolsState(
-                newGameWithAIState = NewGameWithAIState(
-                    players = listOf(
-                        Constants.Players.USER,
-                        Constants.Players.DEVICE1
-                    )
-                )
-            )
+            createNewGameToolsState = CreateNewGameToolsState()
         )
 
     }

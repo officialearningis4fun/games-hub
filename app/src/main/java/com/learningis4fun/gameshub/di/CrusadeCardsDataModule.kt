@@ -3,6 +3,9 @@ package com.learningis4fun.gameshub.di
 import android.app.Application
 import android.content.Context
 import androidx.room.Room
+import com.learningis4fun.gameshub.api.CrusadeGameService
+import com.learningis4fun.gameshub.api.CrusadeGameServiceImpl
+import com.learningis4fun.gameshub.api.use_cases.GetLatestStageNumber
 import com.learningis4fun.gameshub.commons.domain.controller.CrusadeComputerCardsController
 import com.learningis4fun.gameshub.commons.domain.controller.CrusadeComputerCardsControllerImpl
 import com.learningis4fun.gameshub.commons.domain.repository.CardRepository
@@ -15,13 +18,13 @@ import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManag
 import com.learningis4fun.gameshub.data.data_source.OpenAICrusadeCardsControllerImpl
 import com.learningis4fun.gameshub.data.data_source.local.CrusadeCardsPreferencesManagerImpl
 import com.learningis4fun.gameshub.data.data_source.local.GamesDatabase
+import com.learningis4fun.gameshub.data.data_source.remote.GoogleAuthUiClient
 import com.learningis4fun.gameshub.data.repository.CardRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.DefaultCardRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.GameCardRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.GameRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.GameStageRepositoryImpl
 import com.learningis4fun.gameshub.data.repository.UserRepositoryImpl
-import com.learningis4fun.gameshub.domain.use_cases.GetLatestStageNumber
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,6 +45,22 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object CrusadeCardsDataModule {
+
+    @Provides
+    @Singleton
+    fun providesGoogleAuthClient(
+        @ApplicationContext context: Context,
+    ): GoogleAuthUiClient {
+        return GoogleAuthUiClient(context)
+    }
+
+    @Provides
+    @Singleton
+    fun providesCrusadeGameService(
+        googleAuthUiClient: GoogleAuthUiClient
+    ) = CrusadeGameServiceImpl(
+        googleAuthUiClient = googleAuthUiClient
+    ) as CrusadeGameService
 
     @Provides
     @Singleton

@@ -59,6 +59,15 @@ class CardsStartViewModel @Inject constructor(
                     }
                 }
         }
+
+
+        viewModelScope.launch {
+            cardsStartStateFlow.collectLatest {
+                println("cardsStartStateFlow: $it")
+            }
+
+
+        }
     }
 
     fun onEvent(event: CardsStartEvents) {

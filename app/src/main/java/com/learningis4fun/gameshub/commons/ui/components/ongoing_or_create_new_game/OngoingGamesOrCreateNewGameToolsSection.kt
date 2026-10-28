@@ -88,14 +88,7 @@ private fun OngoingGamesOrCreateNewGamePrevLight() {
             modifier = Modifier
                 .fillMaxWidth(),
             ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
-            createNewGameToolsState = CreateNewGameToolsState(
-                newGameWithAIState = NewGameWithAIState(
-                    players = listOf(
-                        Constants.Players.USER,
-                        Constants.Players.DEVICE1,
-                    )
-                )
-            )
+            createNewGameToolsState = CreateNewGameToolsState()
         )
     }
 }

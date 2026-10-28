@@ -1,12 +1,12 @@
 package com.learningis4fun.gameshub.commons.domain.controller
 
+import com.learningis4fun.gameshub.api.use_cases.HandleCardStateUseCase
 import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.commons.domain.util.JokerActions
 import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.domain.model.UserCard
-import com.learningis4fun.gameshub.domain.use_cases.HandleCardStateUseCase
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject

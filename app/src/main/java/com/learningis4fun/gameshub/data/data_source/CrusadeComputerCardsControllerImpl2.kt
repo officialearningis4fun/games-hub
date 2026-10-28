@@ -2,6 +2,7 @@
 
 package com.learningis4fun.gameshub.data.data_source
 
+import com.learningis4fun.gameshub.api.use_cases.GetLatestStageNumber
 import com.learningis4fun.gameshub.commons.domain.controller.CrusadeComputerCardsController
 import com.learningis4fun.gameshub.commons.domain.repository.CardRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
@@ -9,7 +10,6 @@ import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameStageRepository
 import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.domain.model.UserCard
-import com.learningis4fun.gameshub.domain.use_cases.GetLatestStageNumber
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject

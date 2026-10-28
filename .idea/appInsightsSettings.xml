@@ -23,14 +23,14 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.learningis4fun.gameshub" />
-                  <option name="mobileSdkAppId" value="1:417539504278:android:76e62b363892c33f642ab7" />
+                  <option name="appId" value="com.learningis4fun.gameshub.debug" />
+                  <option name="mobileSdkAppId" value="1:417539504278:android:1e1a012a7ee45afe642ab7" />
                   <option name="projectId" value="gameshub-5a89f" />
                   <option name="projectNumber" value="417539504278" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />
-              <option name="timeIntervalDays" value="SEVEN_DAYS" />
+              <option name="timeIntervalDays" value="THIRTY_DAYS" />
               <option name="visibilityType" value="ALL" />
             </InsightsFilterSettings>
           </value>

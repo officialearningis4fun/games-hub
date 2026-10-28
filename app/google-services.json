@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "417539504278",
+    "firebase_url": "https://gameshub-5a89f-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "gameshub-5a89f",
+    "storage_bucket": "gameshub-5a89f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417539504278:android:76e62b363892c33f642ab7",
+        "android_client_info": {
+          "package_name": "com.learningis4fun.gameshub"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "417539504278-2o8vld3018m9rhdhk8jf325tsv24uubv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAE7HM4Vw81ezOJ9Z6rgAJZ-Yl_7W_I5gU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "417539504278-2o8vld3018m9rhdhk8jf325tsv24uubv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:417539504278:android:1e1a012a7ee45afe642ab7",
+        "android_client_info": {
+          "package_name": "com.learningis4fun.gameshub.debug"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "417539504278-2o8vld3018m9rhdhk8jf325tsv24uubv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAE7HM4Vw81ezOJ9Z6rgAJZ-Yl_7W_I5gU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "417539504278-2o8vld3018m9rhdhk8jf325tsv24uubv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

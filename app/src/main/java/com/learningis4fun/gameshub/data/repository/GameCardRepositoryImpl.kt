@@ -263,8 +263,9 @@ class GameCardRepositoryImpl @Inject constructor(
     ): Response<Int> {
 
         return try {
-            val playersIds = db.gameDao().getGameWithPlayers(gameId).first()
-                .players
+            val gameWithPlayers = db.gameDao().getGameWithPlayers(gameId).first()
+                ?: return Response.Error("Game not found")
+            val playersIds = gameWithPlayers.players
                 .map {
                     it.uniqueId
                 }

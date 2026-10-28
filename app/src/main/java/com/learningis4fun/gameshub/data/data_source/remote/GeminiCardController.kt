@@ -5,12 +5,13 @@ package com.learningis4fun.gameshub.data.data_source.remote
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.generationConfig
 import com.learningis4fun.gameshub.BuildConfig
+import com.learningis4fun.gameshub.api.use_cases.GetLatestStageNumber
 import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.commons.domain.util.CardStatesDefaultMsg
 import com.learningis4fun.gameshub.commons.domain.util.Response
-import com.learningis4fun.gameshub.domain.use_cases.GetLatestStageNumber
+import com.learningis4fun.gameshub.util.getDataOrThrowException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -86,7 +87,7 @@ class GeminiCardController @OptIn(ExperimentalCoroutinesApi::class)
 
             var stateMessage: String? = null
 
-            val gameWithPlayers = gameRepository.getGameWithPlayers(gameId).first()
+            val gameWithPlayers = gameRepository.getGameWithPlayers(gameId).first() ?: return Response.Error("Game not found")
 
             val otherPlayers = gameWithPlayers
                 .players

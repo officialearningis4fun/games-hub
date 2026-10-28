@@ -45,6 +45,7 @@ interface GameDao {
         )
     ): Flow<Game>
 
+    @Transaction
     @Query("SELECT * FROM game WHERE gameState IN(:gameStates)")
     fun getNonCompletedGames(
         gameStates: List<String> = listOf(
@@ -56,7 +57,7 @@ interface GameDao {
 
     @Transaction
     @Query("SELECT * FROM game WHERE gameId LIKE :gameId")
-    fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers>
+    fun getGameWithPlayers(gameId: String): Flow<GameWithPlayers?>
 
     @Transaction
     @Query("SELECT * FROM game WHERE gameState LIKE :gameState ORDER BY gameId DESC ")

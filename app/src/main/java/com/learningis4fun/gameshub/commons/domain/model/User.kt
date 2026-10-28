@@ -10,5 +10,9 @@ data class User(
     @ColumnInfo(name = "userId")
     val id: String = "",
     @ColumnInfo(name = "userName")
-    val name : String = ""
+    val name : String? = "",
+    @ColumnInfo(name = "userEmail")
+    val email: String = "",
+    @ColumnInfo(name = "userPhotoUrl")
+    val photoUrl: String? = ""
 )

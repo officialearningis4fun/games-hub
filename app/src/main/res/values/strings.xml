@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">GamesHub</string>
+    <string name="google_client_id">417539504278-2o8vld3018m9rhdhk8jf325tsv24uubv.apps.googleusercontent.com</string>
 
     <!-- Main Cards Screen -->
     <string name="title_users_cards">Your cards</string>
@@ -29,6 +30,8 @@
     <string name="screen_profile_title">Profile</string>
     <string name="screen_profile_choose_avatar">Choose avatar</string>
     <string name="screen_winner_title">Winner</string>
+    <string name="screen_add_participant_title">Add Participants</string>
+    <string name="screen_add_participant_search_hint">Name, email</string>
 
     <string name="admob_app_ID">ca-app-pub-9786986871932218~6262489813</string>
     <string name="admod_ad_ID">ca-app-pub-9786986871932218/1354548577</string>
