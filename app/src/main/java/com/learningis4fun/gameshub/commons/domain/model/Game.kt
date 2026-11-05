@@ -3,6 +3,7 @@ package com.learningis4fun.gameshub.commons.domain.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.learningis4fun.gameshub.api.model.dto.GameDto
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.GameState
 

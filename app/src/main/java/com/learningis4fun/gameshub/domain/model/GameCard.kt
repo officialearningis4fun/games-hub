@@ -3,6 +3,7 @@ package com.learningis4fun.gameshub.domain.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.learningis4fun.gameshub.api.model.dto.GameCardDto
 
 @Entity(tableName = "gameCard")
 data class GameCard(
@@ -23,4 +24,14 @@ data class GameCard(
     val playTime: Long = 0L,
     @ColumnInfo(name = "pickedTime")
     val pickedTime: Long = 0L
-)
+){
+    fun toGameCardDto() = GameCardDto(
+        gameId = gameId,
+        cardId = cardId,
+        playerId = playerId,
+        stageNumber = stageNumber,
+        played = isPlayed,
+        playTime = playTime,
+        pickedTime = pickedTime
+    )
+}

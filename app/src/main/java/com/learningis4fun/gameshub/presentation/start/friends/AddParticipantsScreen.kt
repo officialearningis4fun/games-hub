@@ -65,6 +65,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.app.nav.BottonNavRoute
@@ -72,6 +73,7 @@ import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.PlayerInfo
 import com.learningis4fun.gameshub.commons.ui.routes.AddParticipantsRoute
+import com.learningis4fun.gameshub.commons.ui.routes.CoreNavGraphRoute
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
@@ -82,15 +84,19 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun NavGraphBuilder.addParticipantsScreenComposable(
+    navController: NavHostController,
     onNavBackClick: () -> Unit,
 ) {
     composable<AddParticipantsRoute>(
         popEnterTransition = {
             scaleIntoContainer(direction = ScaleTransitionDirection.INWARDS)
         }) { backStackEntry ->
-        backStackEntry.destination.parent
 
-        val friendsStartViewModel: FriendsStartViewModel = hiltViewModel()
+        val parentEntry = remember(backStackEntry) {
+            navController.getBackStackEntry(CoreNavGraphRoute)
+        }
+
+        val friendsStartViewModel: FriendsStartViewModel = hiltViewModel(parentEntry)
         val searchQuery by friendsStartViewModel.searchQuery.collectAsStateWithLifecycle()
         val createNewFriendsGameState by friendsStartViewModel.createNewFriendsGameState.collectAsStateWithLifecycle()
         val isSearchedUserNotAFriend by friendsStartViewModel.isSearchedUserNotAFriend.collectAsStateWithLifecycle()
@@ -275,7 +281,10 @@ fun AddParticipantsScreen(
 
             items(players) {
                 FriendItem(
-                    playerInfo = it
+                    playerInfo = it,
+                    onCheckClick = {
+                        onEvent(FriendsStartEvents.CheckParticipantClick(it))
+                    }
                 )
             }
         }
@@ -399,14 +408,17 @@ private fun AddFriendItem(
 
 @Composable
 private fun FriendItem(
-    modifier: Modifier = Modifier, playerInfo: PlayerInfo, onRemove: () -> Unit = {}
+    modifier: Modifier = Modifier,
+    playerInfo: PlayerInfo,
+    onCheckClick: () -> Unit = {}
 ) {
     val imageRes = playerInfo.player.imageUrl.toIntOrNull() ?: R.drawable.avatar_person1
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable { onCheckClick() },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {

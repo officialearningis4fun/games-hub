@@ -8,7 +8,7 @@ data class CreateNewFriendsGameState(
     val numberOfParticipants: Int = Constants.DEFAULT_PARTICIPANTS_IN_CRUSADE_GAME,
     val eliminationLimitForCrusade: Int = Constants.DEFAULT_CRUSADE_ELIMINATION_LIMIT,
     val createGameLoading: Boolean = false,
-    val enableCreateGameButton: Boolean = false,
+    val enableCreateGameButton: Boolean = true,
     val playerInfos: List<PlayerInfo> = emptyList(),
     val userInfo: PlayerInfo? = null,
 ) {
@@ -20,7 +20,10 @@ data class CreateNewFriendsGameState(
             numberOfCardsPerPlayer = numberOfCardsPerPlayer,
             numberOfParticipants = availablePlayers.size,
             eliminationLimitForCrusade = eliminationLimitForCrusade,
+            createGameLoading = createGameLoading,
+            enableCreateGameButton = enableCreateGameButton,
             playerInfos = playerInfos,
+            userInfo = userInfo
         )
     }
 }

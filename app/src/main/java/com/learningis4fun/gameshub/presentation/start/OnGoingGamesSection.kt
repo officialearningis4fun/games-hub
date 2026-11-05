@@ -55,6 +55,7 @@ import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 import com.learningis4fun.gameshub.presentation.util.LocalAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.LocalCustomSharedTransitionScope
 import com.learningis4fun.gameshub.presentation.util.sharedElementKeyOfOngoingGameSection
+import com.learningis4fun.gameshub.presentation.util.toImageResource
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -309,12 +310,13 @@ private fun PlayerItem(
 
 }
 
+@Composable
 private fun imageOfCard(cards: List<Card>, index: Int): Int {
     if (cards.lastIndex < index) {
         return R.drawable.card_base
     }
 
-    val cardImage = cards[index].image.toIntOrNull()
+    val cardImage = cards[index].image.toImageResource()
 
     return cardImage ?: R.drawable.card_base
 

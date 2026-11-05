@@ -9,7 +9,10 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.platform.LocalContext
+import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
+import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 val LocalCustomSharedTransitionScope = compositionLocalOf<SharedTransitionScope> {
@@ -103,4 +106,23 @@ fun GamesHubAppThemePrev(
             }
         }
     }
+}
+
+@Composable
+fun String.toImageResource(): Int {
+    val context = LocalContext.current
+
+    val imageResId = try {
+        val id = context.resources.getIdentifier(
+            this,
+            "drawable",
+            context.packageName
+        )
+        if (id == 0) throw Exception("Image not found") else id
+    } catch (e: Exception) {
+        if (e is CancellationException) throw e
+        e.printStackTrace()
+        null
+    }
+    return this.toIntOrNull() ?: imageResId ?: R.drawable.card_base
 }

@@ -6,4 +6,5 @@ object LogTags {
     const val GOOGLE_AUTH_UI_CLIENT = "GoogleAuthUIClient"
     const val CRUSADE_GAME_SERVICE_IMPL = "CrusadeGameServiceImpl"
     const val FRIENDS_START_VIEW_MODEL = "FriendsStartViewModel"
+    const val PLAY_CARDS_VIEW_MODEL = "PlayCardsViewModel"
 }

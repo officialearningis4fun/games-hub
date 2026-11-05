@@ -24,6 +24,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.domain.model.UserCard
+import com.learningis4fun.gameshub.presentation.util.toImageResource
 
 @Composable
 fun PlayedCardsSection(
@@ -124,9 +125,11 @@ fun PlayedCardsSection(
     }
 }
 
+@Composable
 private fun getImageOrDefault(cards: List<UserCard>, index: Int): Int {
-    return if (cards.lastIndex >= index) cards[index].image.toIntOrNull()
-        ?: R.drawable.card_base else R.drawable.card_base
+    return if (cards.lastIndex >= index) {
+        cards[index].image.toImageResource()
+    } else R.drawable.card_base
 }
 
 @Composable

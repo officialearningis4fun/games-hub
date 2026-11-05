@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class GameStage(
-    val gameId: String = "",
+    val gameId: String,
     val stageNumber: Int = 1,
     val playerIds: List<PlayerIdAndPosition> = emptyList()
 ) {

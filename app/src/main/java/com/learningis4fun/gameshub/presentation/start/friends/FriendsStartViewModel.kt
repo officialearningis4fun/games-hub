@@ -4,18 +4,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.learningis4fun.gameshub.api.CrusadeGameService
-import com.learningis4fun.gameshub.api.use_cases.GetOngoingGamesUseCase
 import com.learningis4fun.gameshub.commons.domain.model.Player
-import com.learningis4fun.gameshub.commons.domain.repository.DefaultCardRepository
-import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
-import com.learningis4fun.gameshub.commons.domain.repository.UserRepository
+import com.learningis4fun.gameshub.commons.domain.model.User
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.GameState
 import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.PlayerInfo
 import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.data.data_source.remote.GoogleAuthUiClient
-import com.learningis4fun.gameshub.domain.model.CompletedGame
 import com.learningis4fun.gameshub.presentation.start.CompletedGamesState
 import com.learningis4fun.gameshub.util.LogTags
 import com.learningis4fun.gameshub.util.getDataOrThrowException
@@ -26,7 +22,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,11 +30,7 @@ import kotlin.coroutines.cancellation.CancellationException
 @ExperimentalCoroutinesApi
 @HiltViewModel
 class FriendsStartViewModel @Inject constructor(
-    val repository: DefaultCardRepository,
     private val crusadeGameService: CrusadeGameService,
-    private val gameRepository: GameRepository,
-    private val userRepository: UserRepository,
-    private val getOngoingGamesUseCase: GetOngoingGamesUseCase,
     private val googleAuthUiClient: GoogleAuthUiClient,
     private val preferencesManager: CrusadeCardsPreferencesManager
 ) : ViewModel() {
@@ -62,31 +53,21 @@ class FriendsStartViewModel @Inject constructor(
     val handler = CoroutineExceptionHandler { _, throwable ->
         Log.d(LogTags.OngoingGamesOrCreateNewGameViewModel, "throwable: $throwable")
     }
-    private val gameId = MutableStateFlow("")
 
     init {
-        viewModelScope.launch {
-            gameRepository.getCompletedGamesWithPlayers()
-                .collectLatest { gamesWithPlayers ->
-
-                    val completedGames = gamesWithPlayers.map {
-                        CompletedGame(
-                            duration = it.game.gameDuration,
-                            game = it.game,
-                            players = it.players
-                        )
-                    }
-
+        viewModelScope.launch(handler) {
+            crusadeGameService.getCompletedGames()
+                .collectLatest { completedGames ->
                     completedGamesStateFlow.update {
                         it.copy(completedGames = completedGames, isLoading = false)
                     }
                 }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             completedGamesStateFlow
                 .collectLatest { completed ->
-                    val userId = userRepository.getUserId()
+                    val userId = getUser().id
 
                     friendsStartStateFlow.update {
                         it.copy(
@@ -98,28 +79,16 @@ class FriendsStartViewModel @Inject constructor(
         }
 
         viewModelScope.launch(handler) {
-            combine(
-                getOngoingGamesUseCase(),
-                gameId,
-            ) { ongoingGames, gameId ->
-                Pair(
-                    ongoingGames,
-                    gameId
-                )
-            }.collect { (ongoingGames, gameId) ->
 
-                try {
-                    Log.d(LogTags.OngoingGamesOrCreateNewGameViewModel, "gameId: $gameId")
-                    val game = gameRepository.getGame(gameId).first()
-                    // loading - default
-                    // ongoing games
-                    // create new game
-                    // nothing
+            crusadeGameService.getUnCompletedGames()
+                .collect { ongoingGames ->
 
-                    // when the game is not completed - we have another stage - so show nothing
-                    val state = if (game == null || game.gameState == GameState.Completed.name) {
-                        // if game is completed; check the ongoing games -. if empty -> show create new game
-                        if (ongoingGames.isNotEmpty()) {
+                    try {
+                        // loading - default
+                        // ongoing games
+                        // create new game
+
+                        val state = if (ongoingGames.isNotEmpty()) {
                             // show ongoing
                             OngoingGamesOrCreateNewGameState.OngoingGamesState(
                                 games = ongoingGames
@@ -128,23 +97,25 @@ class FriendsStartViewModel @Inject constructor(
                             // show create new game
                             OngoingGamesOrCreateNewGameState.CreateNewGameToolsState
                         }
-                    } else {
-                        // not completed
-                        OngoingGamesOrCreateNewGameState.Nothing
-                    }
-                    Log.d(LogTags.OngoingGamesOrCreateNewGameViewModel, "state: $state")
+                        Log.d(LogTags.OngoingGamesOrCreateNewGameViewModel, "state: $state")
 
-                    ongoingGamesOrCreateNewGameStateFlow.update {
-                        state
+                        ongoingGamesOrCreateNewGameStateFlow.update {
+                            state
+                        }
+                    } catch (e: Exception) {
+                        if (e is CancellationException) throw e
+                        e.printStackTrace()
+                        ongoingGamesOrCreateNewGameStateFlow.update {
+                            OngoingGamesOrCreateNewGameState.CreateNewGameToolsState
+                        }
                     }
-                } catch (e: Exception) {
-                    if (e is CancellationException) throw e
-                    e.printStackTrace()
-                    ongoingGamesOrCreateNewGameStateFlow.update {
-                        OngoingGamesOrCreateNewGameState.CreateNewGameToolsState
-                    }
+
                 }
+        }
 
+        viewModelScope.launch(handler) {
+            createNewFriendsGameStateFlow.collectLatest {
+                Log.d(LogTags.FRIENDS_START_VIEW_MODEL, "userInfo: ${it.userInfo}")
             }
         }
 
@@ -180,7 +151,7 @@ class FriendsStartViewModel @Inject constructor(
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             combine(
                 preferencesManager.numberOfCardsPerPlayer,
                 preferencesManager.eliminationCountLimitForCrusade
@@ -238,7 +209,7 @@ class FriendsStartViewModel @Inject constructor(
                             PlayerInfo(
                                 player = player,
                                 canRemove = false,
-                                includeInList = true
+                                includeInList = false
                             )
                         }
                     )
@@ -246,6 +217,10 @@ class FriendsStartViewModel @Inject constructor(
             }
         }
 
+    }
+
+    fun getUser(): User {
+        return googleAuthUiClient.signedInUser.value ?: throw Exception("User not found")
     }
 
     fun onEvent(event: FriendsStartEvents) {
@@ -291,19 +266,23 @@ class FriendsStartViewModel @Inject constructor(
                 }
             }
 
-            is FriendsStartEvents.RemoveParticipant -> {
+            is FriendsStartEvents.CheckParticipantClick -> {
+
                 createNewFriendsGameStateFlow.update {
 
+                    val isCheck = !event.playerInfo.includeInList
                     it.copy(
                         playerInfos = it.playerInfos.map { playerInfo ->
                             if (playerInfo.player.uniqueId == event.playerInfo.player.uniqueId) {
-                                playerInfo.copy(includeInList = false)
+                                playerInfo.copy(includeInList = isCheck)
                             } else {
                                 playerInfo
                             }
                         }
                     ).updateNumberOfParticipants()
                 }
+
+
             }
 
             FriendsStartEvents.ClearSearchQuery -> {
@@ -330,7 +309,34 @@ class FriendsStartViewModel @Inject constructor(
 
             FriendsStartEvents.CreateGame -> {
                 viewModelScope.launch(handler) {
-                    crusadeGameService.createGame().getDataOrThrowException()
+                    try {
+                        createNewFriendsGameStateFlow.update {
+                            it.copy(
+                                createGameLoading = true,
+                                enableCreateGameButton = false
+                            )
+                        }
+                        crusadeGameService.createGame(
+                            opponentIds = createNewFriendsGameStateFlow.value.playerInfos.mapNotNull {
+                                if (it.includeInList) {
+                                    it.player.uniqueId
+                                } else {
+                                    null
+                                }
+                            }
+                        ).getDataOrThrowException()
+                    } catch (e: Exception) {
+                        if (e is CancellationException) throw e
+                        e.printStackTrace()
+                    } finally {
+                        createNewFriendsGameStateFlow.update {
+                            it.copy(
+                                createGameLoading = false,
+                                enableCreateGameButton = true
+                            )
+                        }
+                    }
+
                 }
             }
         }
@@ -339,14 +345,10 @@ class FriendsStartViewModel @Inject constructor(
     private fun onDeleteGame(gameId: String) {
         viewModelScope.launch {
             try {
-                gameRepository.deleteGame(gameId).getDataOrThrowException()
+                crusadeGameService.deleteGame(gameId).getDataOrThrowException()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-    }
-
-    fun setGameId(id: String) {
-        gameId.update { id }
     }
 }

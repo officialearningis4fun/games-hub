@@ -1,4 +1,4 @@
-package com.learningis4fun.gameshub.api.model
+package com.learningis4fun.gameshub.api.model.dto
 
 import kotlinx.serialization.Serializable
 

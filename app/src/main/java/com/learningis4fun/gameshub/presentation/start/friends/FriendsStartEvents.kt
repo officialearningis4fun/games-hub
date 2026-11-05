@@ -6,7 +6,7 @@ sealed interface FriendsStartEvents {
     data class DeleteGame(val gameId: String): FriendsStartEvents
     data object IncreaseNumberOfCards : FriendsStartEvents
     data object DecreaseNumberOfCards : FriendsStartEvents
-    data class RemoveParticipant(val playerInfo: PlayerInfo) : FriendsStartEvents
+    data class CheckParticipantClick(val playerInfo: PlayerInfo): FriendsStartEvents
     data object IncreaseEliminationLimitForCrusade : FriendsStartEvents
     data object DecreaseEliminationLimitForCrusade : FriendsStartEvents
     data object ClearSearchQuery: FriendsStartEvents

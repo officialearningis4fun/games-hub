@@ -1,5 +1,8 @@
 package com.learningis4fun.gameshub.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class CardStateEntity(
     val cardStateName : String = "",
     val playerId: String = "",

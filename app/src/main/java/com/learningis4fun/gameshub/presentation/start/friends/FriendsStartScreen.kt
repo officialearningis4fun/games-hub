@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.app.nav.BottonNavRoute
@@ -69,6 +70,7 @@ import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.C
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.EliminationLimitToolDialog
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.PlayerInfo
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.ToolChip
+import com.learningis4fun.gameshub.commons.ui.routes.CoreNavGraphRoute
 import com.learningis4fun.gameshub.presentation.start.CompletedGamesSection
 import com.learningis4fun.gameshub.presentation.start.CompletedGamesState
 import com.learningis4fun.gameshub.presentation.start.OngoingGamesSection
@@ -84,6 +86,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun NavGraphBuilder.friendsScreenComposable(
+    navController: NavHostController,
     onResumeClick: (String) -> Unit,
     onProfileClick: () -> Unit,
     onGameClick: (Pair<Game, Player>) -> Unit = {},
@@ -95,8 +98,11 @@ fun NavGraphBuilder.friendsScreenComposable(
         }) { backStackEntry ->
         backStackEntry.destination.parent
 
-        val friendsStartViewModel: FriendsStartViewModel = hiltViewModel()
-        friendsStartViewModel.setGameId("")
+        val parentEntry = remember(backStackEntry) {
+            navController.getBackStackEntry(CoreNavGraphRoute)
+        }
+
+        val friendsStartViewModel: FriendsStartViewModel = hiltViewModel(parentEntry)
 
         val friendsStartState by friendsStartViewModel.friendsStartState.collectAsStateWithLifecycle()
         val ongoingGamesOrCreateNewGameState by friendsStartViewModel.ongoingGamesOrCreateNewGameState.collectAsStateWithLifecycle()
@@ -447,7 +453,7 @@ private fun CreateGameSetupToolsSection(
                 createNewGameToolsState.availablePlayers.forEach { playerInfo ->
                     PlayerItem(
                         modifier = Modifier, playerInfo = playerInfo, onRemove = {
-                            onEvent(FriendsStartEvents.RemoveParticipant(playerInfo))
+                            onEvent(FriendsStartEvents.CheckParticipantClick(playerInfo))
                         })
                 }
             }
@@ -457,6 +463,7 @@ private fun CreateGameSetupToolsSection(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp),
+            enabled = createNewGameToolsState.enableCreateGameButton,
             onClick = {
                 onEvent(FriendsStartEvents.CreateGame)
             },
@@ -465,6 +472,14 @@ private fun CreateGameSetupToolsSection(
                 contentColor = MaterialTheme.colorScheme.onSurface
             )
         ) {
+            if (createNewGameToolsState.createGameLoading) {
+                CircularProgressIndicator(
+                    Modifier.size(16.dp),
+                    strokeWidth = 2.dp,
+                    trackColor = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(Modifier.width(8.dp))
+            }
             Icon(
                 imageVector = Icons.Default.Edit, contentDescription = null
             )

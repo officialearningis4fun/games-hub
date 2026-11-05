@@ -3,24 +3,26 @@
 package com.learningis4fun.gameshub.app
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.navigation
-import androidx.navigation.compose.rememberNavController
 import com.learningis4fun.gameshub.app.nav.BottonNavRoute
 import com.learningis4fun.gameshub.commons.ui.routes.AddParticipantsRoute
 import com.learningis4fun.gameshub.commons.ui.routes.CoreNavGraphRoute
 import com.learningis4fun.gameshub.commons.ui.routes.EditProfileRoute
+import com.learningis4fun.gameshub.commons.ui.routes.OnlineWinnerScreenRoute
+import com.learningis4fun.gameshub.commons.ui.routes.PlayCardsOnlineScreenRoute
 import com.learningis4fun.gameshub.commons.ui.routes.PlayCardsScreenRoute
 import com.learningis4fun.gameshub.commons.ui.routes.ProfileGraph
 import com.learningis4fun.gameshub.commons.ui.routes.StartScreenRoute
 import com.learningis4fun.gameshub.commons.ui.routes.WinnerScreenRoute
-import com.learningis4fun.gameshub.presentation.game_winner.playedGameWinnerComposable
-import com.learningis4fun.gameshub.presentation.play_crusade_cards.playCardsScreenComposable
+import com.learningis4fun.gameshub.presentation.game_winner.offline.playedGameWinnerComposable
+import com.learningis4fun.gameshub.presentation.game_winner.online.playedOnlineGameWinnerComposable
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.offline.playCardsScreenComposable
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.online.playCardsOnlineScreenComposable
 import com.learningis4fun.gameshub.presentation.profile.editProfileScreenComposable
 import com.learningis4fun.gameshub.presentation.profile.profileScreenComposable
 import com.learningis4fun.gameshub.presentation.start.cardsStartScreenComposable
@@ -45,6 +47,7 @@ fun NavigationRoot(
                 startDestination = CoreNavGraphRoute
             ) {
                 navigation<CoreNavGraphRoute>(startDestination = BottonNavRoute.HomeScreenRoute) {
+
                     cardsStartScreenComposable(
                         onStartClick = { gameId ->
                             navController.navigate(PlayCardsScreenRoute(currentGameId = gameId))
@@ -65,9 +68,11 @@ fun NavigationRoot(
                             )
                         },
                     )
+
                     friendsScreenComposable(
+                        navController = navController,
                         onResumeClick = { gameId ->
-                            navController.navigate(PlayCardsScreenRoute(currentGameId = gameId))
+                            navController.navigate(PlayCardsOnlineScreenRoute(currentGameId = gameId))
                         },
                         onProfileClick = {
                             navController.navigate(ProfileGraph)
@@ -85,6 +90,14 @@ fun NavigationRoot(
                             )
                         },
                     )
+
+                    addParticipantsScreenComposable(
+                        navController = navController,
+                        onNavBackClick = {
+                            navController.navigateUp()
+                        }
+                    )
+
                     profileScreenComposable(
                         onBackClick = {
                             navController.navigateUp()
@@ -96,12 +109,6 @@ fun NavigationRoot(
                     )
                 }
 
-                addParticipantsScreenComposable(
-                    onNavBackClick = {
-                        navController.navigateUp()
-                    }
-                )
-
                 editProfileScreenComposable(
                     onBackClick = {
                         navController.navigateUp()
@@ -110,9 +117,6 @@ fun NavigationRoot(
                 playCardsScreenComposable(
                     onBackClick = {
                         navController.navigateUp()
-                    },
-                    onProfileClick = {
-                        navController.navigate(ProfileGraph)
                     },
                     navigateToWinner = { route ->
                         navController.navigate(
@@ -128,21 +132,44 @@ fun NavigationRoot(
                         }
                     }
                 )
-                playedGameWinnerComposable(
-                    onStartGame = { gameId ->
-                        navController.navigate(PlayCardsScreenRoute(gameId)) {
-                            popUpTo(StartScreenRoute)
+
+                playCardsOnlineScreenComposable(
+                    onBackClick = {
+                        navController.navigateUp()
+                    },
+                    navigateToWinner = { route ->
+                        navController.navigate(
+                            OnlineWinnerScreenRoute(
+                                wonGameId = route.wonGameId,
+                                winnerImageUrl = route.winnerImageUrl,
+                                playerId = route.playerId
+                            )
+                        ) {
+                            popUpTo<CoreNavGraphRoute> {
+                                inclusive = false
+                            }
                         }
-                    },
-                    onResumeClick = { gameId ->
-                        navController.navigate(PlayCardsScreenRoute(currentGameId = gameId))
-                    },
+                    }
+                )
+
+                playedGameWinnerComposable(
                     onCloseClick = {
                         navController.navigateUp()
                     },
                     onStartNextStage = { gameId ->
                         navController.navigate(PlayCardsScreenRoute(gameId)) {
-                            popUpTo(StartScreenRoute)
+                            popUpTo(BottonNavRoute.HomeScreenRoute)
+                        }
+                    }
+                )
+
+                playedOnlineGameWinnerComposable(
+                    onCloseClick = {
+                        navController.navigateUp()
+                    },
+                    onStartNextStage = { gameId ->
+                        navController.navigate(PlayCardsOnlineScreenRoute(gameId)) {
+                            popUpTo(BottonNavRoute.FriendsScreenRoute)
                         }
                     }
                 )

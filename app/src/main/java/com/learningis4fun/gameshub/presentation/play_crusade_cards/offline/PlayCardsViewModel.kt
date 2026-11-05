@@ -1,4 +1,4 @@
-package com.learningis4fun.gameshub.presentation.play_crusade_cards
+package com.learningis4fun.gameshub.presentation.play_crusade_cards.offline
 
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
@@ -34,8 +34,19 @@ import com.learningis4fun.gameshub.commons.ui.routes.PlayCardsScreenRoute
 import com.learningis4fun.gameshub.data.data_source.CrusadeCardsPreferencesManager
 import com.learningis4fun.gameshub.data.data_source.relations.GameWithPlayers
 import com.learningis4fun.gameshub.di.CrusadeCardsDataModule
+import com.learningis4fun.gameshub.domain.model.CardsActionMessage
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.AnimatingCardAndStage
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.AnimatingCardStages
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.CurrentlyPlayingAnim
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.PlayCardsErrorAction
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.PlayCardsErrorState
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.PlayCardsEvent
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.PlayCardsState
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.WonGame
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.isAnimating
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.isNotAnimating
 import com.learningis4fun.gameshub.util.GamesHubLogTags
 import com.learningis4fun.gameshub.util.getDataOrThrowException
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -498,14 +509,14 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                 }
             }
 
-    private suspend fun gameActionMessages(state: CardStates): com.learningis4fun.gameshub.domain.model.CardsActionMessage {
+    private suspend fun gameActionMessages(state: CardStates): CardsActionMessage {
         val userId = preference.user.first().uniqueId
         return when (state) {
             is CardStates.ChangeType -> {
                 if (state.playerId != userId) {
-                    com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                    CardsActionMessage("...", true)
                 } else {
-                    com.learningis4fun.gameshub.domain.model.CardsActionMessage(
+                    CardsActionMessage(
                         message = state.message
                     )
                 }
@@ -513,9 +524,9 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
 
             is CardStates.DefineCardAction -> {
                 if (state.playerId != userId) {
-                    com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                    CardsActionMessage("...", true)
                 } else {
-                    com.learningis4fun.gameshub.domain.model.CardsActionMessage(
+                    CardsActionMessage(
                         message = state.message
                     )
                 }
@@ -550,57 +561,57 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
                     }
                     pauseGameAndReleaseResources()
                 }
-                com.learningis4fun.gameshub.domain.model.CardsActionMessage(message = state.message)
+                CardsActionMessage(message = state.message)
             }
 
             is CardStates.Hit -> {
                 if (state.playerId != userId) {
-                    com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                    CardsActionMessage("...", true)
                 } else {
                     val message = "${CardStatesDefaultMsg.HitBackOrPick} ${state.cardsToPick} cards"
-                    com.learningis4fun.gameshub.domain.model.CardsActionMessage(
+                    CardsActionMessage(
                         message = message
                     )
                 }
             }
 
             is CardStates.Pick -> {
-                com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                CardsActionMessage("...", true)
             }
 
             is CardStates.Picked -> {
-                com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                CardsActionMessage("...", true)
             }
 
             is CardStates.Played -> {
-                com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                CardsActionMessage("...", true)
             }
 
             is CardStates.NoAvailableCard -> {
-                com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                CardsActionMessage("...", true)
             }
 
             is CardStates.ChangedType,
             is CardStates.Chance -> {
-                com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                CardsActionMessage("...", true)
             }
 
             is CardStates.Play -> {
                 if (state.playerId != userId) {
-                    com.learningis4fun.gameshub.domain.model.CardsActionMessage("...", true)
+                    CardsActionMessage("...", true)
                 } else {
                     val message = if (state.canPick) {
                         CardStatesDefaultMsg.PlayOrPick
                     } else {
                         state.message
                     }
-                    com.learningis4fun.gameshub.domain.model.CardsActionMessage(
+                    CardsActionMessage(
                         message = message
                     )
                 }
             }
 
-            CardStates.Start -> com.learningis4fun.gameshub.domain.model.CardsActionMessage(
+            CardStates.Start -> CardsActionMessage(
                 message = "Preparing to play...",
                 animate = true
             )
@@ -1211,7 +1222,7 @@ class PlayCardsViewModel @ExperimentalCoroutinesApi
     data class PlayingScreenState(
         val playersScreenInfo: List<PlayerScreenInfo>,
         val lastThreePlayedCards: List<UserCard>,
-        val messages: com.learningis4fun.gameshub.domain.model.CardsActionMessage,
+        val messages: CardsActionMessage,
         val userCards: List<UserCard>,
         val allowOthersPlay: Boolean,
         val showChooseCardTypeScreen: Boolean,

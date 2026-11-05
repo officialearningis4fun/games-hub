@@ -211,7 +211,6 @@ class CreateNewGameToolsViewModel @OptIn(ExperimentalCoroutinesApi::class)
     fun setupNewGameWithAIOnStartClick(onGameCreated: (String) -> Unit = {}) {
         viewModelScope.launch {
             try {
-                crusadeGameService.createGame().getDataOrThrowException()
                 /*val sessionID = preferences.getGameSessionId()
 
                 analytics.logEvent(FirebaseLog.LogName.NEW_GAME_WITH_OPENAI_CREATED) {

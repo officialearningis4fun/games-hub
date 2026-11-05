@@ -1,9 +1,11 @@
 package com.learningis4fun.gameshub.api.use_cases
 
+import com.learningis4fun.gameshub.commons.domain.model.Card
 import com.learningis4fun.gameshub.commons.domain.repository.DefaultCardRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameCardRepository
 import com.learningis4fun.gameshub.commons.domain.repository.GameRepository
 import com.learningis4fun.gameshub.commons.domain.util.Constants
+import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.domain.model.GameCard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -58,6 +60,55 @@ class AssignCardsUseCase @Inject constructor(
             true
         } catch (e: Exception) {
             false
+        }
+    }
+
+    fun getGameCardsWithAssignedCards(
+        gameId: String,
+        howManyCardsPerPlayer: Int,
+        playerIds: List<String>,
+        cards: List<Card>,
+        stageNumber: Int
+    ): Response<List<GameCard>> {
+        return try {
+
+            val gameCards = cards.map { card ->
+                GameCard(
+                    id = "",
+                    gameId = gameId,
+                    cardId = card.id,
+                    stageNumber = stageNumber
+                )
+            }
+            val cardsToAssign = gameCards
+                .shuffled()
+                .take(howManyCardsPerPlayer * playerIds.size)
+
+            val playersCards: MutableList<GameCard> = ArrayList(cardsToAssign)
+
+            var lastAccessedIndex = 0
+            playerIds.forEachIndexed { index, id ->
+                val pickTime = System.currentTimeMillis()
+                val startIndex = if (index == 0) {
+                    0
+                } else {
+                    lastAccessedIndex + 1
+                }
+                val endIndex = startIndex + howManyCardsPerPlayer
+
+                for (count in endIndex downTo startIndex) {
+                    playersCards[count] = playersCards[count].copy(
+                        playerId = id,
+                        pickedTime = pickTime
+                    )
+                }
+
+                lastAccessedIndex = endIndex
+            }
+
+            Response.Success(playersCards)
+        } catch (e: Exception) {
+            Response.Error(e.message.toString())
         }
     }
 }

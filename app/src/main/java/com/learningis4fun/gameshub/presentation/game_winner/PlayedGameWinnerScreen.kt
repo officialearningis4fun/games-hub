@@ -1,6 +1,5 @@
 package com.learningis4fun.gameshub.presentation.game_winner
 
-import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

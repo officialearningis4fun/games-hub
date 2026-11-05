@@ -21,6 +21,8 @@ fun <T> Response<T>.getNullableDataOrThrowException(): T? {
 object GamesHubLogTags {
     const val UTIL = "util"
     const val MULTIPLAYER_CRUSADE_CARDS_CONTROLLER = "MultiplayerController"
+    const val ONLINE_CRUSADE_CARDS_CONTROLLER = "OnlineController"
+    const val USER_CRUSADE_CARDS_CONTROLLER = "UserController"
     const val GAME_REPOSITORY = "gameRepository"
     const val GAME_CARD_REPOSITORY = "gameCardRepository"
     const val HANDLE_CARD_STATE_USE_CASE = "handleCardStateUseCase"

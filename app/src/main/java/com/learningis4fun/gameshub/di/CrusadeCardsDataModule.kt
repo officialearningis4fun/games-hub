@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.room.Room
 import com.learningis4fun.gameshub.api.CrusadeGameService
 import com.learningis4fun.gameshub.api.CrusadeGameServiceImpl
+import com.learningis4fun.gameshub.api.use_cases.AssignCardsUseCase
 import com.learningis4fun.gameshub.api.use_cases.GetLatestStageNumber
 import com.learningis4fun.gameshub.commons.domain.controller.CrusadeComputerCardsController
 import com.learningis4fun.gameshub.commons.domain.controller.CrusadeComputerCardsControllerImpl
@@ -57,9 +58,11 @@ object CrusadeCardsDataModule {
     @Provides
     @Singleton
     fun providesCrusadeGameService(
-        googleAuthUiClient: GoogleAuthUiClient
+        googleAuthUiClient: GoogleAuthUiClient,
+        preferencesManager: CrusadeCardsPreferencesManager
     ) = CrusadeGameServiceImpl(
-        googleAuthUiClient = googleAuthUiClient
+        googleAuthUiClient = googleAuthUiClient,
+        preferencesManager = preferencesManager
     ) as CrusadeGameService
 
     @Provides

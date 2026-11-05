@@ -61,96 +61,16 @@ import com.learningis4fun.gameshub.presentation.util.sharedImageElementKey
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 
-fun NavGraphBuilder.playedGameWinnerComposable(
-    onStartGame: (String) -> Unit,
-    onCloseClick: () -> Unit,
-    onResumeClick: (String) -> Unit,
-    onStartNextStage: (String) -> Unit
-) {
-
-    composable<WinnerScreenRoute>(
-        enterTransition = {
-            scaleIntoContainer()
-        },
-        popEnterTransition = {
-            scaleIntoContainer(direction = ScaleTransitionDirection.INWARDS)
-        }
-    ) { backStateEntry ->
-
-        val wonGameId = backStateEntry.toRoute<WinnerScreenRoute>().wonGameId
-
-        val playerId = backStateEntry.toRoute<WinnerScreenRoute>().playerId
-
-        val winnerImageRes =
-            backStateEntry.toRoute<WinnerScreenRoute>().winnerImageUrl.toIntOrNull()
-                ?: R.drawable.game_test_profile
-
-        val viewModel: PlayedGameWinnerViewModel = hiltViewModel()
-        val playedGameState by viewModel.playedGameState.collectAsStateWithLifecycle()
-
-        val ongoingGamesOrCreateNewGameViewModel: OngoingGamesOrCreateNewGameViewModel =
-            hiltViewModel()
-        val ongoingGamesOrCreateNewGameState by ongoingGamesOrCreateNewGameViewModel.ongoingGamesOrCreateNewGameState.collectAsStateWithLifecycle()
-
-        ongoingGamesOrCreateNewGameViewModel.setGameId(wonGameId)
-
-        val createNewGameToolsViewModel: CreateNewGameToolsViewModel = hiltViewModel()
-        val createNewGameToolsState by createNewGameToolsViewModel.createNewGameToolsState.collectAsStateWithLifecycle()
-
-        GamesHubAnimatedContentScope(
-            animatedContentScope = this@composable
-        ) {
-            PlayedGameScreen(
-                modifier = Modifier
-                    .fillMaxSize(),
-                playedGameWinnerOrNextStage = playedGameState,
-                ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
-                createNewGameToolsState = createNewGameToolsState,
-                winnerImageRes = winnerImageRes,
-                wonGameId = wonGameId,
-                playerId = playerId,
-                onStartGame = {
-                    createNewGameToolsViewModel.setupNewGameOnStartClick(
-                        onGameCreated = { gameId ->
-                            onStartGame(gameId)
-                        }
-                    )
-                },
-                onStartAIGame = {
-                    createNewGameToolsViewModel.setupNewGameWithAIOnStartClick(
-                        onGameCreated = { gameId ->
-                            onStartGame(gameId)
-                        }
-                    )
-                },
-                onResumeClick = onResumeClick,
-                onStartNextStage = { onStartNextStage(wonGameId) },
-                onCloseClick = onCloseClick,
-                onEvent = viewModel::onEvent,
-                onCreateEvent = createNewGameToolsViewModel::onEvent
-            )
-        }
-
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayedGameScreen(
     modifier: Modifier = Modifier,
     playedGameWinnerOrNextStage: PlayedGameWinnerOrNextStage,
-    ongoingGamesOrCreateNewGameState: OngoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.Loading,
-    createNewGameToolsState: CreateNewGameToolsState,
     winnerImageRes: Int = R.drawable.avatar_boy1,
     wonGameId: String = "",
     playerId: String = "",
     onCloseClick: () -> Unit = {},
-    onStartGame: () -> Unit = {},
-    onStartAIGame: () -> Unit = {},
-    onResumeClick: (String) -> Unit = {},
     onStartNextStage: () -> Unit = {},
-    onEvent: (PlayedGameWinnerEvents) -> Unit = {},
-    onCreateEvent: (CreateNewGameToolsEvents) -> Unit = {},
 ) {
     Scaffold(
         modifier = modifier,
@@ -216,20 +136,6 @@ fun PlayedGameScreen(
                 }
             }
 
-            item {
-                OngoingGamesOrCreateNewGameToolsSection(
-                    ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
-                    createNewGameToolsState = createNewGameToolsState,
-                    onCreateEvent = onCreateEvent,
-                    onStartGame = onStartGame,
-                    onStartAIGame = onStartAIGame,
-                    onResumeClick = onResumeClick,
-                    onDeleteGame = { gameId ->
-                        onEvent(PlayedGameWinnerEvents.DeleteGame(gameId))
-                    }
-                )
-            }
-
         }
     }
 }
@@ -277,7 +183,6 @@ private fun PlayedGameNextStageScreenPrev() {
             modifier = Modifier
                 .fillMaxSize(),
             playedGameWinnerOrNextStage = playedGameNextStageState,
-            createNewGameToolsState = CreateNewGameToolsState(),
             onCloseClick = {}
         )
     }
@@ -293,7 +198,6 @@ private fun PlayedGameNextStageScreenDarkPrev() {
             modifier = Modifier
                 .fillMaxSize(),
             playedGameWinnerOrNextStage = playedGameNextStageState,
-            createNewGameToolsState = CreateNewGameToolsState(),
             onCloseClick = {}
         )
     }
@@ -306,9 +210,7 @@ private fun PlayedGameWinnerPrev() {
         PlayedGameScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
             playedGameWinnerOrNextStage = playedGameWinnerState,
-            createNewGameToolsState = CreateNewGameToolsState()
         )
 
     }
@@ -322,9 +224,7 @@ private fun PlayedGameWinnerDarkPrev() {
         PlayedGameScreen(
             modifier = Modifier
                 .fillMaxSize(),
-            ongoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.CreateNewGameToolsState,
             playedGameWinnerOrNextStage = playedGameWinnerState,
-            createNewGameToolsState = CreateNewGameToolsState(),
         )
     }
 

@@ -88,92 +88,14 @@ import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.commons.ui.theme.green
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
+import com.learningis4fun.gameshub.presentation.play_crusade_cards.offline.PlayCardsViewModel
 import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
+import com.learningis4fun.gameshub.presentation.util.toImageResource
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
-
-
-@OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
-fun NavGraphBuilder.playCardsScreenComposable(
-    onProfileClick: () -> Unit,
-    onBackClick: () -> Unit,
-    navigateToWinner: (WinnerScreenRoute) -> Unit
-) {
-    composable<PlayCardsScreenRoute>(
-        enterTransition = {
-            scaleIntoContainer()
-        },
-        popEnterTransition = {
-            scaleIntoContainer(direction = ScaleTransitionDirection.INWARDS)
-        }
-    ) {
-
-        val playCardsViewModel: PlayCardsViewModel = hiltViewModel()
-
-        val playCardsState by playCardsViewModel.playCardsState.collectAsState()
-        val gameDuration by playCardsViewModel.gameDuration.collectAsStateWithLifecycle()
-
-        val animatingCardAndStage by playCardsViewModel.animatingCardAndStage.collectAsStateWithLifecycle()
-
-        BackHandler(
-            onBack = {
-                playCardsViewModel.onCloseNavigationIconClicked {
-                    onBackClick()
-                }
-            }
-        )
-
-        GamesHubAnimatedContentScope(
-            animatedContentScope = this@composable
-        ) {
-            PlayCardsScreen(
-                playCardsState = playCardsState,
-                animatingCardAndStage = animatingCardAndStage,
-                onEvent = playCardsViewModel::onEvent,
-                timerSectionContent = {
-                    TimerSection(
-                        textColor = Color.Black,
-                        duration = gameDuration,
-                        direction = playCardsState.playingDirection
-                    )
-                },
-                headingTimerContent = {
-                    Heading(
-                        text = gameDuration,
-                        textColor = Color.Black
-                    )
-                },
-                winner = { (player, wonGameId) ->
-                    navigateToWinner(
-                        WinnerScreenRoute(
-                            wonGameId = wonGameId,
-                            winnerImageUrl = player.imageUrl,
-                            playerId = player.uniqueId
-                        )
-                    )
-                },
-                onClose = {
-                    playCardsViewModel.onCloseNavigationIconClicked {
-                        onBackClick()
-                    }
-                },
-                onProfileClick = {
-                    onProfileClick()
-                },
-                onPauseGame = {
-                    playCardsViewModel.onAppPaused()
-                },
-                onResumeGame = {
-                    playCardsViewModel.onAppResumed()
-                }
-            )
-
-        }
-    }
-}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -188,7 +110,6 @@ fun PlayCardsScreen(
     headingTimerContent: @Composable () -> Unit = {},
     timerSectionContent: @Composable () -> Unit = {},
     onClose: () -> Unit = {},
-    onProfileClick: () -> Unit = {},
     onPauseGame: () -> Unit = {},
     onResumeGame: () -> Unit = {}
 ) {
@@ -254,14 +175,6 @@ fun PlayCardsScreen(
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = onProfileClick) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = null
-                        )
-                    }
-                }
             )
         }
     ) { paddingValues ->
@@ -731,7 +644,7 @@ private fun UserCardsSection(
                 state = userCardsState
             ) {
                 items(cards.first, key = { it.cardId }) {
-                    val image = it.image.toIntOrNull() ?: R.drawable.card_base
+                    val image = it.image.toImageResource()
                     Image(
                         modifier = Modifier
                             .onGloballyPositioned { coordinates ->

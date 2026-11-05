@@ -1,7 +1,14 @@
 package com.learningis4fun.gameshub.commons.domain.util
 
+import com.google.firebase.Timestamp
 import com.learningis4fun.gameshub.commons.domain.model.Card
 import com.learningis4fun.gameshub.commons.domain.model.Player
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -101,4 +108,18 @@ data class SixFold<out A, out B, out C, out D, out E, out F>(
      * Returns string representation of the [Triple] including its [first], [second], [third], [fourth], [fifth] and [sixth] values.
      */
     override fun toString(): String = "($first, $second, $third, $fourth, $fifth, $sixth)"
+}
+
+object FirebaseTimestampSerializer : KSerializer<Timestamp> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("FirebaseTimestamp", PrimitiveKind.LONG)
+
+    override fun serialize(encoder: Encoder, value: Timestamp) {
+        encoder.encodeLong(value.seconds)
+    }
+
+    override fun deserialize(decoder: Decoder): Timestamp {
+        val seconds = decoder.decodeLong()
+        return Timestamp(seconds, 0)
+    }
 }
