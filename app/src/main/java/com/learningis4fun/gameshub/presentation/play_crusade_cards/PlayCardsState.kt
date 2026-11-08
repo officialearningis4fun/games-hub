@@ -6,6 +6,7 @@ import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.domain.model.GameCard
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
+import com.learningis4fun.gameshub.presentation.util.removeSAtEnd
 
 data class PlayCardsState(
     val playersScreenInfo: List<PlayerScreenInfo> = emptyList(),
@@ -26,7 +27,17 @@ data class PlayCardsState(
     val isLoading: Boolean = true
 ) {
 
-    private val imageOfCurrentCardType = when (showCurrentCardType.second) {
+    val showCurrentCardTypeAndImage = Pair(
+        showCurrentCardType.first, imageOfCurrentCardType(
+            showCurrentCardType.second
+        )
+    )
+}
+
+private fun imageOfCurrentCardType(
+    showCurrentCardType: String
+): Int? {
+    return when (showCurrentCardType.removeSAtEnd()) {
         Constants.CardTypes.DIAMOND -> {
             R.drawable.suit_diamond
         }
@@ -45,9 +56,7 @@ data class PlayCardsState(
 
         else -> null
 
-    }?.toString()
-
-    val showCurrentCardTypeAndImage = Pair(showCurrentCardType.first, imageOfCurrentCardType)
+    }
 }
 
 enum class AnimatingCardStages {

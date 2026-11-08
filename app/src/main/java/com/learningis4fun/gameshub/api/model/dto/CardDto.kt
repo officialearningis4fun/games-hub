@@ -1,9 +1,11 @@
 package com.learningis4fun.gameshub.api.model.dto
 
+import androidx.annotation.Keep
 import com.learningis4fun.gameshub.commons.domain.model.Card
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Keep
 data class CardDto(
 val id: String = "",
 val name: String = "",

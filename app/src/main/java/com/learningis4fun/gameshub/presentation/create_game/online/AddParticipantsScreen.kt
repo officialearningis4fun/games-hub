@@ -1,4 +1,4 @@
-package com.learningis4fun.gameshub.presentation.start.friends
+package com.learningis4fun.gameshub.presentation.create_game.online
 
 import android.content.res.Configuration
 import androidx.compose.foundation.Image
@@ -20,13 +20,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,7 +51,6 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -68,12 +64,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
-import com.learningis4fun.gameshub.app.nav.BottonNavRoute
-import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.PlayerInfo
 import com.learningis4fun.gameshub.commons.ui.routes.AddParticipantsRoute
-import com.learningis4fun.gameshub.commons.ui.routes.CoreNavGraphRoute
+import com.learningis4fun.gameshub.commons.ui.routes.CreateGameGraph
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
@@ -93,13 +87,13 @@ fun NavGraphBuilder.addParticipantsScreenComposable(
         }) { backStackEntry ->
 
         val parentEntry = remember(backStackEntry) {
-            navController.getBackStackEntry(CoreNavGraphRoute)
+            navController.getBackStackEntry(CreateGameGraph)
         }
 
-        val friendsStartViewModel: FriendsStartViewModel = hiltViewModel(parentEntry)
-        val searchQuery by friendsStartViewModel.searchQuery.collectAsStateWithLifecycle()
-        val createNewFriendsGameState by friendsStartViewModel.createNewFriendsGameState.collectAsStateWithLifecycle()
-        val isSearchedUserNotAFriend by friendsStartViewModel.isSearchedUserNotAFriend.collectAsStateWithLifecycle()
+        val createOnlineGameViewModel: CreateOnlineGameViewModel = hiltViewModel(parentEntry)
+        val searchQuery by createOnlineGameViewModel.searchQuery.collectAsStateWithLifecycle()
+        val createNewFriendsGameState by createOnlineGameViewModel.createNewFriendsGameState.collectAsStateWithLifecycle()
+        val isSearchedUserNotAFriend by createOnlineGameViewModel.isSearchedUserNotAFriend.collectAsStateWithLifecycle()
         GamesHubAnimatedContentScope(
             animatedContentScope = this@composable
         ) {
@@ -108,7 +102,7 @@ fun NavGraphBuilder.addParticipantsScreenComposable(
                 onNavBackClick = onNavBackClick,
                 players = createNewFriendsGameState.playerInfos,
                 isSearchedUserNotAFriend = isSearchedUserNotAFriend,
-                onEvent = friendsStartViewModel::onEvent,
+                onEvent = createOnlineGameViewModel::onEvent,
                 searchQuery = searchQuery
             )
         }
@@ -123,7 +117,7 @@ fun AddParticipantsScreen(
     onNavBackClick: () -> Unit = {},
     players: List<PlayerInfo> = emptyList(),
     isSearchedUserNotAFriend: PlayerInfo? = null,
-    onEvent: (FriendsStartEvents) -> Unit = {},
+    onEvent: (CreateOnlineGameEvents) -> Unit = {},
     searchQuery: String = ""
 ) {
 
@@ -180,7 +174,7 @@ fun AddParticipantsScreen(
                             ),
                             onValueChange = {
                                 textFieldValue = it
-                                onEvent(FriendsStartEvents.UpdateSearchQuery(it.text))
+                                onEvent(CreateOnlineGameEvents.UpdateSearchQuery(it.text))
                             },
                             decorationBox = { innerTextField ->
                                 Box {
@@ -200,7 +194,7 @@ fun AddParticipantsScreen(
                         if (searchQuery.isNotEmpty()) {
                             IconButton(
                                 onClick = {
-                                    onEvent(FriendsStartEvents.ClearSearchQuery)
+                                    onEvent(CreateOnlineGameEvents.ClearSearchQuery)
                                 }
                             ) {
                                 Icon(
@@ -231,7 +225,7 @@ fun AddParticipantsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         playerInfo = isSearchedUserNotAFriend,
                         onAdd = {
-                            onEvent(FriendsStartEvents.AddUserToFriends(email = isSearchedUserNotAFriend.player.email))
+                            onEvent(CreateOnlineGameEvents.AddUserToFriends(email = isSearchedUserNotAFriend.player.email))
                         }
                     )
                 }
@@ -283,7 +277,7 @@ fun AddParticipantsScreen(
                 FriendItem(
                     playerInfo = it,
                     onCheckClick = {
-                        onEvent(FriendsStartEvents.CheckParticipantClick(it))
+                        onEvent(CreateOnlineGameEvents.CheckParticipantClick(it))
                     }
                 )
             }

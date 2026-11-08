@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.api.model.dto
 
+import androidx.annotation.Keep
 import com.learningis4fun.gameshub.commons.domain.model.ActiveGame
 import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
@@ -8,6 +9,7 @@ import com.learningis4fun.gameshub.commons.domain.util.GameState
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Keep
 data class GameDto(
     val gameState: String = GameState.NotStarted.name,
     val recentCardState: RecentCardStateDto = RecentCardStateDto(),

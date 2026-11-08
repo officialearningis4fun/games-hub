@@ -5,20 +5,13 @@
 # For more details, see
 #   http://developer.android.com/guide/developing/tools/proguard.html
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Preserve line numbers and source file attributes for stack traces
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Preserve reflection attributes (annotations, signatures, inner classes)
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
 -keep,allowoptimization,allowobfuscation class org.apache.logging.log4j.** { *; }
 
 -keep class com.google.firebase.** { *; }
@@ -46,4 +39,53 @@
 -dontwarn io.ktor.client.plugins.contentnegotiation.ContentNegotiation$Plugin
 -dontwarn io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 
--keepclassmembers class  com.learningis4fun.gameshub.crusade_cards.commons.ui.routes.** {<fields>; <methods>;}
+# Keep all classes annotated with @androidx.annotation.Keep and their members
+-keep @androidx.annotation.Keep class * { *; }
+-keepclassmembers class * {
+    @androidx.annotation.Keep *;
+}
+
+# Keep kotlinx.serialization classes, companion objects, serializers, and properties
+-keepattributes RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations
+-keepclassmembers class * {
+    @kotlinx.serialization.Serializable *;
+}
+-keepclassmembers class * {
+    *** Companion;
+}
+-keepclassmembers class *$serializer {
+    *** INSTANCE;
+}
+
+# Keep Firebase Realtime Database & Firestore property annotations
+-keepclassmembers class * {
+    @com.google.firebase.database.PropertyName <fields>;
+    @com.google.firebase.database.PropertyName <methods>;
+    @com.google.firebase.firestore.PropertyName <fields>;
+    @com.google.firebase.firestore.PropertyName <methods>;
+}
+
+# Keep Firebase and Serialization DTO & Model classes (including constructor parameter names & fields)
+-keep class com.learningis4fun.gameshub.api.model.** { *; }
+-keepclassmembers class com.learningis4fun.gameshub.api.model.** { *; }
+
+-keep class com.learningis4fun.gameshub.commons.domain.model.** { *; }
+-keepclassmembers class com.learningis4fun.gameshub.commons.domain.model.** { *; }
+
+-keep class com.learningis4fun.gameshub.data.data_source.remote.dto.** { *; }
+-keepclassmembers class com.learningis4fun.gameshub.data.data_source.remote.dto.** { *; }
+
+-keep class com.learningis4fun.gameshub.domain.model.** { *; }
+-keepclassmembers class com.learningis4fun.gameshub.domain.model.** { *; }
+
+-keep class com.learningis4fun.gameshub.commons.ui.routes.** { *; }
+-keepclassmembers class com.learningis4fun.gameshub.commons.ui.routes.** { *; }
+
+-keep class com.learningis4fun.gameshub.app.nav.** { *; }
+-keepclassmembers class com.learningis4fun.gameshub.app.nav.** { *; }
+
+# Preserve Enum values for state serialization
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}

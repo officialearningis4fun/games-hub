@@ -12,4 +12,6 @@ data object ViewProfile
 data object EditProfileRoute
 
 @Serializable
+data object CreateOnlineGameRoute
+@Serializable
 data object AddParticipantsRoute

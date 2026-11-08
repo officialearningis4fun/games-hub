@@ -1,7 +1,6 @@
 package com.learningis4fun.gameshub.presentation.play_crusade_cards
 
 import android.util.Log
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.AnimationEndReason
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,7 +26,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
@@ -45,7 +43,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,32 +66,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.commons.domain.model.Card
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.JokerActions
-import com.learningis4fun.gameshub.commons.ui.routes.PlayCardsScreenRoute
-import com.learningis4fun.gameshub.commons.ui.routes.WinnerScreenRoute
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.commons.ui.theme.green
 import com.learningis4fun.gameshub.domain.model.PlayerScreenInfo
 import com.learningis4fun.gameshub.domain.model.UserCard
-import com.learningis4fun.gameshub.presentation.play_crusade_cards.offline.PlayCardsViewModel
-import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 import com.learningis4fun.gameshub.presentation.util.toImageResource
-import com.learningis4fun.gameshub.util.ScaleTransitionDirection
-import com.learningis4fun.gameshub.util.scaleIntoContainer
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 
 
@@ -401,6 +387,7 @@ fun PlayCardsDataRoot(
             ChooseCardTypeScreen(
                 modifier = Modifier.align(Alignment.Center),
                 onClick = {
+                    println("choose card type: $it")
                     onEvent(PlayCardsEvent.SetNewCardType(it))
                 }
             )
@@ -491,7 +478,7 @@ private fun PlayedAndDustbinSection(
     modifier: Modifier = Modifier,
     playedCards: List<UserCard>,
     showAllowOthersPlay: Boolean,
-    showCurrentCardType: Pair<Boolean, String?>,
+    showCurrentCardType: Pair<Boolean, Int?>,
     onDustbinClick: () -> Unit,
     onAllowOthersPlay: () -> Unit,
     targetAnimDim: (CardAnimDim) -> Unit = {}

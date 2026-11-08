@@ -112,6 +112,12 @@ class PlayCardsOnlineViewModel
     init {
 
         viewModelScope.launch {
+            playCardsStateFlow.collect {
+                Log.d(LogTags.PLAY_CARDS_VIEW_MODEL, "showCurrentCardTypeStateAndImage: ${it.showCurrentCardTypeAndImage}")
+            }
+        }
+
+        viewModelScope.launch(handler) {
             crusadeGameService.recentGame(currentGameId).collectLatest { game ->
                 Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "gameId:$currentGameId")
                 Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "recentGame onChange:$game")
@@ -119,14 +125,14 @@ class PlayCardsOnlineViewModel
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             recentGameFlow.collectLatest { activeGame ->
                 if (activeGame == null) return@collectLatest
                 recentCardState.update { toCardState(activeGame.recentCardState) }
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             combine(
                 recentCardState.filterNotNull(),
                 updateOnGameStartedFlow,
@@ -147,7 +153,7 @@ class PlayCardsOnlineViewModel
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             while (true) {
                 val gameState = recentGameFlow.value?.gameState
                 if (gameState == GameState.Started.name) {
@@ -157,7 +163,7 @@ class PlayCardsOnlineViewModel
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             getGameWithLatestStagePlayers()
                 .filterNotNull()
                 .flatMapLatest { gameWithPlayers ->
@@ -214,7 +220,7 @@ class PlayCardsOnlineViewModel
                 .collect()
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             _gameDuration.collectLatest { (shouldUpdate, duration) ->
                 if (shouldUpdate) {
                     val durationText = duration.toTimeFormatted()
@@ -226,7 +232,7 @@ class PlayCardsOnlineViewModel
         }
 
         // create or resume game
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             val response = resumeGame()
 
             if (response is Response.Error) {
@@ -244,7 +250,7 @@ class PlayCardsOnlineViewModel
             }
         }
 
-        viewModelScope.launch {
+        viewModelScope.launch(handler) {
             recentGameFlow
                 .collect { game ->
                     game?.gameState?.let {
@@ -291,13 +297,12 @@ class PlayCardsOnlineViewModel
         return getLatestGameStage().stageNumber
     }
 
-    suspend fun getCurrentCardType(): String {
-        val gameCardId =
-            recentGameFlow.value?.recentCardState?.gameCardId ?: throw Exception("Card not found")
-        return crusadeGameService.getCard(
-            gameId = currentGameId,
-            gameCardId = gameCardId
-        ).getDataOrThrowException().type
+    fun getCurrentCardType(): String {
+        return recentGameFlow.value?.currentCardType ?: throw Exception("Card not found")
+    }
+
+    fun getCurrentCardName(): String {
+        return recentGameFlow.value?.currentCardName ?: throw Exception("Card not found")
     }
 
     /**
@@ -489,8 +494,9 @@ class PlayCardsOnlineViewModel
                     )
                         .data
 
-                    val isCardSevenOrJack = topCard != null && topCard.name == Constants.CardNames.SEVEN
-                            || topCard != null && topCard.name == Constants.CardNames.JACK
+                    val isCardSevenOrJack =
+                        topCard != null && topCard.name == Constants.CardNames.SEVEN
+                                || topCard != null && topCard.name == Constants.CardNames.JACK
 
                     val isCardNotSevenOrJackOnlyForLessThanTwoPlayers =
                         if (playerIds.size > 2) true else !isCardSevenOrJack
@@ -703,10 +709,10 @@ class PlayCardsOnlineViewModel
         val currentlyPlaying = playerScreenInfo.firstOrNull { it.isCurrentlyPlaying }
 
         val showCurrentCardTypeIfNecessary = showCurrentCardTypeIfNecessary(
-            currGameId = gameWithPlayers.game.id,
-            recentCardType = getCurrentCardType(),
             recentCardState = cardState
         )
+
+        Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "showCurrentCardTypeIfNecessary: $showCurrentCardTypeIfNecessary")
 
         val showDefineJokerActions =
             gamePlayerAction is GamePlayerActions.PromptPlayerDefineJokerCardAction
@@ -825,26 +831,18 @@ class PlayCardsOnlineViewModel
         }
     }
 
-    private suspend fun showCurrentCardTypeIfNecessary(
-        currGameId: String,
-        recentCardType: String,
+    private fun showCurrentCardTypeIfNecessary(
         recentCardState: CardStates
     ): String {
-        var type = ""
-        return try {
-            if (currGameId.isEmpty()) {
-                throw Exception("Game not available")
-            }
-            val playerIds = getGameWithLatestStagePlayers()
-                .filterNotNull()
-                .first().players.map { it.uniqueId }
-            val topPlayedCardName =
-                crusadeGameService.getTopPlayedCard(
-                    gameId = currGameId,
-                    stageNumber = getLatestStageNumber(),
-                    playerIds = playerIds
-                ).getDataOrThrowException().name
 
+       var type = ""
+        return try {
+            val recentCardType = getCurrentCardType()
+            Log.d(
+                GamesHubLogTags.PLAY_CARDS_VIEW_MODEL,
+                "showCurrentCardTypeIfNecessary: $recentCardState - $recentCardType"
+            )
+            val topPlayedCardName = getCurrentCardName()
 
             when {
                 topPlayedCardName == Constants.CardNames.JOKER
@@ -858,8 +856,9 @@ class PlayCardsOnlineViewModel
             type
         } catch (exception: Exception) {
             if (exception is CancellationException) throw exception
+            Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "exception: $exception")
             exception.printStackTrace()
-            type
+            ""
         }
     }
 
@@ -1192,6 +1191,7 @@ class PlayCardsOnlineViewModel
 
     private fun onCardTypeClick(type: String) = viewModelScope.launch(handler) {
         // change card type or error
+        Log.d(GamesHubLogTags.PLAY_CARDS_VIEW_MODEL, "onCardTypeClick: $type")
         val currentCardState = recentCardState.first()!!
         val response = userCardsController.userRequestToChangeCardType(
             type = type,

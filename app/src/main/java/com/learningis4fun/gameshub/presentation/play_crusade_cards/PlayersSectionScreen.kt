@@ -47,6 +47,7 @@ import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 import com.learningis4fun.gameshub.presentation.util.LocalAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.LocalCustomSharedTransitionScope
 import com.learningis4fun.gameshub.presentation.util.sharedImageElementKey
+import com.learningis4fun.gameshub.presentation.util.toImageResource
 
 @Composable
 fun MultiplePlayersSectionScreen(
@@ -238,7 +239,7 @@ fun CardItem(
     card: Card,
     count: Int = 0
 ) {
-    val imageRes = card.image.toIntOrNull() ?: R.drawable.card_base
+    val imageRes = card.image.toImageResource()
 
     Column(
         modifier = modifier

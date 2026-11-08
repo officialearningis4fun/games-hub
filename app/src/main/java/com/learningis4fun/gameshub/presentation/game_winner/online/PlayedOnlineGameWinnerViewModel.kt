@@ -69,6 +69,10 @@ class PlayedOnlineGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
                     numberOfCardsPerPlayer
                 )
             }.collect { (game, numberOfCardsPerPlayer) ->
+                Log.d(
+                    GamesHubLogTags.PLAY_ONLINE_GAME_WINNER_VIEW_MODEL,
+                    "game: $game numberOfCardsPerPlayer: $numberOfCardsPerPlayer"
+                )
 
                 game?.let {
                     loadWinnerScreenInfo(
@@ -81,7 +85,10 @@ class PlayedOnlineGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
 
         viewModelScope.launch {
             playedGameStateFlow.collectLatest {
-                println("playedGameStateFlow: $it")
+                Log.d(
+                    GamesHubLogTags.PLAY_ONLINE_GAME_WINNER_VIEW_MODEL,
+                    "playedGameStateFlow: $it"
+                )
             }
         }
 
@@ -121,7 +128,7 @@ class PlayedOnlineGameWinnerViewModel @OptIn(ExperimentalCoroutinesApi::class)
         numberOfCardsPerPlayer: Int
     ) {
         try {
-            println("winner: $game")
+            Log.d(GamesHubLogTags.PLAY_ONLINE_GAME_WINNER_VIEW_MODEL, "game: $game")
 
             if (game.gameState == GameState.Completed.name) {
                 // completed

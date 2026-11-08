@@ -1,10 +1,12 @@
 package com.learningis4fun.gameshub.api.model.dto
 
+import androidx.annotation.Keep
 import com.learningis4fun.gameshub.domain.model.GameCard
 import com.learningis4fun.gameshub.domain.model.UserCard
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Keep
 data class GameCardDto(
     val playerId: String = "",
     val cardId: String = "",

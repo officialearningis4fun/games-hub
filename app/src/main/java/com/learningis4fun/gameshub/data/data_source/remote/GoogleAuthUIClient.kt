@@ -35,7 +35,7 @@ class GoogleAuthUiClient(
     private val credentialManager: CredentialManager = CredentialManager.create(context)
 
     private val auth = Firebase.auth
-    private val signedInUserFlow = MutableStateFlow<User?>(null)
+    private val signedInUserFlow = MutableStateFlow<User?>(auth.currentUser?.toUser())
     val signedInUser = signedInUserFlow.asStateFlow()
 
     private val googleAuthStagesState =

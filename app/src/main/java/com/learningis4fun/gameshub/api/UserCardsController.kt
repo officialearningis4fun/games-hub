@@ -191,6 +191,7 @@ class UserCardsController @Inject constructor(
         playerId: String,
         gameId: String
     ): Response<Unit> {
+        Log.d(GamesHubLogTags.USER_CRUSADE_CARDS_CONTROLLER, "type: $type gameId: $gameId playerId: $playerId state: $currentCardState")
         return when (currentCardState) {
             is CardStates.ChangeType -> {
                 if (currentCardState.playerId == playerId) {

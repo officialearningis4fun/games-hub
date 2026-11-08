@@ -7,13 +7,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,13 +36,10 @@ import com.learningis4fun.gameshub.commons.domain.util.playerName
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsViewModel
-import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.NewGameWithAIState
-import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.OnlineOfflineMode
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.PlayerInfo
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameState
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameToolsSection
 import com.learningis4fun.gameshub.commons.ui.components.ongoing_or_create_new_game.OngoingGamesOrCreateNewGameViewModel
-import com.learningis4fun.gameshub.commons.ui.routes.StartScreenRoute
 import com.learningis4fun.gameshub.presentation.util.GamesHubAnimatedContentScope
 import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
@@ -58,7 +51,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 fun NavGraphBuilder.cardsStartScreenComposable(
     onStartClick: (String) -> Unit,
     onResumeClick: (String) -> Unit,
-    onProfileClick: () -> Unit,
     onGameClick: (Pair<Game, Player>) -> Unit = {},
 ) {
     composable<BottonNavRoute.HomeScreenRoute>(
@@ -100,7 +92,6 @@ fun NavGraphBuilder.cardsStartScreenComposable(
                     }
                 },
                 onResumeClick = onResumeClick,
-                onProfileClick = onProfileClick,
                 onGameClick = onGameClick,
                 onEvent = cardsStartViewModel::onEvent,
                 onCreateGameEvent = createNewGameToolsViewModel::onEvent
@@ -121,7 +112,6 @@ fun CardsStartScreen(
     onStartClick: () -> Unit = {},
     onStartWithAIClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
-    onProfileClick: () -> Unit = {},
     onGameClick: (Pair<Game, Player>) -> Unit = {},
     onEvent: (CardsStartEvents) -> Unit = {},
     onCreateGameEvent: (CreateNewGameToolsEvents) -> Unit = {}
@@ -143,14 +133,6 @@ fun CardsStartScreen(
                 ),
                 title = {
                     Text(text = stringResource(id = R.string.app_name))
-                },
-                actions = {
-                    IconButton(onClick = { onProfileClick() }) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = null
-                        )
-                    }
                 }
             )
         }

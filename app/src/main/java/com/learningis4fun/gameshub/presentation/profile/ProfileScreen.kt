@@ -16,17 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,7 +44,6 @@ import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
 import com.learningis4fun.gameshub.app.nav.BottonNavRoute
 import com.learningis4fun.gameshub.commons.domain.model.Player
-import com.learningis4fun.gameshub.commons.ui.routes.ViewProfile
 import com.learningis4fun.gameshub.commons.ui.theme.GamesHubAppTheme
 import com.learningis4fun.gameshub.util.ScaleTransitionDirection
 import com.learningis4fun.gameshub.util.scaleIntoContainer
@@ -56,7 +51,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 fun NavGraphBuilder.profileScreenComposable(
-    onBackClick: () -> Unit,
     onEditProfile: () -> Unit,
     signInRequest: () -> Unit,
 ) {
@@ -73,7 +67,6 @@ fun NavGraphBuilder.profileScreenComposable(
         val userProfileInfo by profileViewModel.profileState.collectAsStateWithLifecycle()
 
         ProfileScreen(
-            onBackClick = onBackClick,
             onEditProfile = onEditProfile,
             profileState = userProfileInfo,
             onSignInButtonClick = {
@@ -89,7 +82,6 @@ fun NavGraphBuilder.profileScreenComposable(
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    onBackClick: () -> Unit = {},
     onEditProfile: () -> Unit = {},
     onSignInButtonClick: () -> Unit = {},
     profileState: ProfileState
@@ -102,7 +94,7 @@ fun ProfileScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 modifier = Modifier.shadow(
                     elevation = 5.dp,
                     spotColor = Color.LightGray
@@ -115,16 +107,7 @@ fun ProfileScreen(
                 ),
                 title = {
                     Text(text = stringResource(id = R.string.screen_profile_title))
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = null
-                        )
-                    }
-                },
-                actions = {}
+                }
             )
         }
     ) { paddingValues ->
@@ -190,21 +173,7 @@ fun ProfileScreen(
                 }
 
                 item {
-                    Text(
-                        modifier = Modifier
-                            .padding(vertical = 8.dp),
-                        text = "The name and profile image will identify you to others",
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
-
-                item {
                     Column {
-                        SectionSubtitle(
-                            text = "We use your Google account email to identify you and keep track of your progress. Records of pdfs you've created"
-                        )
-
                         SectionTitle(
                             modifier = Modifier.fillMaxWidth(),
                             text = "Google Account"

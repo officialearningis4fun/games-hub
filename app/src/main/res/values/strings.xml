@@ -27,7 +27,8 @@
     <string name="challenge_your_phone_to_a_crusade">Challenge your Phone to a crusade</string>
     <string name="resume_btn">Resume</string>
 
-    <string name="screen_profile_title">Profile</string>
+    <string name="screen_profile_title">Account</string>
+    <string name="screen_create_game_title">Create Game</string>
     <string name="screen_profile_choose_avatar">Choose avatar</string>
     <string name="screen_winner_title">Winner</string>
     <string name="screen_add_participant_title">Add Participants</string>

@@ -93,7 +93,7 @@ interface CrusadeGameService {
 
     suspend fun createGame(
         opponentIds: List<String>
-    ): Response<Unit>
+    ): Response<String>
 
     suspend fun deleteGame(gameId: String): Response<Unit>
 

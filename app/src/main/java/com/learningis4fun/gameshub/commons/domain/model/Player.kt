@@ -1,5 +1,6 @@
 package com.learningis4fun.gameshub.commons.domain.model
 
+import androidx.annotation.Keep
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -10,6 +11,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Entity
+@Keep
 data class Player(
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = "uniqueId")

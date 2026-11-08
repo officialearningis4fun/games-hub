@@ -108,6 +108,13 @@ fun GamesHubAppThemePrev(
     }
 }
 
+// remove the s at the end of the word
+fun String.removeSAtEnd(): String {
+    return if (this.endsWith("s")) {
+        this.dropLast(1)
+    } else this
+}
+
 @Composable
 fun String.toImageResource(): Int {
     val context = LocalContext.current

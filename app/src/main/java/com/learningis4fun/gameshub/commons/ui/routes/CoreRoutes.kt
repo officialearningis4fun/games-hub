@@ -2,8 +2,7 @@ package com.learningis4fun.gameshub.commons.ui.routes
 
 import kotlinx.serialization.Serializable
 
-@Serializable
-data object CoreNavGraphRoute
+
 
 @Serializable
 data object StartScreenRoute

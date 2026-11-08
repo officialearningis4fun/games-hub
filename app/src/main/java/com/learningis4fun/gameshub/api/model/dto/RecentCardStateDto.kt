@@ -1,10 +1,12 @@
 package com.learningis4fun.gameshub.api.model.dto
 
+import androidx.annotation.Keep
 import com.learningis4fun.gameshub.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.domain.model.CardStateEntity
 import kotlinx.serialization.Serializable
 
 @Serializable
+@Keep
 data class RecentCardStateDto(
     val cardStateName : String = CardStates.Start.name,
     val playerId: String = "",

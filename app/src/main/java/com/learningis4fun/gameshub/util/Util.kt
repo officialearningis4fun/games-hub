@@ -27,10 +27,10 @@ object GamesHubLogTags {
     const val GAME_CARD_REPOSITORY = "gameCardRepository"
     const val HANDLE_CARD_STATE_USE_CASE = "handleCardStateUseCase"
     const val PLAY_CARDS_VIEW_MODEL = "playCardsViewModel"
+    const val PLAY_ONLINE_GAME_WINNER_VIEW_MODEL = "playOnlineGameWinnerVM"
     const val GET_LATEST_UN_PLAYED_CARDS = "getLatestUnPlayedCards"
     const val GET_LATEST_GAME_STAGE_PLAYER = "latestGameStagePlayer"
     const val CREATE_NEW_GAME_VIEWMODEL = "createNewGameViewModel"
-    const val GEMINI_CARDS_CONTROLLER = "geminiCardsController"
     const val OPENAI_CARDS_CONTROLLER = "openaiCardsController"
     const val CRUSADE_PREFERENCES = "preferences"
 }

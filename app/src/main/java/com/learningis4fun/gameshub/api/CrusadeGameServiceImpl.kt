@@ -24,6 +24,7 @@ import com.learningis4fun.gameshub.commons.domain.model.GameStage
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.CardStates
 import com.learningis4fun.gameshub.commons.domain.util.CardsErrorMessages
+import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.GameState
 import com.learningis4fun.gameshub.commons.domain.util.Response
 import com.learningis4fun.gameshub.commons.domain.util.toCardState
@@ -49,7 +50,10 @@ import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.tasks.await
@@ -88,9 +92,13 @@ class CrusadeGameServiceImpl @Inject constructor(
                     FirebaseDatabaseFields.CURRENT_CARD_NAME to userCard.name.lowercase(),
                 )
             ).await()
+            val cardTypeIfJocker = if (userCard.name.lowercase() == Constants.CardNames.JOKER) {
+                ""
+            } else userCard.type
+
             gameRef.updateChildren(
                 mapOf(
-                    FirebaseDatabaseFields.CURRENT_CARD_TYPE to userCard.type.lowercase(),
+                    FirebaseDatabaseFields.CURRENT_CARD_TYPE to cardTypeIfJocker,
                     FirebaseDatabaseFields.CURRENT_CARD_NAME to userCard.name.lowercase(),
                     FirebaseDatabaseFields.GAME_CARD_ID to userCard.gameCardId
                 )
@@ -303,9 +311,14 @@ class CrusadeGameServiceImpl @Inject constructor(
         playerId: String, gameId: String, type: String
     ): Response<Unit> {
         return try {
+            Log.d(
+                LogTags.CRUSADE_GAME_SERVICE_IMPL,
+                "playerId: $playerId gameId: $gameId type: $type"
+            )
             val firebaseDatabase = Firebase.database
-            val ref = firebaseDatabase.getReference(FirebaseCollections.GAMES).child(gameId)
-                .child("recentCardState")
+            val ref = firebaseDatabase
+                .getReference(FirebaseCollections.GAMES)
+                .child(gameId)
 
             ref.updateChildren(mapOf(FirebaseDatabaseFields.CURRENT_CARD_TYPE to type)).await()
             Response.Success(Unit)
@@ -370,6 +383,7 @@ class CrusadeGameServiceImpl @Inject constructor(
             val ref = firebaseDatabase
                 .getReference(FirebaseCollections.GAMES)
                 .child(gameId)
+            Log.d(LogTags.CRUSADE_GAME_SERVICE_IMPL, "cardStateEntity: $cardStateEntity")
 
             ref.updateChildren(mapOf(FirebaseDatabaseFields.RECENT_CARD_STATE to cardStateEntity))
                 .await()
@@ -691,7 +705,7 @@ class CrusadeGameServiceImpl @Inject constructor(
 
     override suspend fun createGame(
         opponentIds: List<String>
-    ): Response<Unit> {
+    ): Response<String> {
         return try {
             val user = googleAuthUiClient.getSignedInUser() ?: return Response.Error("User is null")
 
@@ -753,7 +767,7 @@ class CrusadeGameServiceImpl @Inject constructor(
                 stageNumber = 1,
                 playerIds = playerIdAndPositionDtos.map { it.playerId }).getDataOrThrowException()
 
-            Response.Success(Unit)
+            Response.Success(gameId)
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             e.printStackTrace()
@@ -1089,13 +1103,30 @@ class CrusadeGameServiceImpl @Inject constructor(
             val friendId =
                 snapshot.children.firstOrNull()?.key ?: return Response.Error("User not found")
 
-            friends.child(user.id).child(friendId).setValue(
+            friends
+                .child(user.id)
+                .child(friendId)
+                .setValue(
                 FriendDto(
                     userId = friendId, request = RequestDto(
                         accepted = false, send = true
                     )
                 )
             )
+
+            friends
+                .child(friendId)
+                .child(user.id)
+                .setValue(
+                    FriendDto(
+                        userId = user.id,
+                        request = RequestDto(
+                            accepted = false,
+                            send = false
+                        )
+                    )
+                )
+
             Response.Success(Unit)
         } catch (e: Exception) {
             if (e is CancellationException) throw e
@@ -1105,47 +1136,54 @@ class CrusadeGameServiceImpl @Inject constructor(
 
     private fun getUserGames(
         completed: Boolean
-    ): Flow<List<UserGame>> = callbackFlow {
-        val user = googleAuthUiClient.getSignedInUser()
-        if (user == null) {
-            trySend(emptyList())
-            close()
-            return@callbackFlow
-        }
+    ): Flow<List<UserGame>> {
+        return googleAuthUiClient.signedInUser.flatMapLatest { user ->
+            if (user == null) {
+                flowOf(emptyList())
+            } else {
+                callbackFlow {
+                    val ref = Firebase.database.getReference(FirebaseCollections.USER_GAMES)
+                        .child(user.id)
 
-        val firebaseDatabase = Firebase.database
+                    val listener = object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            Log.d(
+                                LogTags.CRUSADE_GAME_SERVICE_IMPL,
+                                "getUserGames changed: $snapshot"
+                            )
 
-        val ref = firebaseDatabase.getReference(FirebaseCollections.USER_GAMES).child(user.id)
-            .orderByChild("completed").equalTo(completed)
+                            val userGameDtos = snapshot.children.mapNotNull { childSnapshot ->
+                                val gameId = childSnapshot.key ?: return@mapNotNull null
+                                runCatching {
+                                    childSnapshot.getValue(UserGameDto::class.java)
+                                        ?.toUserGame(gameId = gameId)
+                                }.onFailure { error ->
+                                    Log.d(
+                                        LogTags.CRUSADE_GAME_SERVICE_IMPL,
+                                        "Error parsing game $gameId: $error"
+                                    )
+                                }.getOrNull()
+                            }.filter { it.completed == completed }
 
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val userGameDtos = snapshot.children.mapNotNull { childSnapshot ->
-                    runCatching {
-                        val gameId = childSnapshot.key ?: return@runCatching null
-                        childSnapshot.getValue(UserGameDto::class.java)?.toUserGame(gameId = gameId)
-                    }.onFailure { error ->
-                        Log.d(LogTags.CRUSADE_GAME_SERVICE_IMPL, "error: $error")
-                    }.getOrNull()
-                }
-                trySend(userGameDtos).onFailure { error ->
-                    Log.w(
-                        LogTags.CRUSADE_GAME_SERVICE_IMPL,
-                        "Failed to send user games update to flow",
-                        error
-                    )
+                            trySend(userGameDtos).onFailure { error ->
+                                Log.w(
+                                    LogTags.CRUSADE_GAME_SERVICE_IMPL,
+                                    "Failed to send user games update to flow",
+                                    error
+                                )
+                            }
+                        }
 
+                        override fun onCancelled(error: DatabaseError) {
+                            close(error.toException())
+                        }
+                    }
+
+                    ref.addValueEventListener(listener)
+                    awaitClose { ref.removeEventListener(listener) }
                 }
             }
-
-            override fun onCancelled(error: DatabaseError) {
-                close(error.toException())
-            }
         }
-
-        ref.addValueEventListener(listener)
-
-        awaitClose { ref.removeEventListener(listener) }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -1184,24 +1222,32 @@ class CrusadeGameServiceImpl @Inject constructor(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getUnCompletedGames(): Flow<List<OnGoingGame>> {
-        val firebaseDatabase = Firebase.database
-        val gamesRef = firebaseDatabase.getReference(FirebaseCollections.GAMES)
-        return getUserGames(
-            completed = false
-        ).mapLatest { userGameDtos ->
-            userGameDtos.mapNotNull { userGame ->
-                val gameId = userGame.gameId
-                val gameDto = gamesRef.child(gameId).get().await().getValue(GameDto::class.java)
-                    ?: return@mapNotNull null
-                val game = gameDto.toGame(gameId = gameId)
-                val players = getPlayers(
-                    playerIds = gameDto.playerIds.map { it.playerId })
-                OnGoingGame(
-                    threeCards = emptyList(), gameWithPlayers = GameWithPlayers(
-                        game = game, players = players
-                    )
+        val gamesRef = Firebase.database.getReference(FirebaseCollections.GAMES)
+        return getUserGames(completed = false).mapLatest { userGameDtos ->
+            coroutineScope {
+                userGameDtos.map { userGame ->
+                    async {
+                        runCatching {
+                            val gameId = userGame.gameId
+                            val snapshot = gamesRef.child(gameId).get().await()
+                            val gameDto =
+                                snapshot.getValue(GameDto::class.java) ?: return@runCatching null
 
-                )
+                            val game = gameDto.toGame(gameId = gameId)
+                            val players = getPlayers(
+                                playerIds = gameDto.playerIds.map { it.playerId }
+                            )
+
+                            OnGoingGame(
+                                threeCards = emptyList(),
+                                gameWithPlayers = GameWithPlayers(
+                                    game = game,
+                                    players = players
+                                )
+                            )
+                        }.getOrNull()
+                    }
+                }.awaitAll().filterNotNull()
             }
         }
     }

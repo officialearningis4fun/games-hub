@@ -30,7 +30,7 @@ import com.learningis4fun.gameshub.presentation.util.toImageResource
 fun PlayedCardsSection(
     modifier: Modifier,
     cards: List<UserCard>,
-    showCurrentCardType: Pair<Boolean, String?>,
+    showCurrentCardType: Pair<Boolean, Int?>,
     targetAnimDim: (CardAnimDim) -> Unit = {}
 ) {
 
@@ -135,10 +135,10 @@ private fun getImageOrDefault(cards: List<UserCard>, index: Int): Int {
 @Composable
 private fun CurrentCardTypeScreen(
     modifier: Modifier,
-    showCurrentCardType: Pair<Boolean, String?>
+    showCurrentCardType: Pair<Boolean, Int?>
 ) {
 
-    showCurrentCardType.second?.toIntOrNull()?.let { cardTypeImage ->
+    showCurrentCardType.second?.let { cardTypeImage ->
         val show = showCurrentCardType.first
         if (show) {
             Box(modifier) {
@@ -218,7 +218,7 @@ private fun PlayedCardsSectionLightPrev() {
                     pickedTime = 0L
                 )
             ),
-            showCurrentCardType = Pair(true, R.drawable.suit_club.toString()),
+            showCurrentCardType = Pair(true, R.drawable.suit_club),
         )
     }
 }
@@ -268,7 +268,7 @@ private fun PlayedCardsSectionDarkPrev() {
                     pickedTime = 0L
                 )
             ),
-            showCurrentCardType = Pair(true, R.drawable.suit_club.toString()),
+            showCurrentCardType = Pair(true, R.drawable.suit_club),
         )
     }
 }

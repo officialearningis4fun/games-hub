@@ -47,6 +47,8 @@ class CrusadeCardsController @Inject constructor(
         gameId: String
     ): CardStates {
 
+        Log.d(GamesHubLogTags.ONLINE_CRUSADE_CARDS_CONTROLLER, "playerId: $playerId type: $type gameId: $gameId")
+
         return when (val result = allowChangeType(
             playerId = playerId,
             gameId = gameId,
