@@ -2,6 +2,7 @@ package com.learningis4fun.gameshub.api.model.dto
 
 import androidx.annotation.Keep
 import com.learningis4fun.gameshub.commons.domain.model.Card
+import com.learningis4fun.gameshub.presentation.util.removeSAtEnd
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -17,7 +18,7 @@ val image: String = ""
     fun toCard() = Card(
         id = id,
         name = name.lowercase(),
-        type = type.lowercase(),
+        type = type.lowercase().removeSAtEnd(),
         image = image
     )
 }

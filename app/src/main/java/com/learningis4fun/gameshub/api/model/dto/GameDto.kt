@@ -6,6 +6,7 @@ import com.learningis4fun.gameshub.commons.domain.model.Game
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.domain.util.GameState
+import com.learningis4fun.gameshub.presentation.util.removeSAtEnd
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -30,7 +31,7 @@ data class GameDto(
         gameState = gameState,
         recentCardState = recentCardState.toCardStateEntity(),
         currentCardName = currentCardName,
-        currentCardType = currentCardType,
+        currentCardType = currentCardType.removeSAtEnd(),
         name = name,
         winnerId = winnerId,
         gameDuration = gameDuration,

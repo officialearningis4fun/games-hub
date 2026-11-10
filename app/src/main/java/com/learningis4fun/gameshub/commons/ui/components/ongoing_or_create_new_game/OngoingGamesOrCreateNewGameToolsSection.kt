@@ -11,11 +11,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.learningis4fun.gameshub.commons.domain.util.Constants
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameSection
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsEvents
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CreateNewGameToolsState
-import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.NewGameWithAIState
 import com.learningis4fun.gameshub.presentation.start.OngoingGamesSection
 import com.learningis4fun.gameshub.presentation.util.GamesHubAppThemePrev
 
@@ -26,7 +24,6 @@ fun OngoingGamesOrCreateNewGameToolsSection(
     createNewGameToolsState: CreateNewGameToolsState,
     onCreateEvent: (CreateNewGameToolsEvents) -> Unit = {},
     onStartGame: () -> Unit = {},
-    onStartAIGame: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onDeleteGame: (String) -> Unit = {},
 ) {
@@ -40,7 +37,6 @@ fun OngoingGamesOrCreateNewGameToolsSection(
                         createNewGameToolsState = createNewGameToolsState,
                         onCreateEvent = onCreateEvent,
                         onStartGame = onStartGame,
-                        onStartAIGame = onStartAIGame
                     )
                 }
             }

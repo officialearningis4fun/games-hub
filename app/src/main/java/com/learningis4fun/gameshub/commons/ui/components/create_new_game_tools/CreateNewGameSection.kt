@@ -36,7 +36,6 @@ fun CreateNewGameSection(
     createNewGameToolsState: CreateNewGameToolsState,
     onCreateEvent: (CreateNewGameToolsEvents) -> Unit,
     onStartGame: () -> Unit,
-    onStartAIGame: () -> Unit
 ) {
     val sharedTransitionScope = LocalCustomSharedTransitionScope.current
     val animatedContentScope = LocalAnimatedContentScope.current
@@ -164,8 +163,7 @@ fun CreateNewGameSectionPrev() {
         CreateNewGameSection(
             createNewGameToolsState = createNewGameToolsState,
             onCreateEvent = {},
-            onStartGame = { /*TODO*/ },
-            onStartAIGame = {})
+            onStartGame = { /*TODO*/ })
     }
 }
 
@@ -176,7 +174,6 @@ fun CreateNewGameSectionPrevDark() {
         CreateNewGameSection(
             createNewGameToolsState = createNewGameToolsState,
             onCreateEvent = {},
-            onStartGame = { /*TODO*/ },
-            onStartAIGame = {})
+            onStartGame = { /*TODO*/ })
     }
 }

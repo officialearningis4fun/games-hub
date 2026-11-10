@@ -62,6 +62,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.learningis4fun.gameshub.R
+import com.learningis4fun.gameshub.app.nav.BottonNavRoute
 import com.learningis4fun.gameshub.commons.domain.model.Player
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.CardsToolDialog
 import com.learningis4fun.gameshub.commons.ui.components.create_new_game_tools.EliminationLimitToolDialog
@@ -86,6 +87,7 @@ fun NavGraphBuilder.createOnlineGameScreenComposable(
     navController: NavHostController,
     onClose: () -> Unit,
     onAddParticipants: () -> Unit = {},
+    onGameCreated: (String) -> Unit = {}
 ) {
     composable<CreateOnlineGameRoute>(
         popEnterTransition = {
@@ -110,15 +112,7 @@ fun NavGraphBuilder.createOnlineGameScreenComposable(
                 onAddParticipants = onAddParticipants,
                 onCreateGame = {
                     createOnlineGameViewModel.onCreateOnlineGame { gameId ->
-                        navController.popBackStack(
-                            route = CreateGameGraph,
-                            inclusive = true
-                        )
-                        navController.navigate(
-                            PlayCardsOnlineScreenRoute(
-                                currentGameId = gameId
-                            )
-                        )
+                        onGameCreated(gameId)
                     }
                 },
                 onClose = onClose,
@@ -396,7 +390,7 @@ private fun CreateGameSetupToolsSection(
                 .padding(horizontal = 16.dp),
             enabled = createNewGameToolsState.enableCreateGameButton,
             onClick = {
-               onCreateGame()
+                onCreateGame()
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,

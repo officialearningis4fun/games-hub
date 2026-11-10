@@ -88,8 +88,6 @@ class CrusadeGameServiceImpl @Inject constructor(
                     FirebaseDatabaseFields.PLAY_TIME to playTime,
                     FirebaseDatabaseFields.PLAYED to true,
                     FirebaseDatabaseFields.PLAYER_ID to userCard.playerId,
-                    FirebaseDatabaseFields.CURRENT_CARD_TYPE to userCard.type.lowercase(),
-                    FirebaseDatabaseFields.CURRENT_CARD_NAME to userCard.name.lowercase(),
                 )
             ).await()
             val cardTypeIfJocker = if (userCard.name.lowercase() == Constants.CardNames.JOKER) {
@@ -1107,12 +1105,12 @@ class CrusadeGameServiceImpl @Inject constructor(
                 .child(user.id)
                 .child(friendId)
                 .setValue(
-                FriendDto(
-                    userId = friendId, request = RequestDto(
-                        accepted = false, send = true
+                    FriendDto(
+                        userId = friendId, request = RequestDto(
+                            accepted = false, send = true
+                        )
                     )
                 )
-            )
 
             friends
                 .child(friendId)

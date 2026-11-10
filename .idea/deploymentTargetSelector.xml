@@ -15,12 +15,12 @@
           <targets>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=R7AW405W2RK" />
+                <DeviceId pluginId="PhysicalDevice" identifier="serial=R8YL203V96Y" />
               </handle>
             </Target>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=R8YL203V96Y" />
+                <DeviceId pluginId="PhysicalDevice" identifier="serial=R7AW405W2RK" />
               </handle>
             </Target>
           </targets>

@@ -270,6 +270,7 @@ class CreateOnlineGameViewModel @Inject constructor(
 
                         is Response.Success<*> -> {
                             Log.d(LogTags.FRIENDS_START_VIEW_MODEL, "success")
+                            searchQueryFlow.update { "" }
                         }
                     }
                 }

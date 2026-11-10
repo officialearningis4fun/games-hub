@@ -103,6 +103,15 @@ fun NavigationRoot(
                         },
                         onAddParticipants = {
                             navController.navigate(AddParticipantsRoute)
+                        },
+                        onGameCreated = {gameId ->
+                            navController.navigate(
+                                PlayCardsOnlineScreenRoute(
+                                    currentGameId = gameId
+                                )
+                            ) {
+                                popUpTo<BottonNavRoute.FriendsScreenRoute> { inclusive = false }
+                            }
                         }
                     )
 
@@ -131,7 +140,7 @@ fun NavigationRoot(
                                 playerId = route.playerId
                             )
                         ) {
-                            popUpTo<StartScreenRoute> {
+                            popUpTo<BottonNavRoute.HomeScreenRoute> {
                                 inclusive = false
                             }
                         }
@@ -150,7 +159,7 @@ fun NavigationRoot(
                                 playerId = route.playerId
                             )
                         ) {
-                            popUpTo<CoreNavGraph> {
+                            popUpTo<BottonNavRoute.FriendsScreenRoute> {
                                 inclusive = false
                             }
                         }

@@ -113,6 +113,7 @@ class PlayCardsOnlineViewModel
 
         viewModelScope.launch {
             playCardsStateFlow.collect {
+                Log.d(LogTags.PLAY_CARDS_VIEW_MODEL, "playCardsState: ${it}")
                 Log.d(LogTags.PLAY_CARDS_VIEW_MODEL, "showCurrentCardTypeStateAndImage: ${it.showCurrentCardTypeAndImage}")
             }
         }
@@ -158,6 +159,26 @@ class PlayCardsOnlineViewModel
                 val gameState = recentGameFlow.value?.gameState
                 if (gameState == GameState.Started.name) {
                     adjustGameTimer()
+                } else if(gameState == GameState.Completed.name){
+                   try {
+                       val winnerId = recentGameFlow.value?.winnerId
+                       val winner = recentGameFlow.value?.players
+                           ?.find { player -> player.uniqueId == winnerId }
+                           ?: throw Exception("Winner not found but game completed")
+
+                       playCardsStateFlow.update {
+                           it.copy(
+                               wonGame = WonGame(winner = winner, gameId = currentGameId)
+                           )
+                       }
+                   } catch (e: Exception){
+                       e.printStackTrace()
+                       playCardsStateFlow.update {
+                           it.copy(
+                           warning = e.message
+                           )
+                       }
+                   }
                 }
                 delay(Constants.GAME_DURATION_INTERVAL.milliseconds)
             }

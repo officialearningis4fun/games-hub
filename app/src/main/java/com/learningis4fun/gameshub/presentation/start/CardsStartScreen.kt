@@ -86,11 +86,6 @@ fun NavGraphBuilder.cardsStartScreenComposable(
                         onStartClick(gameId)
                     }
                 },
-                onStartWithAIClick = {
-                    createNewGameToolsViewModel.setupNewGameWithAIOnStartClick { gameId ->
-                        onStartClick(gameId)
-                    }
-                },
                 onResumeClick = onResumeClick,
                 onGameClick = onGameClick,
                 onEvent = cardsStartViewModel::onEvent,
@@ -110,7 +105,6 @@ fun CardsStartScreen(
     ongoingGamesOrCreateNewGameState: OngoingGamesOrCreateNewGameState = OngoingGamesOrCreateNewGameState.Loading,
     createNewGameToolsState: CreateNewGameToolsState = CreateNewGameToolsState(),
     onStartClick: () -> Unit = {},
-    onStartWithAIClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onGameClick: (Pair<Game, Player>) -> Unit = {},
     onEvent: (CardsStartEvents) -> Unit = {},
@@ -153,7 +147,6 @@ fun CardsStartScreen(
                 ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
                 createNewGameToolsState = createNewGameToolsState,
                 onStartClick = onStartClick,
-                onStartWithAIClick = onStartWithAIClick,
                 onResumeClick = onResumeClick,
                 onGameClick = onGameClick,
                 onEvent = onCreateGameEvent,
@@ -191,7 +184,6 @@ fun CardsStartDataScreen(
     completedGamesState: CompletedGamesState,
     createNewGameToolsState: CreateNewGameToolsState,
     onStartClick: () -> Unit = {},
-    onStartWithAIClick: () -> Unit = {},
     onResumeClick: (String) -> Unit = {},
     onGameClick: (Pair<Game, Player>) -> Unit = {},
     onDeleteGame: (String) -> Unit = {},
@@ -213,7 +205,6 @@ fun CardsStartDataScreen(
                 ongoingGamesOrCreateNewGameState = ongoingGamesOrCreateNewGameState,
                 createNewGameToolsState = createNewGameToolsState,
                 onStartGame = onStartClick,
-                onStartAIGame = onStartWithAIClick,
                 onResumeClick = onResumeClick,
                 onDeleteGame = onDeleteGame,
                 onCreateEvent = onEvent

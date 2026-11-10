@@ -3,6 +3,7 @@ package com.learningis4fun.gameshub.api.model.dto
 import androidx.annotation.Keep
 import com.learningis4fun.gameshub.domain.model.GameCard
 import com.learningis4fun.gameshub.domain.model.UserCard
+import com.learningis4fun.gameshub.presentation.util.removeSAtEnd
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -25,7 +26,7 @@ data class GameCardDto(
         playerId = playerId,
         cardId = cardId,
         name = name.lowercase(),
-        type = type.lowercase(),
+        type = type.lowercase().removeSAtEnd(),
         gameId = gameId,
         stageNumber = stageNumber,
         isPlayed = played,
